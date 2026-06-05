@@ -1,0 +1,2458 @@
+{
+  "months": [
+    "1월",
+    "2월",
+    "3월",
+    "4월",
+    "5월",
+    "6월",
+    "칠월",
+    "팔월",
+    "구월",
+    "십월",
+    "십일월",
+    "12월"
+  ],
+  "common": {
+    "not_found": "찾을 수 없음",
+    "buttons": {
+      "save": {
+        "label": "구하다"
+      },
+      "delete": {
+        "label": "삭제"
+      }
+    },
+    "notifications": {
+      "copy_to_clipboard": {
+        "title": "클립보드에 복사됨",
+        "message": "{{message}}이(가) 클립보드에 복사되었습니다."
+      },
+      "on_trade_event": {
+        "multiple_items": {
+          "title": "{{player_name}}와의 거래가 처리되지 않았습니다.",
+          "message": "여러 항목으로 인해 {{player_name}} 거래가 처리되지 않았습니다."
+        },
+        "no_valid_items": {
+          "title": "{{player_name}}와의 거래가 처리되지 않았습니다.",
+          "message": "유효한 항목이 없어 {{player_name}}와의 거래가 처리되지 않았습니다."
+        },
+        "success": {
+          "title": "{{player_name}} 거래 완료",
+          "message": "<blue>{{item_name}}</blue> X<blue>{{quantity}}</blue> <blue>{{trade_type}}</blue> {{platinum}}p의 경우"
+        }
+      },
+      "warframe_gdpr_data_loaded": {
+        "success": {
+          "title": "워프레임 GDPR 데이터 로드됨",
+          "message": "거래: {{trades}}, 로그인: {{logins}}, 구매: {{purchases}}, 거래: {{transactions}}"
+        }
+      },
+      "log_export": {
+        "error": {
+          "title": "로그 내보내기 오류",
+          "message": "로그를 내보내는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "로그 내보내기 성공",
+          "message": "로그를 {{path}}(으)로 내보냈습니다."
+        }
+      },
+      "create_stock_item": {
+        "error": {
+          "title": "재고 오류 생성",
+          "message": "재고를 생성하는 중 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "주식 성공 창출",
+          "message": "재고 품목 {{name}}이(가) 성공적으로 생성되었습니다."
+        }
+      },
+      "update_stock_item": {
+        "error": {
+          "title": "재고 오류 업데이트",
+          "title_multiple": "재고 오류 업데이트",
+          "message": "재고를 업데이트하는 중에 오류가 발생했습니다.",
+          "message_multiple": "여러 재고 항목을 업데이트하는 동안 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "업데이트 주식 성공",
+          "title_multiple": "업데이트 주식 성공",
+          "message": "재고 항목 {{name}}이(가) 성공적으로 업데이트되었습니다.",
+          "message_multiple": "{{count}} 재고 항목이 성공적으로 업데이트되었습니다."
+        }
+      },
+      "delete_stock_item": {
+        "error": {
+          "title": "재고 오류 삭제",
+          "title_multiple": "재고 오류 삭제",
+          "message": "재고를 삭제하는 중에 오류가 발생했습니다.",
+          "message_multiple": "여러 재고 항목을 삭제하는 동안 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "주식 성공 삭제",
+          "title_multiple": "주식 성공 삭제",
+          "message": "재고 품목 {{name}}이(가) 성공적으로 삭제되었습니다.",
+          "message_multiple": "{{count}} 재고 항목이 성공적으로 삭제되었습니다."
+        }
+      },
+      "sell_stock_item": {
+        "error": {
+          "title": "매도 재고 오류",
+          "message": "재고를 판매하는 중 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "주식 판매 성공",
+          "message": "재고 품목 {{name}}이(가) 성공적으로 판매되었습니다."
+        }
+      },
+      "create_stock_riven": {
+        "error": {
+          "title": "재고 오류 생성",
+          "message": "재고를 생성하는 중 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "주식 성공 창출",
+          "message": "재고 품목 {{name}}이(가) 성공적으로 생성되었습니다."
+        }
+      },
+      "update_stock_riven": {
+        "error": {
+          "title": "재고 오류 업데이트",
+          "title_multiple": "재고 오류 업데이트",
+          "message": "재고를 업데이트하는 중에 오류가 발생했습니다.",
+          "message_multiple": "여러 재고 항목을 업데이트하는 동안 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "업데이트 주식 성공",
+          "title_multiple": "업데이트 주식 성공",
+          "message": "재고 항목 {{name}}이(가) 성공적으로 업데이트되었습니다.",
+          "message_multiple": "{{count}} 재고 항목이 성공적으로 업데이트되었습니다."
+        }
+      },
+      "delete_stock_riven": {
+        "error": {
+          "title": "재고 오류 삭제",
+          "title_multiple": "재고 오류 삭제",
+          "message": "재고를 삭제하는 중에 오류가 발생했습니다.",
+          "message_multiple": "여러 재고 항목을 삭제하는 동안 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "주식 성공 삭제",
+          "title_multiple": "주식 성공 삭제",
+          "message": "주식 리븐 {{name}}이(가) 성공적으로 삭제되었습니다.",
+          "message_multiple": "{{count}} 주식 리븐이 성공적으로 삭제되었습니다."
+        }
+      },
+      "delete_transaction": {
+        "error": {
+          "title": "거래 오류 삭제",
+          "title_multiple": "거래 오류 삭제",
+          "message": "거래를 삭제하는 중에 오류가 발생했습니다.",
+          "message_multiple": "여러 거래를 삭제하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "거래 성공 삭제",
+          "title_multiple": "거래 성공 삭제",
+          "message": "거래 {{name}}이(가) 성공적으로 삭제되었습니다.",
+          "message_multiple": "{{count}} 거래가 성공적으로 삭제되었습니다."
+        }
+      },
+      "sell_stock_riven": {
+        "error": {
+          "title": "매도 재고 오류",
+          "message": "재고를 판매하는 중 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "주식 판매 성공",
+          "message": "재고 품목 {{name}}이(가) 성공적으로 판매되었습니다."
+        }
+      },
+      "create_wish_list": {
+        "error": {
+          "title": "위시리스트 생성 오류",
+          "message": "위시리스트를 생성하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "위시리스트 성공 만들기",
+          "message": "위시리스트가 성공적으로 생성되었습니다."
+        }
+      },
+      "update_wish_list": {
+        "error": {
+          "title": "위시리스트 업데이트 오류",
+          "title_multiple": "위시리스트 업데이트 오류",
+          "message": "위시리스트를 업데이트하는 중에 오류가 발생했습니다.",
+          "message_multiple": "여러 위시리스트를 업데이트하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "위시리스트 업데이트 성공",
+          "title_multiple": "위시리스트 업데이트 성공",
+          "message": "위시리스트가 성공적으로 업데이트되었습니다.",
+          "message_multiple": "{{count}} 위시리스트가 성공적으로 업데이트되었습니다."
+        }
+      },
+      "delete_wish_list": {
+        "error": {
+          "title": "위시리스트 오류 삭제",
+          "title_multiple": "위시리스트 오류 삭제",
+          "message": "위시리스트를 삭제하는 중에 오류가 발생했습니다.",
+          "message_multiple": "여러 위시리스트를 삭제하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "위시리스트 삭제 성공",
+          "title_multiple": "위시리스트 삭제 성공",
+          "message": "위시리스트가 성공적으로 삭제되었습니다.",
+          "message_multiple": "{{count}} 위시리스트가 성공적으로 삭제되었습니다."
+        }
+      },
+      "bought_wish_list": {
+        "error": {
+          "title": "구매한 위시리스트 오류",
+          "message": "위시리스트를 구매한 것으로 표시하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "위시리스트 성공 구매",
+          "message": "위시리스트가 성공적으로 구매됨으로 표시되었습니다."
+        }
+      },
+      "delete_chat": {
+        "error": {
+          "title": "채팅 오류 삭제",
+          "message": "채팅을 삭제하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "채팅 성공 삭제",
+          "message": "채팅이 성공적으로 삭제되었습니다."
+        }
+      },
+      "export_data": {
+        "error": {
+          "title": "데이터 내보내기 오류",
+          "message": "데이터를 내보내는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "데이터 내보내기 성공",
+          "message": "데이터가 {{path}}(으)로 성공적으로 내보내졌습니다."
+        }
+      },
+      "no_updates_available": {
+        "title": "사용 가능한 업데이트가 없습니다.",
+        "message": "이미 최신 버전을 사용하고 있습니다."
+      },
+      "update_settings": {
+        "error": {
+          "title": "업데이트 설정 오류",
+          "message": "설정을 업데이트하는 중 오류가 발생했습니다. \n{{message}}"
+        },
+        "success": {
+          "title": "업데이트 설정 성공",
+          "message": "설정이 성공적으로 업데이트되었습니다."
+        }
+      },
+      "create_trade_entry": {
+        "error": {
+          "title": "거래 입력 오류 생성",
+          "title_multiple": "거래 입력 오류 생성",
+          "message": "거래 항목을 생성하는 동안 오류가 발생했습니다.",
+          "message_multiple": "여러 거래 항목을 생성하는 동안 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "무역 진입 성공 만들기",
+          "title_multiple": "무역 진입 성공 만들기",
+          "message": "거래 항목 {{name}}이(가) 성공적으로 생성되었습니다.",
+          "message_multiple": "{{count}} 거래 항목이 성공적으로 생성되었습니다."
+        }
+      },
+      "update_trade_entry": {
+        "error": {
+          "title": "거래 입력 오류 업데이트",
+          "title_multiple": "거래 입력 오류 업데이트",
+          "message": "거래 항목을 업데이트하는 동안 오류가 발생했습니다.",
+          "message_multiple": "여러 거래 항목을 업데이트하는 동안 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "업데이트 거래 진입 성공",
+          "title_multiple": "업데이트 거래 진입 성공",
+          "message": "거래 항목 {{name}}이(가) 성공적으로 업데이트되었습니다.",
+          "message_multiple": "{{count}} 거래 항목이 성공적으로 업데이트되었습니다."
+        }
+      },
+      "delete_trade_entry": {
+        "error": {
+          "title": "거래 입력 오류 삭제",
+          "title_multiple": "거래 입력 오류 삭제",
+          "message": "거래 항목을 삭제하는 동안 오류가 발생했습니다.",
+          "message_multiple": "여러 거래 항목을 삭제하는 중 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "거래 입력 성공 삭제",
+          "title_multiple": "거래 입력 성공 삭제",
+          "message": "거래 항목 {{name}}이(가) 성공적으로 삭제되었습니다.",
+          "message_multiple": "{{count}} 거래 항목이 성공적으로 삭제되었습니다."
+        }
+      },
+      "create_trade_msg_template": {
+        "error": {
+          "title": "템플릿 오류 생성",
+          "message": "거래 메시지 템플릿을 생성하는 동안 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "템플릿 성공 만들기",
+          "message": "거래 메시지 템플릿이 성공적으로 생성되었습니다."
+        }
+      },
+      "delete_trade_msg_template": {
+        "error": {
+          "title": "템플릿 오류 삭제",
+          "message": "거래 메시지 템플릿을 삭제하는 동안 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "템플릿 성공 삭제",
+          "message": "거래 메시지 템플릿이 성공적으로 삭제되었습니다."
+        }
+      },
+      "update_transaction": {
+        "error": {
+          "title": "거래 오류 업데이트",
+          "message": "거래를 업데이트하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "거래 성공 업데이트",
+          "message": "거래가 성공적으로 업데이트되었습니다."
+        }
+      },
+      "processed_multiple_items": {
+        "error": {
+          "title": "여러 항목 처리 오류",
+          "message": "여러 항목을 처리하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "여러 항목 처리 성공",
+          "message": "{{count}} 항목이 성공적으로 처리되었습니다."
+        }
+      },
+      "calculate_tax_all_transactions": {
+        "error": {
+          "title": "세금 오류 계산",
+          "message": "거래에 대한 세금을 계산하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "세금 성공 계산",
+          "message": "거래에 대한 세금이 성공적으로 계산되었습니다."
+        }
+      },
+      "delete_order": {
+        "error": {
+          "title": "주문 오류 삭제",
+          "message": "주문을 삭제하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "주문 성공 삭제",
+          "message": "주문이 성공적으로 삭제되었습니다."
+        }
+      },
+      "delete_all_orders": {
+        "error": {
+          "title": "모든 주문 삭제 오류",
+          "message": "모든 주문을 삭제하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "모든 주문 삭제 성공",
+          "message": "모든 주문이 성공적으로 삭제되었습니다."
+        }
+      },
+      "refresh_orders": {
+        "error": {
+          "title": "새로 고침 주문 오류",
+          "message": "주문을 새로 고치는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "새로고침 주문 성공",
+          "message": "주문이 성공적으로 새로 고쳐졌습니다."
+        }
+      },
+      "delete_auction": {
+        "error": {
+          "title": "경매 오류 삭제",
+          "message": "경매를 삭제하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "경매 성공 삭제",
+          "message": "경매가 성공적으로 삭제되었습니다."
+        }
+      },
+      "delete_all_auctions": {
+        "error": {
+          "title": "모든 경매 오류 삭제",
+          "message": "모든 경매를 삭제하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "모든 경매 성공 삭제",
+          "message": "모든 경매가 성공적으로 삭제되었습니다."
+        }
+      },
+      "refresh_auctions": {
+        "error": {
+          "title": "경매 새로고침 오류",
+          "message": "경매를 새로 고치는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "경매 성공 새로 고침",
+          "message": "경매가 성공적으로 새로 고쳐졌습니다."
+        }
+      }
+    },
+    "datatable_columns": {
+      "list_price": "상장됨",
+      "maximum_price": {
+        "title": "최대 가격",
+        "value": "{{maximum_price}} ({{currency}})",
+        "edit_tooltip": "최대 가격 편집"
+      },
+      "minimum_price": {
+        "title": "최소 가격",
+        "value": "{{minimum_price}} ({{currency}})",
+        "edit_tooltip": "최저 가격 수정"
+      },
+      "actions": {
+        "title": "행위",
+        "buttons": {
+          "manual_tooltip": "수동으로 판매",
+          "auto_tooltip": "상장된 대로 판매",
+          "bought_manual_tooltip": "구매로 표시",
+          "bought_auto_tooltip": "정가로 구매함",
+          "hide": {
+            "disabled_tooltip": "보여주다",
+            "enabled_tooltip": "숨다"
+          },
+          "info_tooltip": "정보",
+          "delete_tooltip": "삭제",
+          "edit_tooltip": "편집하다",
+          "open_filter_tooltip": "오픈 필터"
+        }
+      },
+      "quantity": {
+        "title": "수량"
+      },
+      "volume": {
+        "title": "용량"
+      }
+    },
+    "item_name": {
+      "title": "이름",
+      "value": "{{name}} {{quantity}} <blue>{{sub_type}}</blue>"
+    },
+    "pagination_total_items": "{{start}} - {{end}} / {{total}}",
+    "prompts": {
+      "delete_item": {
+        "title": "확실합니까?",
+        "message": "이 작업은 취소할 수 없습니다.",
+        "cancel": "취소",
+        "confirm": "확인하다"
+      },
+      "delete_multiple_items": {
+        "title": "확실합니까?",
+        "message": "정말로 이 {{count}} 항목을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+        "cancel": "취소",
+        "confirm": "확인하다"
+      },
+      "sell_manual": {
+        "title": "판매 대상",
+        "fields": {
+          "sell": {
+            "label": "가격"
+          },
+          "quantity": {
+            "label": "수량"
+          }
+        }
+      },
+      "bought_manual": {
+        "title": "구입 대상",
+        "fields": {
+          "bought": {
+            "label": "가격"
+          },
+          "quantity": {
+            "label": "수량"
+          }
+        }
+      },
+      "minimum_price": {
+        "title": "최소 가격",
+        "fields": {
+          "minimum_price": {
+            "label": "최소 가격",
+            "description": "품목의 최소 가격"
+          }
+        }
+      },
+      "maximum_price": {
+        "title": "최대 가격",
+        "fields": {
+          "maximum_price": {
+            "label": "최대 가격",
+            "description": "해당 품목의 최대 가격"
+          }
+        }
+      },
+      "save": {
+        "title": "구하다",
+        "fields": {
+          "name": {
+            "label": "이름"
+          }
+        }
+      }
+    },
+    "sort_by": {
+      "created_at": "생성 날짜",
+      "platinum": "백금",
+      "updated_at": "업데이트 날짜",
+      "order_type": "주문 유형",
+      "disposition": "처분",
+      "endo": "엔도",
+      "riven_grade": "리븐 등급"
+    }
+  },
+  "enums": {
+    "item_type": {
+      "riven": "리븐",
+      "item": "목",
+      "details": {
+        "riven": "리븐",
+        "item": "목"
+      }
+    },
+    "order_type": {
+      "all": "모든 주문",
+      "buy": "구매 주문",
+      "sell": "매도 주문",
+      "closed": "마감된 주문",
+      "details": {
+        "buy": "구입하다",
+        "sell": "팔다"
+      }
+    },
+    "transaction_type": {
+      "purchase": "구입",
+      "sale": "판매",
+      "trade": "거래",
+      "details": {
+        "purchase": "구입",
+        "sale": "판매",
+        "trade": "거래"
+      }
+    },
+    "stock_status": {
+      "pending": "보류 중",
+      "live": "살다",
+      "to_low_profit": "저수익",
+      "no_sellers": "판매자 없음",
+      "no_buyers": "구매자 없음",
+      "inactive": "비활성",
+      "sma_limit": "SMA 한도",
+      "order_limit": "주문한도",
+      "overpriced": "가격이 너무 비싸다",
+      "underpriced": "가격이 저렴함",
+      "details": {
+        "pending": "처리 대기 중",
+        "live": "워프레임 마켓에서 라이브",
+        "to_low_profit": "설정상 수익이 낮아 처리되지 않았습니다.",
+        "no_sellers": "이 항목에 대한 판매자를 찾을 수 없습니다.",
+        "no_buyers": "이 항목에 대한 구매자를 찾을 수 없습니다.",
+        "inactive": "비활성 상태이므로 처리되지 않습니다.",
+        "sma_limit": "SMA에 의해 제한됨",
+        "order_limit": "주문 제한에 의해 제한됩니다",
+        "overpriced": "가격이 너무 비싸다",
+        "underpriced": "가격이 저렴함"
+      }
+    },
+    "stock_mode": {
+      "all": "모두",
+      "riven": "리븐",
+      "item": "목"
+    },
+    "trade_mode": {
+      "buy": "구입하다",
+      "sell": "팔다",
+      "wishlist": "위시리스트"
+    },
+    "user_status": {
+      "online": "온라인",
+      "ingame": "게임 내",
+      "in_game": "게임 내",
+      "invisible": "오프라인"
+    },
+    "alert_type": {
+      "info": "정보",
+      "warning": "경고",
+      "error": "오류",
+      "success": "성공"
+    }
+  },
+  "context": {
+    "app": {
+      "starting_up": "시작하는 중...",
+      "database": {
+        "updating_names_transactions": "거래 항목 이름 업데이트 중 {{progress}}%",
+        "updating_names_stock_items": "재고 품목 이름 업데이트 중 {{progress}}%",
+        "updating_names_stock_rivens": "주식 리븐 이름 업데이트 중 {{progress}}%",
+        "updating_names_wish_lists": "위시 리스트 이름 업데이트 중 {{progress}}%",
+        "update_names_completed": "모든 항목 이름이 업데이트되었습니다."
+      },
+      "cache": {
+        "initializing": "캐시 초기화 중...",
+        "updating": "캐시 업데이트 중...",
+        "item_price_updating": "품목 가격 업데이트 중..."
+      }
+    }
+  },
+  "components": {
+    "item_component": "<blue>{{name}}</blue> x<blue>{{count}}</blue>",
+    "item_components": "품목 구성요소",
+    "patreon_overlay": {
+      "title": "제한된 콘텐츠",
+      "description": "이 콘텐츠는 <blue>{{tier}}</blue> 등급 이상의 Patreon 후원자에게만 제공됩니다.",
+      "buttons": {
+        "become_a_patron": "후원자가 되세요"
+      }
+    },
+    "timer_stamp": {
+      "years": "{{years}}년 전",
+      "months": "{{months}}개월 전",
+      "days": "{{days}}일 전",
+      "hours": "{{hours}}시간 전",
+      "minutes": "{{minutes}}분 전",
+      "seconds": "{{seconds}}초 전"
+    },
+    "wfm_auction": {
+      "fields": {
+        "selling_price": "판매 가격: <blue>{{price}}</blue> <plat/>",
+        "left_footer": "<blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue> <blue>{{drain}}</blue> <polarity/>",
+        "right_footer": "씨: <blue>{{mastery_level}}</blue> <roll/> <blue>{{re_rolls}}</blue>"
+      }
+    },
+    "live_scraper_control": {
+      "buttons": {
+        "start": "라이브 스크레이퍼 시작",
+        "stop": "라이브 스크레이퍼 중지"
+      },
+      "prompts": {
+        "start": {
+          "title": "경고",
+          "message": "실시간 스크래핑을 시작하시겠습니까? 이 작업을 수행하면 WFM에서 블랙리스트에 포함되지 않은 모든 주문이 삭제됩니다.",
+          "confirm": "시작",
+          "cancel": "취소"
+        }
+      },
+      "item": {
+        "checking": "확인항목 : <blue>{{name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "deleted": "주문 삭제: <blue>{{current}}</blue>/<blue>{{total}}</blue>"
+      },
+      "riven": {
+        "cooldown": "리븐 쿨다운: <blue>{{seconds}}</blue>초 남음",
+        "checking": "리븐 확인 중: <blue>{{name}}</blue> <blue>{{mod_name}}</blue> <blue>{{current}}</blue>/<blue>{{total}}</blue>",
+        "rate_limited": "속도 제한됨: 계속하기 전에 <blue>{{seconds}}</blue>초 동안 대기 중"
+      }
+    },
+    "searchfield": {
+      "label": "찾다",
+      "placeholder": "찾다...",
+      "buttons": {
+        "filter": {
+          "tooltip": "필터"
+        },
+        "search": {
+          "tooltip": "찾다"
+        },
+        "create": {
+          "tooltip": "만들다"
+        }
+      }
+    },
+    "user_menu": {
+      "items": {
+        "app_label": "애플리케이션",
+        "settings": "설정",
+        "logout": "로그아웃"
+      },
+      "errors": {
+        "logout": {
+          "title": "로그아웃 오류",
+          "message": "로그아웃을 시도하는 동안 오류가 발생했습니다."
+        }
+      },
+      "success": {
+        "logout": {
+          "title": "로그아웃 성공",
+          "message": "성공적으로 로그아웃되었습니다."
+        }
+      },
+      "prompts": {
+        "logout": {
+          "title": "로그아웃 확인",
+          "message": "정말로 로그아웃하시겠습니까?",
+          "confirm": "예",
+          "cancel": "아니요"
+        }
+      }
+    },
+    "clock": {
+      "gmt": "그리니치 표준시: <blue>{{time}}</blue>",
+      "time_until_midnight": "자정까지의 시간(GMT): <blue>{{time}}</blue>"
+    },
+    "layout": {
+      "log_in": {
+        "navbar": {
+          "home": "집",
+          "debug": "디버그",
+          "live_scraper": "라이브 스크레이퍼",
+          "warframe_market": "워프레임 마켓",
+          "trading_analytics": "거래 분석",
+          "trade_messages": "무역 메시지",
+          "chat": "채팅",
+          "wf_inventory": "WF 인벤토리",
+          "about": "에 대한"
+        }
+      }
+    },
+    "select_item_tags": {
+      "tags": {
+        "label": "태그",
+        "description": "항목을 필터링하려면 태그를 선택하세요."
+      }
+    },
+    "theme_editor": {
+      "chart_styles": {
+        "title": "차트 스타일",
+        "fields": {
+          "bgColor": "배경색",
+          "lineColor": "선 색상",
+          "lastYearLineColor": "작년 라인 색상",
+          "currentYearLineColor": "현재 연도 라인 색상"
+        },
+        "total": "총",
+        "today": "오늘",
+        "last_days": "지난 7일"
+      },
+      "color_palettes": {
+        "title": "색상 팔레트",
+        "base_colors": "기본 색상",
+        "stock_status": "재고현황",
+        "user_status": "사용자 상태",
+        "alert_type": "경고 유형",
+        "transaction_type": "거래 유형",
+        "item_type": "품목 유형",
+        "logo_color": "로고 색상",
+        "positive": "긍정적인",
+        "negative": "부정적인",
+        "profit": "이익"
+      },
+      "sharing": {
+        "title": "공유"
+      },
+      "buttons": {
+        "copy_to_clipboard": "클립보드에 복사",
+        "import_from_clipboard": "클립보드에서 가져오기",
+        "open_themes_folder": "테마 폴더 열기"
+      },
+      "fields": {
+        "export_name": {
+          "label": "이름",
+          "placeholder": "테마 이름을 입력하세요",
+          "error": "잘못된 테마 이름"
+        },
+        "export_author": {
+          "label": "작가",
+          "placeholder": "작성자 이름을 입력하세요.",
+          "error": "잘못된 작성자 이름",
+          "tooltip": "만들다"
+        }
+      },
+      "export_success": {
+        "title": "테마 내보내기 성공",
+        "message": "테마를 성공적으로 내보냈습니다."
+      },
+      "export_error": {
+        "title": "테마 내보내기 오류",
+        "message": "테마를 내보내는 중 오류가 발생했습니다: {{error}}"
+      }
+    },
+    "forms": {
+      "update_transaction": {
+        "buttons": {
+          "hide_properties": {
+            "label": "속성 숨기기"
+          },
+          "show_properties": {
+            "label": "속성 표시"
+          }
+        },
+        "fields": {
+          "price": {
+            "label": "가격",
+            "placeholder": "가격을 입력하세요",
+            "description": "플래티넘 거래 가격입니다."
+          },
+          "quantity": {
+            "label": "수량",
+            "placeholder": "수량 입력",
+            "description": "거래되는 아이템의 수량입니다."
+          },
+          "user_name": {
+            "label": "사용자 이름",
+            "placeholder": "사용자 이름을 입력하세요",
+            "description": "거래와 관련된 사용자 이름입니다."
+          },
+          "created_at": {
+            "label": "생성 날짜",
+            "placeholder": "날짜 선택",
+            "description": "거래 날짜입니다."
+          },
+          "properties": {
+            "label": "속성",
+            "placeholder": "속성 입력",
+            "description": "거래의 추가 속성입니다."
+          }
+        }
+      },
+      "generic_item_list": {
+        "add_all_tooltip": "모든 항목 추가"
+      },
+      "edit_notification_setting": {
+        "discord": {
+          "tooltip": "Discord 알림 전환",
+          "title": "불일치 알림",
+          "fields": {
+            "webhook": {
+              "label": "웹훅 URL",
+              "placeholder": "Discord 웹훅 URL을 입력하세요"
+            },
+            "content": {
+              "label": "콘텐츠",
+              "placeholder": "알림 내용을 입력하세요",
+              "reset_button": "기본값으로 재설정"
+            },
+            "user_ids": {
+              "label": "사용자 ID",
+              "placeholder": "사용자 ID를 입력하세요(쉼표로 구분)",
+              "description": "알림을 받을 사용자 ID를 지정하세요."
+            }
+          }
+        },
+        "system": {
+          "tooltip": "Toggle 시스템 알림",
+          "title": "시스템 알림",
+          "fields": {
+            "title": {
+              "label": "제목",
+              "placeholder": "알림 제목을 입력하세요"
+            },
+            "content": {
+              "label": "콘텐츠",
+              "placeholder": "알림 내용을 입력하세요"
+            },
+            "sound": {
+              "label": "소리",
+              "placeholder": "알림음 선택",
+              "play_tooltip": "소리 재생",
+              "options": {
+                "none": "없음",
+                "cat_meow": "고양이 야옹",
+                "windows_xp_error": "윈도우 XP 오류",
+                "windows_xp_startup": "윈도우 XP 시작",
+                "iphone_notification": "젠장 전화 알림",
+                "windows_notification": "Windows 알림"
+              }
+            },
+            "volume": {
+              "label": "용량",
+              "placeholder": "볼륨 레벨 설정"
+            }
+          }
+        },
+        "webhook": {
+          "tooltip": "웹훅 알림 전환",
+          "title": "웹훅 알림",
+          "fields": {
+            "url": {
+              "label": "웹훅 URL",
+              "placeholder": "웹훅 URL을 입력하세요."
+            }
+          }
+        },
+        "manage_sounds": {
+          "title": "맞춤 사운드 추가",
+          "buttons": {
+            "manage": "소리 관리",
+            "back": "돌아가기"
+          },
+          "fields": {
+            "name": {
+              "label": "사운드 이름",
+              "placeholder": "사운드 이름"
+            },
+            "file": {
+              "label": "사운드 파일",
+              "placeholder": "파일 선택"
+            }
+          },
+          "tooltips": {
+            "add_sound": "소리 추가",
+            "play": "놀다",
+            "delete": "삭제"
+          },
+          "notifications": {
+            "add_error": {
+              "title": "사운드 오류 추가",
+              "message": "사운드를 추가하는 동안 오류가 발생했습니다."
+            },
+            "delete_error": {
+              "title": "소리 삭제 오류",
+              "message": "사운드를 삭제하는 동안 오류가 발생했습니다."
+            }
+          },
+          "table": {
+            "columns": {
+              "name": "이름",
+              "file_name": "파일 이름",
+              "actions": "행위"
+            }
+          },
+          "dialog": {
+            "delete": {
+              "title": "{{name}} 삭제",
+              "message": "이 소리를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+              "confirm": "삭제",
+              "cancel": "취소"
+            }
+          },
+          "file_picker": {
+            "filter_name": "오디오"
+          }
+        }
+      },
+      "riven_filter_attribute": {
+        "fields": {
+          "is_required": {
+            "tooltip": "필수입니다"
+          }
+        }
+      },
+      "riven_filter": {
+        "fields": {
+          "enabled": {
+            "label": "활성화됨"
+          },
+          "similarity": {
+            "label": "유사"
+          },
+          "rank": {
+            "label": "계급"
+          },
+          "mastery_rank": {
+            "label": "마스터리 랭크"
+          },
+          "required_negative": {
+            "label": "필수 부정"
+          },
+          "re_rolls": {
+            "label": "재굴림"
+          }
+        },
+        "buttons": {
+          "save": {
+            "label": "구하다"
+          }
+        }
+      },
+      "create_riven_attributes": {
+        "fields": {
+          "positive": {
+            "title": "긍정적인 속성",
+            "add": "추가하다"
+          },
+          "negative": {
+            "title": "부정적인 속성"
+          }
+        },
+        "buttons": {
+          "add": "+ 추가"
+        }
+      },
+      "create_riven_attribute": {
+        "fields": {
+          "value": {
+            "error": "잘못된 값"
+          }
+        },
+        "buttons": {
+          "remove": "제거하다"
+        }
+      },
+      "create_riven": {
+        "buttons": {
+          "submit": {
+            "label": "만들다"
+          }
+        },
+        "fields": {
+          "mastery_rank": {
+            "label": "마스터리 랭크",
+            "placeholder": "8",
+            "error": "잘못된 마스터리 랭크"
+          },
+          "re_rolls": {
+            "label": "재굴림",
+            "placeholder": "0",
+            "error": "잘못된 재굴림"
+          },
+          "rank": {
+            "label": "계급",
+            "placeholder": "0",
+            "error": "잘못된 순위"
+          },
+          "polarity": {
+            "label": "극성",
+            "error": "잘못된 극성"
+          },
+          "weapon": {
+            "label": "무기 이름",
+            "placeholder": "무기",
+            "error": "유효하지 않은 무기"
+          },
+          "bought": {
+            "label": "구입했다",
+            "placeholder": "구입했다",
+            "error": "잘못된 구매"
+          },
+          "attributes": {
+            "label": "속성",
+            "error": "리븐은 최소한 2개의 긍정적인 속성을 가지고 있어야 합니다."
+          },
+          "attribute": {
+            "label": "기인하다",
+            "error": "속성 값은 0일 수 없습니다."
+          },
+          "mod_name": {
+            "label": "모드 이름",
+            "placeholder": "모드 이름",
+            "error": "잘못된 모드 이름"
+          }
+        }
+      },
+      "debugging_live_item_entry": {
+        "fields": {
+          "wfm_url": {
+            "label": "목",
+            "placeholder": "항목 선택...",
+            "error": "항목을 선택하세요."
+          },
+          "stock_id": {
+            "label": "주식 ID",
+            "placeholder": "주식 ID를 입력하세요...",
+            "error": "잘못된 주식 ID"
+          },
+          "wish_list_id": {
+            "label": "위시리스트 ID",
+            "placeholder": "위시리스트 ID를 입력하세요...",
+            "error": "잘못된 위시리스트 ID"
+          },
+          "priority": {
+            "label": "우선 사항",
+            "placeholder": "우선순위를 입력하세요...",
+            "error": "우선순위는 0 이상이어야 합니다."
+          },
+          "buy_quantity": {
+            "label": "수량 구매",
+            "placeholder": "구매 수량을 입력하세요...",
+            "error": "구매 수량은 0 이상이어야 합니다."
+          },
+          "sell_quantity": {
+            "label": "판매 수량",
+            "placeholder": "판매 수량을 입력하세요...",
+            "error": "판매 수량은 0 이상이어야 합니다."
+          },
+          "operation": {
+            "label": "운영",
+            "placeholder": "작업 선택...",
+            "error": "작업을 하나 이상 선택하세요."
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": "디버깅 라이브 항목 항목 추가"
+          }
+        }
+      },
+      "create_category_summary": {
+        "fields": {
+          "icon": {
+            "label": "상",
+            "placeholder": "상",
+            "description": "카테고리의 아이콘",
+            "tooltip": "카테고리의 아이콘",
+            "error": "잘못된 아이콘"
+          },
+          "name": {
+            "label": "이름",
+            "placeholder": "이름",
+            "description": "카테고리 이름",
+            "tooltip": "카테고리 이름",
+            "error": "잘못된 이름"
+          },
+          "types": {
+            "label": "유형",
+            "description": "카테고리 유형"
+          }
+        },
+        "buttons": {
+          "submit": {
+            "label": "카테고리 생성/저장"
+          }
+        }
+      },
+      "select_tradable_item": {
+        "fields": {
+          "item": {
+            "label": "목",
+            "placeholder": "항목 선택..."
+          },
+          "variant": {
+            "label": "변종",
+            "placeholder": "변형 선택...",
+            "description": "변형을 선택하십시오"
+          },
+          "rank": {
+            "label": "계급",
+            "placeholder": "순위를 선택하세요...",
+            "description": "순위를 선택해 주세요"
+          },
+          "cyan_stars": {
+            "label": "청록색 별",
+            "placeholder": "청록색 별을 선택하세요...",
+            "description": "청록색 별은 몇 개입니까?"
+          },
+          "amber_stars": {
+            "label": "앰버 스타",
+            "placeholder": "호박색 별을 선택하세요...",
+            "description": "호박색 별은 몇 개입니까?"
+          }
+        },
+        "messages": {
+          "nothing_found": "항목을 찾을 수 없습니다"
+        }
+      },
+      "select_riven_weapon": {
+        "fields": {
+          "weapon": {
+            "label": "무기",
+            "placeholder": "무기를 선택하세요..."
+          }
+        }
+      },
+      "create_item": {
+        "fields": {
+          "quantity": {
+            "label": "수량",
+            "placeholder": "수량",
+            "error": "잘못된 수량"
+          },
+          "bought": {
+            "label": "구입했다",
+            "placeholder": "구입했다",
+            "error": "잘못된 구매"
+          }
+        },
+        "buttons": {
+          "add": {
+            "tooltip": {
+              "description_with_report": "아이템을 재고에 추가하고 워프레임 마켓에 보고하세요",
+              "description_without_report": "재고에 품목 추가"
+            }
+          }
+        }
+      },
+      "log_in": {
+        "title": "워프레임 마켓 - 로그인",
+        "register": "계정이 없나요? 등록하다",
+        "fields": {
+          "email": {
+            "label": "이메일",
+            "placeholder": "이메일",
+            "error": "잘못된 이메일"
+          },
+          "password": {
+            "label": "비밀번호",
+            "placeholder": "비밀번호",
+            "error": "비밀번호는 6자 이상이어야 합니다."
+          }
+        },
+        "buttons": {
+          "submit": "로그인"
+        }
+      },
+      "settings": {
+        "tabs": {
+          "general": {
+            "title": "일반적인",
+            "fields": {
+              "language": {
+                "label": "언어",
+                "placeholder": "언어 선택",
+                "error": "잘못된 언어"
+              }
+            }
+          },
+          "themes": {
+            "title": "테마",
+            "community_themes": "커뮤니티 테마",
+            "get_more_out_of_themes": "테마 편집기를 사용하여 테마를 더 다양하게 활용하세요 여기를 클릭하세요",
+            "theme_configuration": "테마 구성"
+          },
+          "notifications": {
+            "title": "알림",
+            "on_new_conversation_title": "새로운 대화에서",
+            "on_new_trade_title": "새로운 거래에",
+            "on_wfm_chat_message_title": "WFM 채팅 메시지에서"
+          },
+          "advanced": {
+            "title": "고급의",
+            "fields": {
+              "wf_log_path": {
+                "label": "워프레임 로그 경로",
+                "placeholder": "기본 워프레임 로그 경로",
+                "errors": {
+                  "not_exists": "지정된 경로가 존재하지 않습니다."
+                },
+                "tooltip": "워프레임 로그 파일 경로입니다. 기본 경로는 비워 두세요."
+              }
+            },
+            "button_export_logs": "로그 내보내기"
+          },
+          "summary": {
+            "title": "요약",
+            "fields": {
+              "recent_days": {
+                "label": "최근 일",
+                "tooltip": "표시할 데이터의 일수"
+              },
+              "recent_transactions": {
+                "label": "최근 거래",
+                "tooltip": "표시할 거래 수"
+              }
+            },
+            "datatable": {
+              "columns": {
+                "name": "이름",
+                "tags": "태그",
+                "types": "유형",
+                "actions": {
+                  "title": "행위",
+                  "buttons": {
+                    "edit": {
+                      "tooltip": "항목 편집"
+                    },
+                    "delete": {
+                      "tooltip": "항목 삭제"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "live_scraper": {
+            "title": "라이브 스크레이퍼",
+            "general": {
+              "title": "일반적인",
+              "fields": {
+                "auto_trade": {
+                  "label": "자동거래",
+                  "error": "잘못된 자동 거래",
+                  "tooltip": "true인 경우 자동으로 재고 추가/판매"
+                },
+                "auto_delete": {
+                  "label": "자동 삭제",
+                  "error": "잘못된 자동 삭제",
+                  "tooltip": "재고 품목 자동 삭제"
+                },
+                "should_delete_other_types": {
+                  "label": "다른 거래 유형을 삭제해야 합니다",
+                  "error": "유효하지 않으면 다른 거래 유형을 삭제해야 합니다.",
+                  "tooltip": "true인 경우 다른 거래 유형을 삭제합니다. 예: 구매가 활성화된 경우 블랙리스트에 등록되지 않은 경우 판매/위시리스트 항목이 삭제됩니다."
+                },
+                "report_to_wfm": {
+                  "label": "워프레임 마켓에 보고하세요",
+                  "error": "워프레임 마켓에 잘못된 신고가 접수되었습니다",
+                  "tooltip": "워프레임 마켓에 거래가 추가됩니다"
+                },
+                "trade_modes": {
+                  "label": "거래 모드",
+                  "description": "거래 모드 선택",
+                  "error": "잘못된 거래 모드"
+                },
+                "stock_mode": {
+                  "label": "스톡 모드",
+                  "description": {
+                    "all": "모두 겪게 될 거야",
+                    "riven": "리벤스만 통과함",
+                    "item": "항목만 통과합니다."
+                  },
+                  "placeholder": "스톡 모드",
+                  "error": "잘못된 재고 모드"
+                }
+              },
+              "columns": {
+                "name": "이름",
+                "maximum_price": "최대 가격"
+              },
+              "buttons": {
+                "edit_blacklist_label": "블랙리스트 편집 {{count}}",
+                "edit_buy_list_label": "구매 목록 편집 {{count}}"
+              },
+              "black_list": {
+                "available_items_label": "사용 가능한 항목",
+                "selected_items_label": "블랙리스트 항목",
+                "name_title": "이름",
+                "trade_tax_title": "무역세",
+                "trade_tax_label": "무역세 {{min}} - {{max}}",
+                "mr_requirement_label": "MR 요구 사항 {{min}} - {{max}}",
+                "mr_requirement_title": "MR 요구 사항",
+                "disabled_for_title": "장애인",
+                "go_back_label": "돌아가기",
+                "set_trade_modes_tooltip": "현재 선택된 거래 모드 설정 {{modes}}",
+                "no_trade_selected": "선택된 거래 모드가 없습니다. 거래 모드를 하나 이상 선택하세요."
+              }
+            },
+            "item": {
+              "title": "재고 품목",
+              "wtb": {
+                "title": "WTB",
+                "fields": {
+                  "volume_threshold": {
+                    "label": "볼륨 임계값",
+                    "placeholder": "볼륨 임계값",
+                    "error": "잘못된 볼륨 임계값",
+                    "tooltip": "거래를 위해 고려해야 할 최소 거래량",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#volume-threshold"
+                  },
+                  "profit_threshold": {
+                    "label": "이익 기준점",
+                    "placeholder": "이익 기준점",
+                    "error": "잘못된 이익 기준액",
+                    "tooltip": "거래를 위해 고려해야 할 최소 이익",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#profit-threshold"
+                  },
+                  "avg_price_cap": {
+                    "label": "평균 가격 상한선",
+                    "placeholder": "평균 가격 상한선",
+                    "error": "잘못된 평균 가격 상한선",
+                    "tooltip": "거래 시 고려해야 할 최대 평균 가격",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#average-price-cap"
+                  },
+                  "trading_tax_cap": {
+                    "label": "거래세 상한제",
+                    "placeholder": "거래세 상한제",
+                    "error": "유효하지 않은 거래세 상한제",
+                    "tooltip": "거래 시 고려해야 할 최대 세금",
+                    "link": "https://example.com/trading-tax-cap"
+                  },
+                  "max_total_price_cap": {
+                    "label": "최대 총 가격 상한선",
+                    "placeholder": "최대 총 가격 상한선",
+                    "error": "잘못된 최대 총 가격 상한선",
+                    "tooltip": "거래 시 고려할 최대 총 가격 -1(제한 없음)",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#max-total-price-cap"
+                  },
+                  "price_shift_threshold": {
+                    "label": "가격 변동 임계값",
+                    "placeholder": "가격 변동 임계값",
+                    "error": "잘못된 가격 변동 기준점",
+                    "tooltip": "거래 시 고려해야 할 최소 가격 변동",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#price-shift-threshold"
+                  },
+                  "buy_quantity": {
+                    "label": "상품 수량",
+                    "placeholder": "상품 수량",
+                    "error": "잘못된 상품 수량",
+                    "tooltip": "구매할 상품의 수량",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#Quantity-of-goods"
+                  },
+                  "min_wtb_profit_margin": {
+                    "label": "이익 마진 임계값",
+                    "placeholder": "이익 마진 임계값",
+                    "error": "잘못된 이익 마진 기준점",
+                    "tooltip": "WTB 거래에 대한 최소 이익 마진",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#profit-margin-threshold"
+                  },
+                  "quantity_per_trade": {
+                    "label": "거래당 수량",
+                    "placeholder": "거래당 수량",
+                    "error": "거래당 유효하지 않은 수량",
+                    "tooltip": "거래당 거래할 상품 수량: 참고 이는 아케인과 같은 일부 아이템에만 유효합니다.",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#Quantity-per-trade"
+                  },
+                  "max_stock_quantity": {
+                    "label": "최대 재고 수량",
+                    "placeholder": "최대 재고 수량",
+                    "error": "잘못된 최대 재고 수량",
+                    "tooltip": "WTB 주문 생성을 중지하기 전에 재고로 보유할 수 있는 품목의 최대 수량입니다. 이 기능을 비활성화하려면 -1로 설정하십시오.",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wtb#max-stock-Quantity"
+                  },
+                  "wts": {
+                    "title": "WTS",
+                    "fields": {}
+                  }
+                }
+              },
+              "wts": {
+                "title": "WTS",
+                "fields": {
+                  "min_sma": {
+                    "label": "최소 SMA",
+                    "placeholder": "최소 SMA",
+                    "error": "잘못된 최소 SMA",
+                    "tooltip": "거래를 위해 고려해야 할 최소 단순 이동 평균",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wts#min-sma"
+                  },
+                  "min_profit": {
+                    "label": "최소 이익",
+                    "placeholder": "최소 이익",
+                    "error": "잘못된 최소 이익",
+                    "tooltip": "거래를 위해 고려해야 할 최소 이익",
+                    "link": "https://Quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  }
+                }
+              },
+              "summary": {
+                "title": "요약",
+                "datatable_columns": {
+                  "profit": "잠재적 이익",
+                  "trading_tax": "거래세"
+                },
+                "buttons": {
+                  "show_interesting_wtb_items": "흥미로운 WTB 항목 표시"
+                }
+              }
+            },
+            "riven": {
+              "title": "스톡 리븐",
+              "fields": {
+                "min_profit": {
+                  "label": "최소 이익",
+                  "placeholder": "최소 이익",
+                  "error": "잘못된 최소 이익",
+                  "tooltip": "거래를 위해 고려해야 할 최소 이익",
+                  "link": "https://Quantframe.app/features/live-trading/settings/riven/wts#min-profit"
+                },
+                "threshold_percentage": {
+                  "label": "임계값 백분율",
+                  "placeholder": "임계값 백분율",
+                  "error": "잘못된 기준 비율",
+                  "tooltip": "거래를 위한 백분율 임계값",
+                  "link": "https://Quantframe.app/features/live-trading/settings/riven/wts#minimum-price-shift"
+                },
+                "limit_to": {
+                  "label": "한도",
+                  "placeholder": "한도",
+                  "error": "유효하지 않은 한도",
+                  "tooltip": "거래 횟수 제한",
+                  "link": "https://Quantframe.app/features/live-trading/settings/riven/wts#limit-to"
+                },
+                "update_interval": {
+                  "label": "업데이트 간격(초)",
+                  "placeholder": "업데이트 간격",
+                  "error": "잘못된 업데이트 간격",
+                  "tooltip": "리븐 거래 업데이트 간격",
+                  "link": "https://Quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            }
+          },
+          "http_server": {
+            "title": "HTTP 서버",
+            "general": {
+              "title": "일반적인",
+              "fields": {
+                "enabled": {
+                  "label": "활성화됨",
+                  "tooltip": "HTTP 서버 활성화 또는 비활성화"
+                },
+                "port": {
+                  "label": "포트",
+                  "placeholder": "포트",
+                  "tooltip": "HTTP 서버가 실행될 포트"
+                },
+                "host": {
+                  "label": "주인",
+                  "placeholder": "주인",
+                  "error": "잘못된 호스트",
+                  "tooltip": "HTTP 서버가 실행될 호스트"
+                }
+              }
+            }
+          }
+        }
+      },
+      "trade_entry_update": {
+        "fields": {
+          "price_label": "가격",
+          "tags_label": "태그"
+        }
+      }
+    },
+    "modals": {
+      "base": {
+        "buttons": {
+          "confirm": "확인하다",
+          "cancel": "취소"
+        }
+      },
+      "generate_trade_message": {
+        "title": "{{count}} 품목에 대한 거래 메시지 생성",
+        "button_add_key_tooltip": "디스플레이 추가",
+        "button_copy_tooltip": "클립보드에 복사",
+        "button_delete_template_tooltip": "템플릿 삭제",
+        "button_load_template_tooltip": "템플릿 로드",
+        "button_save_template_tooltip": "템플릿 저장",
+        "titles": {
+          "message_settings": "메시지 설정",
+          "preview_with_icons": "아이콘으로 미리보기",
+          "display_settings": "디스플레이 설정"
+        },
+        "fields": {
+          "prefix": {
+            "label": "접두사",
+            "description": "거래 메시지에 사용할 접두어",
+            "placeholder": "접두사"
+          },
+          "suffix": {
+            "label": "접미사",
+            "description": "거래 메시지에 사용할 접미사",
+            "placeholder": "접미사"
+          },
+          "message": {
+            "label": "메시지",
+            "description": "생성된 거래 메시지",
+            "length_info": "{{current}} / {{max}}자"
+          },
+          "key": {
+            "label": "열쇠",
+            "description": "메시지의 항목을 구분하는 데 사용되는 키",
+            "placeholder": "열쇠"
+          },
+          "template": {
+            "label": "거래 메시지 템플릿",
+            "description": "메시지 생성에 사용할 템플릿입니다."
+          },
+          "chat_icon": {
+            "label": "채팅 아이콘",
+            "description": "메시지에 워프레임 마켓 채팅 아이콘을 포함하세요"
+          },
+          "group_by": {
+            "label": "그룹화 기준",
+            "description": "메시지의 유형별로 항목을 그룹화합니다."
+          },
+          "load_template": {
+            "label": "템플릿 로드",
+            "description": "저장된 메시지 템플릿 로드"
+          }
+        },
+        "datatable": {
+          "columns": {
+            "key": "열쇠",
+            "name": "이름",
+            "prefix": "접두사",
+            "suffix": "접미사"
+          }
+        }
+      },
+      "patreon_modal": {
+        "title": "Quantframe 개발 지원",
+        "description": "Patreon에서 저를 지원하여 프리미엄 기능에 액세스하세요",
+        "premium_content": "사용자 활동 | 리븐 가격 조회 | 데이터 내보내기 | 아이템 통계",
+        "join_the_community": "지지자 커뮤니티에 참여하여 Quantframe의 미래를 만들어가는 데 도움을 주세요.",
+        "link_your_account": "2. Patreon 계정을 연결하세요",
+        "buttons": {
+          "info": "패트리온",
+          "link": "계정 연결"
+        }
+      },
+      "item_details": {
+        "tabs": {
+          "overview": {
+            "title": "개요",
+            "tooltips": {},
+            "labels": {
+              "created_at": "생성 날짜: <date/>",
+              "updated_at": "업데이트 날짜: <date/>",
+              "bought": "구매 가격: {{price}} <plat/>",
+              "list_price": "정가: {{price}} <plat/>",
+              "potential_profit": "잠재적 이익: {{price}} <plat/>",
+              "minimum_profit": "최소 이익: {{price}}",
+              "minimum_sma": "최소 SMA: {{price}}",
+              "quantity": "수량: {{quantity}}",
+              "is_hidden": "숨김: <hidden/>"
+            }
+          },
+          "analytics": {
+            "title": "해석학",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "마지막 거래",
+              "financial_summary": "재무 요약"
+            }
+          },
+          "wfm": {
+            "title": "개요",
+            "tooltips": {
+              "buy_highest_price": "최고가 구매",
+              "sell_highest_price": "최고 판매",
+              "spread_percent": "스프레드 비율",
+              "supply": "공급"
+            },
+            "labels": {
+              "buy_lowest": "최저 구매",
+              "sell_lowest": "최저가 판매",
+              "spread": "확산",
+              "demand": "수요",
+              "roi_percent": "ROI 비율"
+            },
+            "buttons": {
+              "view_on_wfm": "워프레임 마켓에서 보기"
+            }
+          },
+          "edit": {
+            "title": "편집하다",
+            "fields": {
+              "bought": "구입 대상",
+              "minimum_price": "최소 가격",
+              "maximum_price": "최대 가격",
+              "owned": "현재 소유",
+              "quantity": "수량",
+              "minimum_sma": "최소 SMA",
+              "minimum_profit": "최소 이익"
+            },
+            "tooltips": {
+              "minimum_price": "이 품목을 판매하려는 최소 가격입니다. 비활성화하려면 0으로 설정합니다.",
+              "minimum_profit": "이 상품을 판매할 때 얻고자 하는 최소 수익입니다. 비활성화하려면 0으로 설정하세요.",
+              "minimum_sma": "이 품목을 판매할 때 고려해야 할 최소 단순 이동 평균입니다. 비활성화하려면 0으로 설정하세요.",
+              "maximum_price": "이 품목을 구매할 의사가 있는 최대 가격입니다. 비활성화하려면 0으로 설정합니다."
+            }
+          }
+        }
+      },
+      "riven_details": {
+        "tabs": {
+          "overview": {
+            "title": "개요",
+            "tooltips": {},
+            "labels": {
+              "created_at": "생성 날짜: <date/>",
+              "updated_at": "업데이트 날짜: <date/>",
+              "bought": "구매 가격: {{price}} <plat/>",
+              "list_price": "정가: {{price}} <plat/>",
+              "potential_profit": "잠재적 이익: {{price}} <plat/>",
+              "minimum_profit": "최소 이익: {{price}}",
+              "minimum_sma": "최소 SMA: {{price}}",
+              "kuva": "쿠바 지출: {{kuva}}",
+              "endo": "엔도: {{endo}}",
+              "is_hidden": "숨김: <hidden/>"
+            }
+          },
+          "modifiers": {
+            "title": "수정자",
+            "tooltips": {},
+            "labels": {
+              "weapon": "무기",
+              "rank": "계급"
+            },
+            "titles": {}
+          },
+          "roll_evaluation": {
+            "title": "롤 평가",
+            "tooltips": {},
+            "labels": {
+              "best_attributes": "최고의 속성",
+              "mandatory": "필수적인",
+              "optional": "선택 과목",
+              "best_bad_attributes": "최고의 나쁜 속성"
+            },
+            "titles": {}
+          },
+          "analytics": {
+            "title": "해석학",
+            "tooltips": {},
+            "labels": {},
+            "titles": {
+              "last_transactions": "마지막 거래",
+              "financial_summary": "재무 요약"
+            }
+          },
+          "wfm": {
+            "title": "워프레임 마켓",
+            "tooltips": {},
+            "labels": {
+              "auction_header_left": "{{similarity}}%",
+              "auction_header_right": "{{price}} <plat/>"
+            },
+            "buttons": {
+              "view_on_wfm": "워프레임 마켓에서 보기"
+            }
+          },
+          "edit": {
+            "title": "편집하다",
+            "fields": {
+              "bought": "구입 대상",
+              "minimum_price": "최소 가격",
+              "mastery_rank": "마스터리 랭크",
+              "re_rolls": "재굴림",
+              "minimum_profit": "최소 이익"
+            },
+            "tooltips": {
+              "minimum_price": "이 품목을 판매하려는 최소 가격입니다. 비활성화하려면 0으로 설정합니다.",
+              "minimum_profit": "이 상품을 판매할 때 얻고자 하는 최소 수익입니다. 비활성화하려면 0으로 설정하세요.",
+              "minimum_sma": "이 품목을 판매할 때 고려해야 할 최소 단순 이동 평균입니다. 비활성화하려면 0으로 설정하세요.",
+              "maximum_price": "이 품목을 구매할 의사가 있는 최대 가격입니다. 비활성화하려면 0으로 설정합니다."
+            }
+          }
+        }
+      },
+      "update_available": {
+        "title": "새 업데이트 사용 가능(v{{version}})",
+        "buttons": {
+          "download": "다운로드 및 설치",
+          "download_manual": "수동으로 다운로드",
+          "read_more": "자세히 알아보기"
+        }
+      },
+      "tos": {
+        "title": "서비스 약관",
+        "buttons": {
+          "accept": "수용하다",
+          "decline": "감소"
+        }
+      },
+      "app_error": {
+        "title": "{{component}} 구성 요소에 오류가 있습니다.",
+        "version": "버전: {{version}}",
+        "cause": "원인: {{cause}}",
+        "message": "메시지: {{message}}",
+        "location": "위치: {{location}}",
+        "footer": "이 오류를 개발자에게 보고해 주세요.\n로그 파일을 내보내면 아래 버튼을 클릭하기만 하면 바탕 화면에 파일이 생성됩니다.",
+        "export_log": "로그 내보내기"
+      }
+    },
+    "chat_item": {
+      "delete_tooltip": "대화 삭제",
+      "last_update": "마지막 업데이트"
+    },
+    "chat_rome": {
+      "fields": {
+        "message": {
+          "too_long": "메시지가 너무 깁니다.",
+          "placeholder": "여기에 메시지를 입력하세요..."
+        }
+      },
+      "buttons": {
+        "back_label": "뒤쪽에",
+        "send_label": "보내다",
+        "options": {
+          "label": "옵션",
+          "delete": "당신은 왜 여기에 있습니까?"
+        }
+      }
+    },
+    "best_by_category_table": {
+      "datatable": {
+        "columns": {
+          "name": "이름",
+          "revenue": "수익",
+          "expense": "비용",
+          "profit": "이익",
+          "profit_margin": "이익률",
+          "quantity": "수량"
+        }
+      }
+    },
+    "bar_chart_financial_summary": {
+      "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+      "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>",
+      "tooltips": {
+        "expense": "총 비용",
+        "revenue": "총수익",
+        "profit": "총 이익",
+        "trades": "거래 수",
+        "sales": "판매량",
+        "purchases": "구매 횟수"
+      }
+    },
+    "financial_report_card": {
+      "tooltips": {
+        "total_expenses": "총 비용",
+        "total_revenue": "총 수익",
+        "average_profit": "평균 이익",
+        "total_credits": "총 학점",
+        "lowest_revenue": "최저 수익",
+        "lowest_expense": "최저 비용",
+        "highest_revenue": "최고 수익"
+      },
+      "labels": {
+        "trade_count": "거래 횟수",
+        "highest_revenue": "최고 수익",
+        "highest_expense": "최고 비용",
+        "total_transactions": "총 거래",
+        "revenue": "수익",
+        "expenses": "경비",
+        "total_profit": "총 이익"
+      }
+    },
+    "riven_preview": {
+      "riven_name": "{{name}} <blue>{{mod_name}}</blue>",
+      "types": {
+        "unveiled": {
+          "footer_left": "{{progress}}/{{required}}"
+        },
+        "pre-veiled": {
+          "footer_left": "x{{quantity}}"
+        },
+        "veiled": {
+          "header_left": "{{price}} <plat/>",
+          "footer_left": "응답자: {{rank}}/8",
+          "footer_right": "씨: {{mastery}}"
+        }
+      }
+    },
+    "price_history_popover": {
+      "labels": {
+        "price_history": "가격 내역"
+      }
+    }
+  },
+  "pages": {
+    "home": {
+      "cards": {
+        "total": {
+          "title": "총 이익",
+          "footer": "매출: <blue>{{sales}}</blue> | 구매: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | 이익률: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "총 이익",
+            "datasets": {
+              "this_year": "올해",
+              "last_year": "작년"
+            }
+          }
+        },
+        "today": {
+          "title": "오늘의 이익",
+          "footer": "매출: <blue>{{sales}}</blue> | 구매: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | 이익률: <blue>{{profit_margin}}</blue>%",
+          "bar_chart": {
+            "title": "오늘의 이익",
+            "datasets": {
+              "profit": "이익"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "recent_days": {
+          "bar_chart": {
+            "title": "지난 {{days}}일",
+            "datasets": {
+              "profit": "이익"
+            },
+            "footers": {
+              "profit": "<expenseIco/> <blue>{{expense}}</blue> | <revenueIco/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+              "trades": "<purchaseIco/> <blue>{{purchases}}</blue> | <saleIco/> <blue>{{sales}}</blue> | <tradeIco/> <blue>{{trades}}</blue>"
+            }
+          }
+        },
+        "best_seller": {
+          "title": "베스트셀러 이익",
+          "footer": "이름: <blue>{{name}}</blue> | 에스: <blue>{{sales}}</blue> | 피: <blue>{{purchases}}</blue> | <trade/> <blue>{{quantity}}</blue> | 오후: <blue>{{profit_margin}}</blue>%"
+        },
+        "last_transaction": {
+          "title": "마지막 거래",
+          "info_box": {
+            "purchase": "{{count}} 구매",
+            "sale": "판매 {{count}}"
+          }
+        }
+      }
+    },
+    "about": {
+      "cards": {
+        "coffee": {
+          "title": "커피"
+        },
+        "patreon": {
+          "title": "Patreon에서 저를 후원해주세요"
+        },
+        "discord": {
+          "title": "불화"
+        },
+        "guide": {
+          "title": "위키/가이드"
+        }
+      },
+      "text": {
+        "version": "버전: <blue>{{version}}</blue> 🇩instagram에서 ❤️으로 제작되었습니다. © 2023-{{year}} 케냐-DK. 모든 권리 보유",
+        "patreon_thanks": "Quantframe을 가능하게 해준 Patreon 'Quantframe 사용자' 지지자들에게 특별히 감사드립니다: <blue>{{users}}</blue>.",
+        "disclaimer": "Quantframe은 타사 앱이며 Digital Extremes와 관련이 없습니다."
+      },
+      "button_check_for_updates": "업데이트 확인"
+    },
+    "debug": {
+      "tabs": {
+        "logging": {
+          "title": "벌채 반출",
+          "datatable": {
+            "columns": {
+              "command": "명령",
+              "count": "세다",
+              "actions": {
+                "title": "행위",
+                "buttons": {
+                  "remove_tooltip": "로그온 명령 제거"
+                }
+              }
+            }
+          },
+          "buttons": {
+            "add_log": "로그 추가"
+          },
+          "prompt": {
+            "name": {
+              "title": "로그 추가",
+              "fields": {
+                "name": {
+                  "label": "로그 이름"
+                }
+              }
+            }
+          }
+        },
+        "states": {
+          "title": "상태",
+          "accordions": {
+            "app_info": "앱 정보",
+            "app_error": "앱 오류",
+            "settings": "설정",
+            "alerts": "경고",
+            "user": "사용자",
+            "live_scraper": "라이브 스크레이퍼",
+            "wfm_state": "WFM 상태",
+            "tauri_events": "타우리 이벤트"
+          }
+        },
+        "debugging": {
+          "title": "디버깅",
+          "fake_orders_tooltip": "실시간 거래를 위한 Toggle 가짜 주문(테스트 목적으로만)은 dev.kenya.Quantframe\\fake_orders에 저장됩니다.",
+          "fake_orders_label": "가짜 주문 실시간 주문 사용",
+          "datatable": {
+            "columns": {
+              "wfm_url": {
+                "title": "이름",
+                "value": "{{name}} <blue>{{sub_type}}</blue>"
+              },
+              "stock_id": "주식 ID",
+              "wish_list_id": "위시리스트 ID",
+              "priority": "우선 사항",
+              "buy_quantity": "수량 구매",
+              "sell_quantity": "판매 수량",
+              "operation": "작업",
+              "actions": {
+                "title": "행위",
+                "buttons": {
+                  "delete_tooltip": "디버깅 라이브 항목 항목 삭제"
+                }
+              }
+            }
+          }
+        },
+        "ee_log": {
+          "title": "EE 로그",
+          "hide_empty": "빈 줄 숨기기",
+          "export_json_tooltip": "항목을 JSON으로 내보내기",
+          "datatable": {
+            "columns": {
+              "line": "선",
+              "date": "타임스탬프"
+            }
+          }
+        }
+      }
+    },
+    "banned": {
+      "wfm": {
+        "title": "다음 사유로 인해 워프레임 마켓 계정이 정지되었습니다:",
+        "reason": "이유: {{reason}}",
+        "until": "까지:"
+      },
+      "qf": {
+        "title": "다음으로 인해 Quantframe 계정이 정지되었습니다:",
+        "reason": "이유: {{reason}}",
+        "until": "까지:"
+      }
+    },
+    "auth": {
+      "errors": {
+        "login": {
+          "title": "로그인 오류",
+          "TooManyRequests": "요청이 너무 많습니다. 나중에 다시 시도해 주세요.",
+          "InvalidCredentials": "비밀번호가 잘못되었습니다.",
+          "InternalServerError": "현재 로그인 서비스를 이용할 수 없습니다. 나중에 다시 시도해 주세요.",
+          "banned": "당신은 금지되었습니다",
+          "ban_reason": "<red>이유: {{reason}}</red>",
+          "verification": "계정 인증이 필요합니다. 워프레임 마켓 웹사이트에서 인증하세요"
+        }
+      },
+      "success": {
+        "login": {
+          "title": "로그인 성공",
+          "message": "돌아온 것을 환영합니다! {{name}}"
+        }
+      }
+    },
+    "live_scraper": {
+      "export_json_tooltip": "항목을 JSON으로 내보내기(Patreon T1+)",
+      "update_multiple_tooltip": "여러 항목 업데이트",
+      "delete_multiple_tooltip": "여러 항목 삭제",
+      "wts_multiple_tooltip": "WTS 메시지 생성",
+      "segments": {
+        "bought": "구입했다",
+        "listed": "상장됨",
+        "profit": "이익"
+      },
+      "prompts": {
+        "update_filter": {
+          "title": "필터 업데이트"
+        },
+        "create_riven": {
+          "title": "리븐 생성"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "목",
+          "datatable": {
+            "columns": {
+              "bought": "구입했다",
+              "owned": "소유"
+            }
+          }
+        },
+        "riven": {
+          "title": "리븐",
+          "datatable": {
+            "columns": {
+              "attributes": "속성",
+              "bought": "구입했다"
+            }
+          }
+        },
+        "wish_list": {
+          "title": "위시리스트"
+        }
+      }
+    },
+    "warframe_market": {
+      "tabs": {
+        "orders": {
+          "title": "명령",
+          "status": "<blue>{{type}}</blue> | <qty/> <blue>{{total}}</blue> | <plat/> <blue>{{platinum}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "예상 이익",
+          "buttons": {
+            "refresh_tooltip": "주문 목록 새로고침",
+            "delete_all_tooltip": "모든 주문 삭제",
+            "delete_tooltip": "이 주문 삭제",
+            "info_tooltip": "주문 세부정보 보기",
+            "sell_manual": {
+              "buy_tooltip": "수동으로 구매함",
+              "sell_tooltip": "수동으로 판매됨"
+            },
+            "sell_auto": {
+              "buy_tooltip": "표시된 가격으로 구매함",
+              "sell_tooltip": "표시된 가격으로 판매됨"
+            }
+          },
+          "order_card": {
+            "header_left": "{{name}}",
+            "header_right": "<qty/> <blue>{{quantity}}</blue>",
+            "footer_left": "<blue>{{price}}</blue> <plat/>"
+          },
+          "fields": {
+            "quantity": "<qty/> <blue>{{quantity}}</blue>",
+            "platinum": "<blue>{{platinum}}</blue> <plat/>",
+            "mod_rank": "순위: <blue>{{mod_rank}}</blue>/<blue>{{mod_max_rank}}</blue>",
+            "subtype": "<blue>{{sub_type}}</blue>"
+          }
+        },
+        "auctions": {
+          "title": "경매",
+          "overview": "<qty/> <blue>{{total}}</blue> | <plat/> <blue>{{revenue}}</blue> | <profitIco/> <blue>{{profit}}</blue>",
+          "tooltip_profit": "예상 이익",
+          "buttons": {
+            "refresh_tooltip": "경매 목록 새로 고침",
+            "delete_all_tooltip": "모든 경매 삭제",
+            "delete_tooltip": "이 경매 삭제",
+            "import_tooltip": "이 경매 가져오기",
+            "info_tooltip": "경매 세부정보 보기"
+          },
+          "auction_card": {
+            "header_right": "{{price}} <plat/>"
+          }
+        }
+      }
+    },
+    "chat": {
+      "prompts": {
+        "delete_chat": {
+          "title": "채팅 삭제",
+          "message": "정말로 이 채팅을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+          "cancel": "취소",
+          "confirm": "삭제"
+        }
+      },
+      "buttons": {
+        "refresh_tooltip": "채팅 목록 새로 고침",
+        "delete_all_tooltip": "모든 채팅 삭제"
+      }
+    },
+    "trading_analytics": {
+      "tabs": {
+        "transaction": {
+          "title": "거래",
+          "date_range_label": "기간",
+          "date_range_description": "거래를 필터링할 날짜 범위",
+          "date_range_placeholder": "기간 선택",
+          "prompts": {
+            "update_title": "거래 업데이트"
+          },
+          "buttons": {
+            "export_transactions_tooltip": "거래를 JSON으로 내보내기(Patreon T1+)",
+            "show_financial_report_tooltip": "보고서 표시",
+            "delete_all_tooltip": "모든 거래 삭제 {{count}}",
+            "calculate_tax_tooltip": "모든 거래에 대한 거래세 계산"
+          },
+          "datatable": {
+            "columns": {
+              "item_type": "품목 유형",
+              "price": "가격",
+              "created_at": "생성 날짜",
+              "user_name": "사용자 이름",
+              "profit": "이익",
+              "credits": "크레딧",
+              "sale_count": "판매량",
+              "revenue": "수익",
+              "purchases_count": "구매 횟수",
+              "expenses": "경비",
+              "total_transactions": "총 거래"
+            }
+          },
+          "titles": {
+            "most_purchased_items": "가장 많이 구매한 품목",
+            "most_sold_items": "가장 많이 판매된 품목"
+          },
+          "table_headers": {
+            "item_name": "이름",
+            "quantity": "수량"
+          }
+        },
+        "item": {
+          "title": "목",
+          "export_json_tooltip": "항목을 JSON으로 내보내기(Patreon T1+)",
+          "open_table_options_tooltip": "테이블 옵션 열기",
+          "date_range_placeholder": "기간 선택",
+          "volume_label": "용량",
+          "min_price_label": "최소 가격",
+          "max_price_label": "최대 가격",
+          "supply_label": "공급",
+          "demand_label": "수요",
+          "datatable": {
+            "columns": {
+              "volume": "용량",
+              "min_price": "최소 가격",
+              "max_price": "최대 가격",
+              "open_price": "공개 가격",
+              "closed_price": "마감 가격",
+              "avg_price": "평균 가격",
+              "wa_price": "WA 가격",
+              "median": "중앙값",
+              "moving_avg": "평균 이동",
+              "donch_top": "돈치 탑",
+              "donch_bot": "돈치 봇",
+              "trading_tax": "거래세",
+              "supply": "공급",
+              "demand": "수요"
+            }
+          }
+        },
+        "riven": {
+          "title": "리븐",
+          "export_json_tooltip": "Riven을 JSON으로 내보내기(Patreon T1+)",
+          "open_table_options_tooltip": "테이블 옵션 열기",
+          "date_range_placeholder": "기간 선택",
+          "volume_label": "용량",
+          "min_price_label": "최소 가격",
+          "max_price_label": "최대 가격",
+          "avg_price_label": "평균 가격",
+          "datatable": {
+            "columns": {
+              "volume": "용량",
+              "min_price": "최소 가격",
+              "max_price": "최대 가격",
+              "avg_price": "평균 가격",
+              "median_price": "중간 가격"
+            }
+          }
+        },
+        "user": {
+          "title": "사용자 활동",
+          "chart": {
+            "datasets": {
+              "registered_users": "등록된 사용자",
+              "active_users": "활성 사용자"
+            }
+          },
+          "fields": {
+            "group_by": {
+              "label": "그룹화 기준",
+              "options": {
+                "day": "낮",
+                "hour": "시간"
+              }
+            },
+            "date_range": {
+              "label": "기간",
+              "placeholder": "기간 선택"
+            }
+          }
+        },
+        "wfgdpr": {
+          "title": "워프레임 GDPR 파서",
+          "drag_and_drop_message": "GDPR 텍스트 파일을 여기로 드래그 앤 드롭하세요. 웹사이트에서 이 기능에 대해 자세히 알아보세요.",
+          "columns": {
+            "account": "계정 이름",
+            "logins": "로그인 횟수",
+            "purchases": "구매 횟수",
+            "trades": "거래 횟수",
+            "transactions": "거래 수",
+            "creation_date": "생성 날짜"
+          },
+          "overview": {
+            "title": "개요",
+            "labels": {
+              "member_since": "회원가입 이후",
+              "subscribed": "구독함",
+              "trades": "거래",
+              "platinum_traded": "플래티넘 거래됨",
+              "purchases": "구매",
+              "total_spent": "총 지출",
+              "transactions": "업무",
+              "unique_ips": "고유 IP",
+              "total_logins": "총 로그인 수"
+            }
+          },
+          "trade": {
+            "title": "거래",
+            "yearly_trade_overview": {
+              "title": "연간 거래 개요({{year}})",
+              "total_trades": "총 거래",
+              "total_purchases": "총 구매",
+              "total_sales": "총 매출"
+            },
+            "columns": {
+              "created_at": "생성 날짜",
+              "offered_items": "제공 항목 수",
+              "received_items": "받은 항목 수",
+              "credits": "크레딧"
+            },
+            "table_headers": {
+              "item_name": "이름",
+              "quantity": "수량"
+            },
+            "titles": {
+              "most_sold_items": "가장 많이 판매된 품목",
+              "most_purchased_items": "가장 많이 구매한 품목"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "보고서 표시"
+            }
+          },
+          "purchase": {
+            "title": "구매",
+            "titles": {
+              "most_purchased_items": "가장 많이 구매한 품목"
+            },
+            "table_headers": {
+              "item_name": "이름",
+              "price": "가격",
+              "quantity": "수량"
+            },
+            "yearly_trade_overview": {
+              "title": "연간 거래 개요({{year}})",
+              "total_purchases": "총 구매"
+            },
+            "columns": {
+              "date": "구매처",
+              "price": "가격",
+              "shop_id": "상점 ID",
+              "items_received": "받은 품목"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "보고서 표시"
+            }
+          },
+          "transaction": {
+            "title": "업무",
+            "titles": {
+              "most_purchased_items": "가장 많이 구매한 품목"
+            },
+            "table_headers": {
+              "item_name": "이름",
+              "price": "가격",
+              "quantity": "수량"
+            },
+            "yearly_trade_overview": {
+              "title": "연간 거래 개요({{year}})",
+              "total_purchases": "총 구매"
+            },
+            "columns": {
+              "date": "구매처",
+              "currency": "통화",
+              "price": "가격",
+              "account": "계정",
+              "sku": "SKU"
+            },
+            "buttons": {
+              "show_financial_report_tooltip": "보고서 표시"
+            }
+          }
+        }
+      }
+    },
+    "trade_messages": {
+      "fields": {
+        "price_label": "가격",
+        "price_placeholder": "가격을 입력하세요",
+        "tags_label": "태그",
+        "tags_placeholder": "태그 입력"
+      },
+      "buttons": {
+        "generate_trade_messages_tooltip": "{{count}} 품목에 대한 거래 메시지 생성",
+        "update_multiple_tooltip": "여러 거래 메시지 업데이트",
+        "export_json_tooltip": "거래 메시지를 JSON으로 내보내기(Patreon T1+)",
+        "delete_multiple_tooltip": "모든 거래 삭제 {{count}}",
+        "add_tooltip": "거래 메시지 추가",
+        "find_interesting_tooltip": "흥미로운 거래 메시지 찾기(Patreon T2+)",
+        "calibrate_prices_tooltip": "가격 보정"
+      },
+      "datatable": {
+        "columns": {
+          "price": "가격",
+          "tags": "태그",
+          "min_price": "최소 가격",
+          "potential_profit": "잠재적 이익",
+          "updated_at": "업데이트 날짜"
+        }
+      },
+      "tabs": {
+        "item": {
+          "title": "목"
+        },
+        "riven": {
+          "title": "리븐",
+          "modals": {
+            "find_interesting_rivens": {
+              "title": "{{date}}에 대한 흥미로운 리븐 찾기",
+              "titles": {
+                "filtered": "필터링된 리븐",
+                "discount_settings": "할인 설정",
+                "export_settings": "내보내기 설정"
+              },
+              "fields": {
+                "min_price_label": "최소 가격",
+                "min_volume_label": "최소 볼륨",
+                "discount_percentage_label": "할인율 %",
+                "round_to_nearest_label": "가장 가까운 값으로 반올림",
+                "override_existing_prices_label": "기존 가격 재정의",
+                "tags_label": "태그"
+              },
+              "datatable_columns": {
+                "name": "이름",
+                "min_price": "최소 가격",
+                "discount_price": "할인 가격",
+                "potential_profit": "잠재적 이익",
+                "volume": "용량"
+              },
+              "buttons": {
+                "export_to_trade_messages": "거래 메시지로 내보내기"
+              }
+            }
+          }
+        },
+        "custom": {
+          "title": "관습"
+        }
+      }
+    },
+    "process_trade": {
+      "stats": {
+        "user_name": "사용자 이름",
+        "trade_type": "거래 유형",
+        "trade_price": "거래 가격",
+        "price": "가격",
+        "difference": "차이점"
+      },
+      "buttons": {
+        "process_trade_tooltip": "거래 처리 시작",
+        "confirm_trade": "거래 확인",
+        "back_to_list": "목록으로 돌아가기"
+      },
+      "datatable": {
+        "columns": {
+          "item_name": "이름",
+          "quantity": "수량",
+          "price": "가격",
+          "total": "총",
+          "platinum": "백금",
+          "user_name": "사용자 이름",
+          "date": "날짜"
+        }
+      }
+    },
+    "wf_inventory": {
+      "tabs": {
+        "riven": {
+          "title": "리벤스",
+          "riven_card": {
+            "footer_left": "{{rank}}/8 <polarity/>",
+            "footer_right": "씨: {{mastery}}",
+            "footer_center": "<stock/>",
+            "stock_status": {
+              "found": "인벤토리에서 발견됨",
+              "not_found": "인벤토리에서 찾을 수 없습니다."
+            }
+          },
+          "filters": {
+            "all": "모두",
+            "rifle": "소총",
+            "shotgun": "산탄총",
+            "melee": "난투",
+            "pistol": "권총",
+            "zaw": "조",
+            "arch": "아크윙",
+            "veiled": "베일에 싸인",
+            "unveiled": "공개됨"
+          }
+        }
+      }
+    }
+  }
+}
