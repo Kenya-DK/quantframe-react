@@ -6,9 +6,9 @@ use crate::Error;
 pub enum DetectionStatus {
     None,
     Line,
-    NextLine,
+    PreviousLine,
     Combined,
-    LineThenNextLine,
+    LineThenPreviousLine,
     PreviousLineThenLine,
 }
 
@@ -18,11 +18,18 @@ impl DetectionStatus {
     }
 
     pub fn is_combined(&self) -> bool {
+        matches!(self, DetectionStatus::Combined)
+    }
+    pub fn is_previous_line(&self) -> bool {
         matches!(
             self,
-            DetectionStatus::Combined
-                | DetectionStatus::NextLine
-                | DetectionStatus::LineThenNextLine
+            DetectionStatus::PreviousLine | DetectionStatus::PreviousLineThenLine
+        )
+    }
+    pub fn is_line(&self) -> bool {
+        matches!(
+            self,
+            DetectionStatus::Line | DetectionStatus::LineThenPreviousLine
         )
     }
 }
@@ -46,7 +53,7 @@ fn contains_match(line: &str, match_pattern: &str, is_exact_match: bool) -> bool
 pub fn strip_prefix(
     prefix: impl Into<String>,
     line: &str,
-    next_line: &str,
+    prev_line: &str,
     use_previous_line: bool,
 ) -> (String, DetectionStatus) {
     let prefix = prefix.into();
@@ -56,9 +63,9 @@ pub fn strip_prefix(
     }
 
     let combined = if use_previous_line {
-        next_line.to_owned() + line
+        prev_line.to_owned() + line
     } else {
-        line.to_owned() + next_line
+        line.to_owned() + prev_line
     };
 
     if let Some(part) = combined.strip_prefix(&prefix) {
@@ -67,7 +74,7 @@ pub fn strip_prefix(
     }
 
     if use_previous_line {
-        (next_line.to_string(), DetectionStatus::None)
+        (prev_line.to_string(), DetectionStatus::None)
     } else {
         (line.to_string(), DetectionStatus::None)
     }
@@ -76,7 +83,7 @@ pub fn strip_prefix(
 /// Detects if a line or a combined line contains Unicode characters.
 pub fn contains_unicode(
     line: &str,
-    next_line: &str,
+    prev_line: &str,
     use_previous_line: bool,
 ) -> (String, DetectionStatus) {
     if line.len() != line.chars().count() {
@@ -84,9 +91,9 @@ pub fn contains_unicode(
     }
 
     let combined = if use_previous_line {
-        next_line.to_owned() + line
+        prev_line.to_owned() + line
     } else {
-        line.to_owned() + next_line
+        line.to_owned() + prev_line
     };
 
     if combined.len() != combined.chars().count() {
@@ -94,7 +101,7 @@ pub fn contains_unicode(
     }
 
     if use_previous_line {
-        (next_line.to_string(), DetectionStatus::None)
+        (prev_line.to_string(), DetectionStatus::None)
     } else {
         (line.to_string(), DetectionStatus::None)
     }
@@ -103,7 +110,7 @@ pub fn contains_unicode(
 /// Combines two lines and detects if the result matches a single pattern.
 pub fn combine_and_detect_match(
     line: &str,
-    next_line: &str,
+    prev_line: &str,
     match_pattern: &str,
     ignore_combined: bool,
     is_exact_match: bool,
@@ -112,17 +119,17 @@ pub fn combine_and_detect_match(
         return (line.to_string(), DetectionStatus::Line);
     }
 
-    if contains_match(next_line, match_pattern, is_exact_match) {
-        return (next_line.to_string(), DetectionStatus::NextLine);
+    if contains_match(prev_line, match_pattern, is_exact_match) {
+        return (prev_line.to_string(), DetectionStatus::PreviousLine);
     }
 
     if !ignore_combined {
-        let line_then_next = format!("{line}{next_line}");
+        let line_then_next = format!("{line}{prev_line}");
         if contains_match(&line_then_next, match_pattern, is_exact_match) {
-            return (line_then_next, DetectionStatus::LineThenNextLine);
+            return (line_then_next, DetectionStatus::LineThenPreviousLine);
         }
 
-        let previous_then_line = format!("{next_line}{line}");
+        let previous_then_line = format!("{prev_line}{line}");
         if contains_match(&previous_then_line, match_pattern, is_exact_match) {
             return (previous_then_line, DetectionStatus::PreviousLineThenLine);
         }
@@ -134,21 +141,21 @@ pub fn combine_and_detect_match(
 /// Combines two lines and detects if the result matches **all** given patterns.
 pub fn combine_and_detect_multiple_matches(
     line: &str,
-    next_line: &str,
+    prev_line: &str,
     match_patterns: &[&str],
     use_previous_line: bool,
     is_exact_match: bool,
 ) -> (String, DetectionStatus) {
-    if !use_previous_line && next_line.is_empty() {
+    if !use_previous_line && prev_line.is_empty() {
         return (line.to_string(), DetectionStatus::None);
     } else if use_previous_line && line.is_empty() {
-        return (next_line.to_string(), DetectionStatus::None);
+        return (prev_line.to_string(), DetectionStatus::None);
     }
 
     let combined = if use_previous_line {
-        next_line.to_owned() + line
+        prev_line.to_owned() + line
     } else {
-        line.to_owned() + next_line
+        line.to_owned() + prev_line
     };
 
     if contains_any_match(&combined, match_patterns, is_exact_match) {
@@ -156,7 +163,7 @@ pub fn combine_and_detect_multiple_matches(
     }
 
     if use_previous_line {
-        (next_line.to_string(), DetectionStatus::None)
+        (prev_line.to_string(), DetectionStatus::None)
     } else {
         (line.to_string(), DetectionStatus::None)
     }
@@ -181,8 +188,8 @@ pub fn contains_at_least(haystack: &str, needles: &str, count: usize, exact: boo
 }
 
 pub fn remove_special_characters(input: &str) -> String {
-    // Define the pattern for special characters except _ and space
-    let pattern = Regex::new("[^a-zA-Z0-9_ ]").unwrap();
+    // Define the pattern for special characters except _ , space , - , .
+    let pattern = Regex::new("[^a-zA-Z0-9_ \\-\\.]").unwrap();
 
     // Replace special characters with empty string
     let result = pattern.replace_all(input, "");

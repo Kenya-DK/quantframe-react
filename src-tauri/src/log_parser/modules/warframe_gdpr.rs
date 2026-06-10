@@ -341,7 +341,7 @@ impl WarframeGDPRModule {
 
                 /* ---------- Create + Validate Item ---------- */
 
-                let (_, mut item) = TradeItem::from_string(&raw, "", &detection);
+                let (_, mut item) = TradeItem::from_string(&raw, "", &detection, false);
 
                 if item.item_type == TradeItemType::Unknown {
                     let validations = [

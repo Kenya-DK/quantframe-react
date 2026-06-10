@@ -57,18 +57,25 @@ impl TradeItem {
         }
     }
     pub fn from_string(
-        line: &str,
-        next_line: &str,
+        line: impl Into<String>,
+        prev_line: impl Into<String>,
         detection: &TradeDetection,
+        ignore_combined: bool,
     ) -> (DetectionStatus, TradeItem) {
-        let mut line = line.to_owned();
-        let mut next_line = next_line.to_owned();
-        let mut raw = line.to_owned();
-        let match_text = ", leftItem=/";
-        // let match_text = ", title= ";
+        let mut line = line.into();
+        let mut next_line = prev_line.into();
+        let mut raw = line.clone();
+
+        // Text for the last item in the list, can be either ", title= " or ", leftItem=/"
+        let matches = vec![", title= ", ", leftItem=/"];
+        let match_text = matches
+            .iter()
+            .find(|mach| line.contains(*mach))
+            .unwrap_or(&", leftItem=/");
+
         // Check if the item is platinum
         let (is_currency_combined, is_currency_status, is_currency_type) =
-            detection.is_currency(&line, &next_line, false, false);
+            detection.is_currency(&line, &next_line, ignore_combined);
 
         if is_currency_status.is_combined() {
             line = is_currency_combined.clone();
@@ -78,8 +85,8 @@ impl TradeItem {
 
         // Check if the item is the last item
         let (mut last_item_combined, last_item_status) =
-            detection.is_last_item(&line, &next_line, false, false);
-        if last_item_status == DetectionStatus::NextLine {
+            detection.is_last_item(&line, &next_line, ignore_combined);
+        if last_item_status == DetectionStatus::PreviousLine {
             next_line.truncate(next_line.find(match_text).unwrap());
         } else if last_item_status == DetectionStatus::Line {
             line.truncate(line.find(match_text).unwrap());
@@ -132,52 +139,9 @@ impl TradeItem {
     }
 
     /* -------------------------------------------------------------
-        Shared Helpers
-    ------------------------------------------------------------- */
-
-    /* -------------------------------------------------------------
         Detection's for specific item types
     ------------------------------------------------------------- */
-
-<<<<<<< HEAD
-    // Helper function to extract logic used by both matching paths
-    fn apply_item_info(&mut self, found: &CacheTradableItem) {
-        let tags: Vec<&str> = found.tags.iter().map(|s| s.as_str()).collect();
-
-<<<<<<< HEAD
-        let variants = found
-            .sub_type
-            .clone()
-            .unwrap_or_default()
-            .variants
-            .unwrap_or_default();
-
-        if tags.contains(&"relic") {
-            self.sub_type = Some(SubType::variant("intact"));
-        }
-=======
->>>>>>> 8b8a01cc (Refactor `TradeItem` detection for improved accuracy and modularity)
-        if tags.contains(&"arcane_enhancement") {
-            if let Some(max_rank) = found.sub_type.as_ref().and_then(|st| st.max_rank) {
-                self.sub_type = Some(SubType::rank(max_rank));
-            }
-        }
-<<<<<<< HEAD
-        // Some mods have variants that are not indicated in the name
-        if variants.contains(&"regular".to_string()) && variants.contains(&"atragraph".to_string())
-        {
-            self.sub_type = Some(SubType::variant("regular"));
-        }
-=======
-        self.unique_name = found.unique_name.clone();
-        self.item_type = tags_to_type(tags.clone());
->>>>>>> 8b8a01cc (Refactor `TradeItem` detection for improved accuracy and modularity)
-    }
-
-    pub fn is_variant_item(
-=======
     pub fn is_arcane(
->>>>>>> 3eb809d1 (add some better handling of the EE log parser)
         &mut self,
         line: &str,
         next_line: &str,
@@ -194,7 +158,6 @@ impl TradeItem {
 
         let index = combine.rfind(' ').unwrap_or(0);
         let name = &combine[..index];
-
         let apply_arcane = |this: &mut Self, info: &CacheArcane| {
             this.unique_name = info.base.unique_name.clone();
             // Default to Max Rank since we cant determine the rank from the logs...
@@ -677,6 +640,10 @@ impl TradeItem {
         }
         Ok(DetectionStatus::None)
     }
+
+    /* -------------------------------------------------------------
+        Validation and Info retrieval
+    ------------------------------------------------------------- */
     pub fn validate(
         &mut self,
         next_line: &str,
@@ -706,6 +673,10 @@ impl TradeItem {
         }
         Ok(DetectionStatus::None)
     }
+
+    /* -------------------------------------------------------------
+        Trade Item Info Retrieval
+    ------------------------------------------------------------- */
     pub fn get_trade_item_info(&self) -> Result<CacheTradableItem, Error> {
         let ch = states::cache_client().expect("Cache not found");
         let info = ch.tradable_item().get_by(&self.unique_name)?;

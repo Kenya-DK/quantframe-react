@@ -37,7 +37,7 @@ pub struct ItemPriceInfo {
     #[serde(rename = "profit_margin", default)]
     pub profit_margin: f64,
 
-    #[serde(rename = "trading_tax")]
+    #[serde(rename = "trading_tax", default)]
     pub trading_tax: i64,
 
     #[serde(rename = "week_price_shift")]

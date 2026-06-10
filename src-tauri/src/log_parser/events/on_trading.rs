@@ -56,7 +56,6 @@ pub struct OnTradeEvent {
 
 impl OnTradeEvent {
     pub fn new(base_component: &str) -> Self {
-        delete_log("e.log").ok();
         delete_log("trade.log").ok();
 
         let detections = DETECTIONS.get().unwrap();
@@ -74,13 +73,9 @@ impl OnTradeEvent {
         self.getting_trade_message_multiline = false;
         self.waiting_confirmation = false;
         self.current_trade = PlayerTrade::default();
+        log("State reset".to_string(), None);
     }
-    pub fn trade_started(&mut self, entry: &LineEntry, line_detection: &DetectionStatus) {
-        if line_detection.is_combined() {
-            self.add_trade_message(entry.get_combined().as_str());
-        } else {
-            self.add_trade_message(&entry.line);
-        }
+    pub fn trade_started(&mut self) {
         log(
             "Started",
             Some(&BASE_LOG_OPTIONS.set_width(180).set_centered(true)),
@@ -91,114 +86,132 @@ impl OnTradeEvent {
         let mut is_offering = true;
         let lines = self.logs.clone();
         self.current_trade.logs = lines.clone();
-        let mut i = 0;
 
-        while i < lines.len() {
-            let line = lines[i].to_owned().replace("\r", "").replace("\n", "");
-            let next_line = if i < lines.len() - 1 {
-                lines[i + 1].to_owned().replace("\r", "").replace("\n", "")
+        let add_item = |item: TradeItem| {
+            if is_offering {
+                log(format!("Added offered item: {}", item), None);
+                self.current_trade.offered_items.push(item);
             } else {
-                "N/A".to_string()
-            };
+                log(format!("Added received item: {}", item), None);
+                self.current_trade.received_items.push(item);
+            }
+        };
 
-            let (is_relevant, status) = self.detection.is_irrelevant_trade_line(&line, &next_line);
+        log(
+            format!("Processing {} trade message lines", lines.len()),
+            None,
+        );
+        for line in &lines {
+            log(format!("Trade message line: '{}'", line), None);
+        }
+        log("Beginning line-by-line processing of trade message", None);
+        let mut ignore_combined = false;
+        let mut prev_line = String::new();
+        for i in 0..lines.len() {
+            let line = lines[i].to_owned();
+
+            println!("Processing Line {} | Prev Line: '{}'", line, prev_line);
+
+            // First check if the line is a item,
+            let (status, item) =
+                TradeItem::from_string(&line, &prev_line, &self.detection, ignore_combined);
 
             log(
                 format!(
-                    "Line {} analyzed | status: {:?} | relevant: {}",
-                    i + 1,
-                    status,
-                    is_relevant
+                    "TradeItem | Line: '{}' | Prev Line: '{}'| Item Type: '{:?}' | Quantity: {} | Detected Type: {:?}",
+                    line, prev_line, item.item_type, item.quantity, status
                 ),
                 None,
             );
 
-            if !is_relevant {
-                i += if status.is_combined() { 2 } else { 1 };
-                continue;
-            }
+            // let (full_line, is_offer_line) =
+            //     self.detection
+            //         .is_offer_line(&line, &prev_line, ignore_combined);
 
-            let (full_line, is_offer_line) = self.detection.is_offer_line(&line, &next_line);
+            // if matches!(
+            //     is_offer_line,
+            //     DetectionStatus::Line | DetectionStatus::Combined
+            // ) {
+            //     is_offering = false;
+            //     let player_name = full_line
+            //         .strip_prefix(&self.detection.receive_line_first_part)
+            //         .and_then(|s| s.strip_suffix(&self.detection.receive_line_second_part))
+            //         .unwrap_or("Unknown");
+            //     self.current_trade.player_name = remove_special_characters(&player_name);
+            //     log(
+            //         format!(
+            //         "Player identified: '{}' | switching to received items | Detection Type: {:?}",
+            //         self.current_trade.player_name, is_offer_line
+            //     ),
+            //         None,
+            //     );
+            //     prev_line = line.clone();
+            //     ignore_combined = matches!(is_offer_line, DetectionStatus::Combined);
+            //     continue;
+            // }
+            // let (status, item) =
+            //     TradeItem::from_string(&line, &prev_line, &self.detection, ignore_combined);
 
-            if is_offer_line.is_found() {
-                i += if is_offer_line.is_combined() { 2 } else { 1 };
+            // log(
+            //         format!(
+            //             "TradeItem | Line: '{}' | Prev Line: '{}'| Item Type: '{:?}' | Detected Type: {:?}",
+            //             line, prev_line, item.item_type, status
+            //         ),
+            //         None,
+            //     );
+            // if status.is_combined() {
+            //     log(
+            //         format!("Combined line consumed | status: {:?}", status),
+            //         None,
+            //     );
+            // }
 
-                log(format!("Offer line detected: {}", full_line), None);
+            // if !item.is_valid() {
+            //     log(
+            //         format!("Skipped invalid parsed item | status: {:?}", status),
+            //         None,
+            //     );
+            //     prev_line = line.clone();
+            //     ignore_combined = status.is_combined();
+            //     continue;
+            // }
 
-                // The - wil be cut off in -satumori- Fix it
-                let player_name = full_line
-                    .strip_prefix(&self.detection.receive_line_first_part)
-                    .and_then(|s| s.strip_suffix(&self.detection.receive_line_second_part))
-                    .map(|s| s.replace('\u{e000}', "").trim().to_string())
-                    .unwrap_or("Unknown".to_string());
-                self.current_trade.player_name = remove_special_characters(&player_name);
+            // log(
+            //     format!(
+            //         "Parsed item: {} | status: {:?} | side: {}",
+            //         item, status, is_offering
+            //     ),
+            //     None,
+            // );
 
-                log(
-                    format!(
-                        "Player identified: '{}' | switching to received items",
-                        self.current_trade.player_name
-                    ),
-                    None,
-                );
+            // let mut items = if is_offering {
+            //     self.current_trade.offered_items.iter_mut()
+            // } else {
+            //     self.current_trade.received_items.iter_mut()
+            // };
 
-                is_offering = false;
-                continue;
-            } else {
-                let (status, item) = TradeItem::from_string(&line, &next_line, &self.detection);
-
-                if status.is_combined() {
-                    log(
-                        format!("Combined line consumed | status: {:?}", status),
-                        None,
-                    );
-                    i += 1;
-                }
-
-                if !item.is_valid() {
-                    log(
-                        format!("Skipped invalid parsed item | status: {:?}", status),
-                        None,
-                    );
-                    i += 1;
-                    continue;
-                }
-
-                log(
-                    format!(
-                        "Parsed item: {} | status: {:?} | side: {}",
-                        item, status, is_offering
-                    ),
-                    None,
-                );
-
-                let mut items = if is_offering {
-                    self.current_trade.offered_items.iter_mut()
-                } else {
-                    self.current_trade.received_items.iter_mut()
-                };
-
-                if let Some(trade) = items.find(|p| {
-                    p.unique_name == item.unique_name
-                        && !item.unique_name.is_empty()
-                        && p.sub_type == item.sub_type
-                }) {
-                    trade.quantity += 1;
-                    log(
-                        format!(
-                            "Incremented item quantity: {} -> {}",
-                            trade.unique_name, trade.quantity
-                        ),
-                        None,
-                    );
-                } else if is_offering {
-                    log(format!("Added offered item: {}", item), None);
-                    self.current_trade.offered_items.push(item);
-                } else {
-                    log(format!("Added received item: {}", item), None);
-                    self.current_trade.received_items.push(item);
-                }
-            }
-            i += 1;
+            // if let Some(trade) = items.find(|p| {
+            //     p.unique_name == item.unique_name
+            //         && !item.unique_name.is_empty()
+            //         && p.sub_type == item.sub_type
+            // }) {
+            //     trade.quantity += 1;
+            //     log(
+            //         format!(
+            //             "Incremented item quantity: {} -> {}",
+            //             trade.unique_name, trade.quantity
+            //         ),
+            //         None,
+            //     );
+            // } else if is_offering {
+            //     log(format!("Added offered item: {}", item), None);
+            //     self.current_trade.offered_items.push(item);
+            // } else {
+            //     log(format!("Added received item: {}", item), None);
+            //     self.current_trade.received_items.push(item);
+            // }
+            prev_line = line.clone();
+            ignore_combined = false;
         }
 
         self.current_trade.trade_time = chrono::Local::now().with_timezone(&chrono::Utc);
@@ -221,6 +234,7 @@ impl OnTradeEvent {
         log("Trade accepted".to_string(), None);
 
         let mut trade = self.current_trade.clone();
+        self.reset();
         let settings = states::get_settings()?.clone();
         let order_type = match trade.trade_type {
             TradeClassification::Sale => OrderType::Sell,
@@ -321,12 +335,15 @@ impl OnTradeEvent {
                 process_operations(&trade, operations);
             }
         });
-        self.reset();
         add_metric!("on_trade_event", "trade_accepted");
         Ok(())
     }
     pub fn add_trade_message(&mut self, line: &str) {
-        self.logs.push(line.to_string());
+        let line = line.replace('\n', "").replace('\r', "");
+        if line.is_empty() {
+            return;
+        }
+        self.logs.push(line);
     }
 }
 
@@ -356,8 +373,6 @@ impl LineHandler for OnTradeEvent {
             } else {
                 return Ok((false, false));
             }
-
-            // return self.process_multiline_trade(entry);
         }
 
         // Detect start of trade
@@ -369,7 +384,7 @@ impl LineHandler for OnTradeEvent {
 
         if trade_start.is_found() {
             self.getting_trade_message_multiline = true;
-            self.trade_started(entry, &trade_start);
+            self.trade_started();
             return Ok((true, !trade_start.is_combined()));
         }
         // Nothing else to do unless we're waiting for confirmation
@@ -386,7 +401,10 @@ impl LineHandler for OnTradeEvent {
                 self.waiting_confirmation = false;
                 return Ok((
                     true,
-                    matches!(status, DetectionStatus::Line | DetectionStatus::NextLine),
+                    matches!(
+                        status,
+                        DetectionStatus::Line | DetectionStatus::PreviousLine
+                    ),
                 ));
             }
             (status, TradeResult::Failed) => {

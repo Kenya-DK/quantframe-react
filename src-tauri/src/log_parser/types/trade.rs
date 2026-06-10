@@ -80,17 +80,6 @@ impl PlayerTrade {
             .cloned()
             .collect()
     }
-    pub fn is_item_in_trade(
-        &self,
-        trade_type: &TradeClassification,
-        unique_name: &str,
-        quantity: i64,
-    ) -> bool {
-        let items = self.get_valid_items(trade_type, vec![]);
-        items
-            .iter()
-            .any(|p| p.unique_name == unique_name && p.quantity == quantity)
-    }
     pub fn calculate(&mut self) {
         let offer_plat = self.get_offered_plat();
         let receive_plat = self.get_received_plat();
