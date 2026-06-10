@@ -5,6 +5,11 @@
         "title": "Restablecer configuración",
         "message": "¿Restablecer toda la configuración a los valores predeterminados?"
       }
+    },
+    "buttons": {
+      "cancel": {
+        "label": "Cancelar"
+      }
     }
   }
 }

@@ -24,6 +24,9 @@
       },
       "delete": {
         "label": "Delete"
+      },
+      "cancel": {
+        "label": "Cancel"
       }
     },
     "dialogs": {

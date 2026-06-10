@@ -1,4 +1,4 @@
-import { PaperProps, Container, Tabs, Button, Group } from "@mantine/core";
+import { PaperProps, Container, Tabs, Button, Group, Text } from "@mantine/core";
 import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
 import { LiveTradingPanel } from "./Tabs/LiveTrading";
@@ -12,7 +12,7 @@ import { GeneralPanel } from "./Tabs/General";
 import { useForm } from "@mantine/form";
 import api from "@api";
 import { useState, useEffect } from "react";
-import { confirm } from "@tauri-apps/plugin-dialog";
+import { modals } from "@mantine/modals";
 
 export type SettingsFormProps = {
   value: TauriTypes.Settings & { has_error?: boolean; hide_save_button?: boolean };
@@ -52,18 +52,21 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
   const resetSettingsDialogTitle = useTranslateCommon("dialogs.reset_settings.title");
   const resetSettingsDialogMessage = useTranslateCommon("dialogs.reset_settings.message");
 
-  const handleReset = async () => {
-    const confirmed = await confirm(resetSettingsDialogMessage, {
-      kind: "warning",
+  const handleReset = () => {
+    modals.openConfirmModal({
       title: resetSettingsDialogTitle,
+      children: <Text size="sm">{resetSettingsDialogMessage}</Text>,
+      labels: { confirm: useTranslateCommon("buttons.reset_defaults.label"), cancel: useTranslateCommon("buttons.cancel.label") },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        try {
+          const defaults = await api.app.getDefaultSettings();
+          form.setValues(defaults);
+        } catch (e) {
+          console.error("Failed to reset to defaults", e);
+        }
+      },
     });
-    if (!confirmed) return;
-    try {
-      const defaults = await api.app.getDefaultSettings();
-      form.setValues(defaults);
-    } catch (e) {
-      console.error("Failed to reset to defaults", e);
-    }
   };
 
   const tabs = [
