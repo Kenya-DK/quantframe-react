@@ -16,7 +16,7 @@ import { modals } from "@mantine/modals";
 
 export type SettingsFormProps = {
   value: TauriTypes.Settings & { has_error?: boolean; hide_save_button?: boolean };
-  onSubmit: (value: TauriTypes.Settings) => void;
+  onSubmit: (value: TauriTypes.Settings) => void | Promise<void>;
   paperProps?: PaperProps;
 };
 
@@ -51,17 +51,21 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
 
   const resetSettingsDialogTitle = useTranslateCommon("dialogs.reset_settings.title");
   const resetSettingsDialogMessage = useTranslateCommon("dialogs.reset_settings.message");
+  const resetDefaultsLabel = useTranslateCommon("buttons.reset_defaults.label");
+  const cancelLabel = useTranslateCommon("buttons.cancel.label");
+  const saveLabel = useTranslateCommon("buttons.save.label");
 
   const handleReset = () => {
     modals.openConfirmModal({
       title: resetSettingsDialogTitle,
       children: <Text size="sm">{resetSettingsDialogMessage}</Text>,
-      labels: { confirm: useTranslateCommon("buttons.reset_defaults.label"), cancel: useTranslateCommon("buttons.cancel.label") },
+      labels: { confirm: resetDefaultsLabel, cancel: cancelLabel },
       confirmProps: { color: "red" },
       onConfirm: async () => {
         try {
           const defaults = await api.app.getDefaultSettings();
           form.setValues(defaults);
+          await onSubmit(defaults);
         } catch (e) {
           console.error("Failed to reset to defaults", e);
         }
@@ -131,11 +135,11 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
       <Group justify="flex-end" mt="md" display={showButtons ? "" : "none"}>
         {isNotDefault && (
           <Button pos="absolute" bottom={10} right={130} onClick={handleReset} color="red" variant="outline">
-            {useTranslateCommon("buttons.reset_defaults.label")}
+            {resetDefaultsLabel}
           </Button>
         )}
         <Button pos="absolute" bottom={10} right={10} onClick={() => onSubmit(form.values)} color="green">
-          {useTranslateCommon("buttons.save.label")}
+          {saveLabel}
         </Button>
       </Group>
     </Container>
