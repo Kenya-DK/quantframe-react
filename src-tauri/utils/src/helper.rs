@@ -84,33 +84,26 @@ pub fn read_json_file<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<
         ));
     }
 
-    let file = File::open(path).map_err(|e| {
-        Error::from_io(
-            "Helper:ReadJsonFile",
-            path,
-            "Failed to open file",
-            e,
-            get_location!(),
-        )
-    })?;
-    let reader = io::BufReader::new(file);
-    let data: Value = serde_json::from_reader(reader).map_err(|e| {
-        Error::from_json(
-            "Helper:ReadJsonFile",
-            &path,
-            "N/A",
-            "Failed to parse JSON file",
-            e,
-            get_location!(),
-        )
-    })?;
-    match serde_json::from_value(data.clone()) {
-        Ok(payload) => Ok(payload),
+    let content = match std::fs::read_to_string(&path) {
+        Ok(content) => content,
+        Err(e) => {
+            return Err(Error::from_io(
+                "Helper:ReadJsonFile",
+                &path,
+                "Failed to read JSON file",
+                e,
+                get_location!(),
+            ));
+        }
+    };
+
+    match serde_json::from_str::<T>(&content) {
+        Ok(data) => Ok(data),
         Err(e) => Err(Error::from_json(
             "Helper:ReadJsonFile",
             &path,
-            &data.to_string(),
-            format!("Failed to deserialize JSON from file {}", path.display()),
+            &content,
+            "Failed to parse JSON file",
             e,
             get_location!(),
         )),

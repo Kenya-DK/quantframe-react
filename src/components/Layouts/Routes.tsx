@@ -56,7 +56,7 @@ export function AppRoutes() {
   const { user } = useAuthContext();
 
   const ShowErrorPage = () => {
-    if (!window.location.href.includes("clean")) return false;
+    if (window.location.href.includes("clean")) return false;
     if (!app_error) return false;
     return true;
   };
