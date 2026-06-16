@@ -8,7 +8,7 @@ pub enum DetectionStatus {
     Line,
     PreviousLine,
     Combined,
-    LineThenPreviousLine,
+    LineThenNextLine,
     PreviousLineThenLine,
 }
 
@@ -18,7 +18,12 @@ impl DetectionStatus {
     }
 
     pub fn is_combined(&self) -> bool {
-        matches!(self, DetectionStatus::Combined)
+        matches!(
+            self,
+            DetectionStatus::Combined
+                | DetectionStatus::NextLine
+                | DetectionStatus::LineThenNextLine
+        )
     }
     pub fn is_previous_line(&self) -> bool {
         matches!(
@@ -119,17 +124,17 @@ pub fn combine_and_detect_match(
         return (line.to_string(), DetectionStatus::Line);
     }
 
-    if contains_match(prev_line, match_pattern, is_exact_match) {
-        return (prev_line.to_string(), DetectionStatus::PreviousLine);
+    if contains_match(next_line, match_pattern, is_exact_match) {
+        return (next_line.to_string(), DetectionStatus::NextLine);
     }
 
     if !ignore_combined {
-        let line_then_next = format!("{line}{prev_line}");
+        let line_then_next = format!("{line}{next_line}");
         if contains_match(&line_then_next, match_pattern, is_exact_match) {
-            return (line_then_next, DetectionStatus::LineThenPreviousLine);
+            return (line_then_next, DetectionStatus::LineThenNextLine);
         }
 
-        let previous_then_line = format!("{prev_line}{line}");
+        let previous_then_line = format!("{next_line}{line}");
         if contains_match(&previous_then_line, match_pattern, is_exact_match) {
             return (previous_then_line, DetectionStatus::PreviousLineThenLine);
         }
