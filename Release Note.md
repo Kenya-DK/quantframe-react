@@ -2,6 +2,7 @@
 
 ## Fix's
 
+✨ - Add a rest to default settings (bxn-dev)
 🛠️ - Fix some issues with the chat websocket connection, so it doesn't cancel the user status
 
 ## Dev Notes
