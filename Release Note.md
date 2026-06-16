@@ -2,7 +2,7 @@
 
 ## Fix's
 
-⚒️ - Fix the new regular/atragraph variant for mods, note all mods from the auto trade wil be regular V2
+✨ - Add a rest to default settings (bxn-dev)
 
 ## Dev Notes
 
