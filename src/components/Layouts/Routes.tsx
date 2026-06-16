@@ -1,13 +1,13 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
 import { lazy } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { routeLoaders } from "./routeLoaders";
 
 // Layouts
+import { CleanLayout } from "./Clean";
 import { LogInLayout } from "./LogIn";
 import { LogOutLayout } from "./LogOut";
-import { CleanLayout } from "./Clean";
 
 // Permissions Gate
 import AuthenticatedGate from "../AuthenticatedGate";
@@ -56,7 +56,7 @@ export function AppRoutes() {
   const { user } = useAuthContext();
 
   const ShowErrorPage = () => {
-    if (!window.location.href.includes("clean")) return false;
+    if (window.location.href.includes("clean")) return false;
     if (!app_error) return false;
     if (app_error.isWebSocket()) return false; // Show error page only for non-WebSocket errors
     return true;
