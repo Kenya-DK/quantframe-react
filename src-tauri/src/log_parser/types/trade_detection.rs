@@ -22,6 +22,7 @@ pub struct TradeDetection {
 impl TradeDetection {
     pub fn new(
         start: impl Into<String>,
+        offer_line: impl Into<String>,
         confirmation_line: impl Into<String>,
         failed_line: impl Into<String>,
         cancelled_line: impl Into<String>,
@@ -33,6 +34,7 @@ impl TradeDetection {
     ) -> Self {
         TradeDetection {
             start: start.into(),
+            offer_line: Regex::new(&offer_line.into()).unwrap(),
             confirmation_line: confirmation_line.into(),
             failed_line: failed_line.into(),
             cancelled_line: cancelled_line.into(),
@@ -56,8 +58,6 @@ impl TradeDetection {
         if !is_dialog.is_found() {
             return DetectionStatus::None;
         }
-        let (_, status) =
-            combine_and_detect_match(&line, next_line, &self.failed_line, ignore_combined, false);
 
         let (_, status) = combine_and_detect_match(line, prev_line, target, ignore_combined, false);
 
@@ -66,21 +66,6 @@ impl TradeDetection {
         } else {
             DetectionStatus::None
         }
-        if ignore_combined {
-            return DetectionStatus::None;
-        }
-        let (_, status) = combine_and_detect_match(
-            &line,
-            next_line,
-            &self.cancelled_line,
-            ignore_combined,
-            false,
-        );
-
-        if is_dialog.is_found() && status.is_found() {
-            return status;
-        }
-        DetectionStatus::None
     }
 
     pub fn get_trade_result(
@@ -109,68 +94,6 @@ impl TradeDetection {
                 return (status, result);
             }
         }
-        if ignore_combined {
-            return DetectionStatus::None;
-        }
-        let (_, status) = combine_and_detect_match(
-            &line,
-            next_line,
-            &self.confirmation_line,
-            ignore_combined,
-            false,
-        );
-
-        (DetectionStatus::None, TradeResult::Unknown)
-    }
-
-    fn detect_trade_state(
-        &self,
-        line: &str,
-        next_line: &str,
-        target: &str,
-        ignore_combined: bool,
-    ) -> DetectionStatus {
-        let is_dialog = self.is_dialog_line(line, next_line, ignore_combined);
-
-        if !is_dialog.is_found() {
-            return DetectionStatus::None;
-        }
-
-        let (_, status) = combine_and_detect_match(line, next_line, target, ignore_combined, false);
-
-        if status.is_found() {
-            status
-        } else {
-            DetectionStatus::None
-        }
-    }
-
-    pub fn get_trade_result(
-        &self,
-        line: &str,
-        next_line: &str,
-        ignore_combined: bool,
-    ) -> (DetectionStatus, TradeResult) {
-        let checks: [(DetectionStatus, TradeResult); 3] = [
-            (
-                self.detect_trade_state(line, next_line, &self.confirmation_line, ignore_combined),
-                TradeResult::Success,
-            ),
-            (
-                self.detect_trade_state(line, next_line, &self.failed_line, ignore_combined),
-                TradeResult::Failed,
-            ),
-            (
-                self.detect_trade_state(line, next_line, &self.cancelled_line, ignore_combined),
-                TradeResult::Cancelled,
-            ),
-        ];
-
-        for (status, result) in checks {
-            if status.is_found() {
-                return (status, result);
-            }
-        }
 
         (DetectionStatus::None, TradeResult::Unknown)
     }
@@ -178,8 +101,7 @@ impl TradeDetection {
     pub fn is_first_part(
         &self,
         line: &str,
-        next_line: &str,
-        _is_previous: bool,
+        prev_line: &str,
         ignore_combined: bool,
     ) -> (String, DetectionStatus) {
         combine_and_detect_match(
@@ -193,8 +115,7 @@ impl TradeDetection {
     pub fn is_second_part(
         &self,
         line: &str,
-        next_line: &str,
-        _is_previous: bool,
+        prev_line: &str,
         ignore_combined: bool,
     ) -> (String, DetectionStatus) {
         combine_and_detect_match(
@@ -209,8 +130,7 @@ impl TradeDetection {
     pub fn is_currency(
         &self,
         line: &str,
-        next_line: &str,
-        _is_previous: bool,
+        prev_line: &str,
         ignore_combined: bool,
     ) -> (String, DetectionStatus, TradeItemType) {
         let detect = |match_text: &str, ty, suffix: &str| {
@@ -228,8 +148,7 @@ impl TradeDetection {
             (&self.platinum_name, TradeItemType::Platinum, " x"),
             (&self.credits_name, TradeItemType::Credits, ""),
         ] {
-            let (combined, status) =
-                combine_and_detect_match(line, next_line, name, ignore_combined, false);
+            let (full_text, status, ty) = detect(name, ty, suffix);
             if status.is_found() {
                 return (full_text, status, ty);
             }
@@ -279,7 +198,7 @@ impl TradeDetection {
     pub fn is_end_of_trade(
         &self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         ignore_combined: bool,
     ) -> DetectionStatus {
         let machs: Vec<String> = vec![
@@ -295,26 +214,18 @@ impl TradeDetection {
         }
         for mach in machs.iter() {
             let (_, status) =
-                combine_and_detect_match(&line, next_line, mach, ignore_combined, false);
+                combine_and_detect_match(&line, prev_line, mach, ignore_combined, false);
             if status.is_found() {
                 return status;
             }
         }
         DetectionStatus::None
     }
-    pub fn is_irrelevant_trade_line(&self, line: &str, next_line: &str) -> (bool, DetectionStatus) {
-        if line == "\n" || line == "" {
-            return (false, DetectionStatus::None);
-        }
-        let is_beginning = self.is_beginning_of_trade(line, next_line, false);
-        if is_beginning.is_found() {
-            return (false, is_beginning);
-        }
 
     pub fn is_dialog_line(
         &self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         ignore_combined: bool,
     ) -> DetectionStatus {
         const MATCHES: [&str; 2] = [
@@ -324,7 +235,7 @@ impl TradeDetection {
 
         for pattern in MATCHES {
             let (_, status) =
-                combine_and_detect_match(line, next_line, pattern, ignore_combined, false);
+                combine_and_detect_match(line, prev_line, pattern, ignore_combined, false);
 
             if status.is_found() {
                 return status;
@@ -336,10 +247,10 @@ impl TradeDetection {
     pub fn is_beginning_of_trade(
         &self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         ignore_combined: bool,
     ) -> DetectionStatus {
-        let is_dialog = self.is_dialog_line(line, next_line, ignore_combined);
+        let is_dialog = self.is_dialog_line(line, prev_line, ignore_combined);
 
         if is_dialog.is_found() && line.contains(&self.start) {
             return DetectionStatus::Line;
@@ -348,7 +259,7 @@ impl TradeDetection {
             return DetectionStatus::None;
         }
         let (_, status) =
-            combine_and_detect_match(&line, next_line, &self.start, ignore_combined, false);
+            combine_and_detect_match(&line, prev_line, &self.start, ignore_combined, false);
 
         if is_dialog.is_found() && status.is_found() {
             return status;
@@ -358,14 +269,19 @@ impl TradeDetection {
     pub fn is_last_item(
         &self,
         line: &str,
-        next_line: &str,
-        _is_previous: bool,
+        prev_line: &str,
         ignore_combined: bool,
     ) -> (String, DetectionStatus) {
-        let last_item_mach = ", leftItem=/Menu/Confirm_Item_Ok";
-        // let last_item_mach = ", title= leftItem=/Menu/Confirm_Item_Ok";
-        if next_line.contains(last_item_mach) {
-            return (next_line.to_string(), DetectionStatus::NextLine);
+        let matches = vec![
+            ", title= leftItem=/Menu/Confirm_Item_Ok",
+            ", leftItem=/Menu/Confirm_Item_Ok",
+        ];
+        let match_pattern = matches
+            .iter()
+            .find(|mach| line.contains(*mach))
+            .unwrap_or(&", leftItem=/Menu/Confirm_Item_Ok");
+        if prev_line.contains(match_pattern) {
+            return (prev_line.to_string(), DetectionStatus::PreviousLine);
         }
         if line.contains(match_pattern) {
             return (line.to_string(), DetectionStatus::Line);
@@ -375,7 +291,7 @@ impl TradeDetection {
             return (line.to_owned(), DetectionStatus::None);
         }
 
-        combine_and_detect_match(&line, next_line, last_item_mach, ignore_combined, false)
+        combine_and_detect_match(&line, prev_line, match_pattern, ignore_combined, false)
     }
 }
 
@@ -389,6 +305,7 @@ pub fn init_detections() {
             TradeDetection::new(
                 "description=Are you sure you want to accept this trade? You are offering"
                     .to_string(),
+                "and will receive from ([A-Za-z0-9]+) the following:",
                 "description=The trade was successful!",
                 "description=The trade failed.",
                 "description=The trade was cancelled",
@@ -403,6 +320,7 @@ pub fn init_detections() {
             "ru".to_string(),
             TradeDetection::new(
                 "description=Вы хотите принять условия сделки? Вы предлагаете",
+                "и получите от ([A-Za-z0-9]+)\u{E000} следующее:",
                 "description=Обмен успешно завершён!",
                 "description=Обмен не удался.",
                 "description=Обмен был отменён",
