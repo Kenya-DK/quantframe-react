@@ -34,4 +34,7 @@ export class AppModule {
   notify_reset(id: string): Promise<TauriTypes.NotificationSetting> {
     return this.client.sendInvoke<TauriTypes.NotificationSetting>("app_notify_reset", { id });
   }
+  getDefaultSettings(): Promise<TauriTypes.Settings> {
+    return this.client.sendInvoke<TauriTypes.Settings>("app_get_default_settings");
+  }
 }

@@ -210,6 +210,7 @@ pub fn run() {
             commands::app::app_exit,
             commands::app::app_accept_tos,
             commands::app::app_notify_reset,
+            commands::app::app_get_default_settings,
             // Auth commands
             commands::auth::auth_me,
             commands::auth::auth_login,

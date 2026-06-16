@@ -19,8 +19,20 @@
       "save": {
         "label": "Save"
       },
+      "reset_defaults": {
+        "label": "Reset to Default"
+      },
       "delete": {
         "label": "Delete"
+      },
+      "cancel": {
+        "label": "Cancel"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "Reset settings",
+        "message": "Reset all settings to default values?"
       }
     },
     "notifications": {
