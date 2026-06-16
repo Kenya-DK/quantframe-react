@@ -1131,7 +1131,14 @@
           "item": {
             "label": "Item",
             "placeholder": "Select item..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "No items found"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "Variant",
             "placeholder": "Select variant...",

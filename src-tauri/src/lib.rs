@@ -177,10 +177,12 @@ pub fn run() {
                 if let Err(e) = init_database(use_temp_db).await {
                     err = Some(e.clone());
                     e.log("init_database_error.log");
+                    emit_error!(e);
                 }
                 if let Err(e) = setup_manages(app_handle.clone(), use_temp_db).await {
                     err = Some(e.clone());
                     e.log("setup_error.log");
+                    emit_error!(e);
                 }
                 if let Err(e) = app_handle.emit("app:ready", ()) {
                     error(
