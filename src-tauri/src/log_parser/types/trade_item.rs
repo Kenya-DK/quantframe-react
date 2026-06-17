@@ -134,6 +134,13 @@ impl TradeItem {
         self.unique_name = found.unique_name.clone();
         self.item_type = tags_to_type(tags.clone());
 
+        let variants = found
+            .sub_type
+            .clone()
+            .unwrap_or_default()
+            .variants
+            .unwrap_or_default();
+
         if tags.contains(&"relic") {
             self.sub_type = Some(SubType::variant("intact"));
         }
@@ -141,6 +148,11 @@ impl TradeItem {
             if let Some(max_rank) = found.sub_type.as_ref().and_then(|st| st.max_rank) {
                 self.sub_type = Some(SubType::rank(max_rank));
             }
+        }
+        // Some mods have variants that are not indicated in the name
+        if variants.contains(&"regular".to_string()) && variants.contains(&"atragraph".to_string())
+        {
+            self.sub_type = Some(SubType::variant("regular"));
         }
     }
     fn detect_variant_or_rank(
