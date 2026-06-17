@@ -10,7 +10,7 @@ import { SummaryPanel } from "./Tabs/Summary";
 import { HttpServerPanel } from "./Tabs/HttpServer";
 import { GeneralPanel } from "./Tabs/General";
 import { useForm } from "@mantine/form";
-import api from "@api";
+import api from "@api/index";
 import { useState, useEffect } from "react";
 import { modals } from "@mantine/modals";
 
