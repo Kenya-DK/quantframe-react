@@ -1,4 +1,4 @@
-import { PaperProps, Container, Tabs, Button, Group } from "@mantine/core";
+import { PaperProps, Container, Tabs, Button, Group, Text } from "@mantine/core";
 import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
 import { LiveTradingPanel } from "./Tabs/LiveTrading";
@@ -10,10 +10,13 @@ import { SummaryPanel } from "./Tabs/Summary";
 import { HttpServerPanel } from "./Tabs/HttpServer";
 import { GeneralPanel } from "./Tabs/General";
 import { useForm } from "@mantine/form";
+import api from "@api";
+import { useState, useEffect } from "react";
+import { modals } from "@mantine/modals";
 
 export type SettingsFormProps = {
   value: TauriTypes.Settings & { has_error?: boolean; hide_save_button?: boolean };
-  onSubmit: (value: TauriTypes.Settings) => void;
+  onSubmit: (value: TauriTypes.Settings) => void | Promise<void>;
   paperProps?: PaperProps;
 };
 
@@ -33,6 +36,42 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
       },
     },
   });
+
+  const [defaultSettings, setDefaultSettings] = useState<TauriTypes.Settings | null>(null);
+
+  useEffect(() => {
+    api.app.getDefaultSettings().then(setDefaultSettings).catch(console.error);
+  }, []);
+
+  const isNotDefault =
+    defaultSettings &&
+    JSON.stringify({ ...value, has_error: undefined, hide_save_button: undefined }) !== JSON.stringify(defaultSettings);
+
+  const showButtons = isNotDefault || form.isDirty();
+
+  const resetSettingsDialogTitle = useTranslateCommon("dialogs.reset_settings.title");
+  const resetSettingsDialogMessage = useTranslateCommon("dialogs.reset_settings.message");
+  const resetDefaultsLabel = useTranslateCommon("buttons.reset_defaults.label");
+  const cancelLabel = useTranslateCommon("buttons.cancel.label");
+  const saveLabel = useTranslateCommon("buttons.save.label");
+
+  const handleReset = () => {
+    modals.openConfirmModal({
+      title: resetSettingsDialogTitle,
+      children: <Text size="sm">{resetSettingsDialogMessage}</Text>,
+      labels: { confirm: resetDefaultsLabel, cancel: cancelLabel },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        try {
+          const defaults = await api.app.getDefaultSettings();
+          form.setValues(defaults);
+          await onSubmit(defaults);
+        } catch (e) {
+          console.error("Failed to reset to defaults", e);
+        }
+      },
+    });
+  };
 
   const tabs = [
     {
@@ -93,9 +132,14 @@ export function SettingsForm({ onSubmit, value }: SettingsFormProps) {
           </Tabs.Panel>
         ))}
       </Tabs>
-      <Group justify="flex-end" mt="md" display={form.isDirty() ? "" : "none"}>
+      <Group justify="flex-end" mt="md" display={showButtons ? "" : "none"}>
+        {isNotDefault && (
+          <Button pos="absolute" bottom={10} right={130} onClick={handleReset} color="red" variant="outline">
+            {resetDefaultsLabel}
+          </Button>
+        )}
         <Button pos="absolute" bottom={10} right={10} onClick={() => onSubmit(form.values)} color="green">
-          {useTranslateCommon("buttons.save.label")}
+          {saveLabel}
         </Button>
       </Group>
     </Container>
