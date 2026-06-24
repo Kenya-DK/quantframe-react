@@ -72,7 +72,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
           trade_tax: item.tradeTax,
           mr_requirement: item.masteryReq,
           tags: item.tags,
-          disabled_for: form.values.live_scraper.stock_item.blacklist?.find((bl) => bl.wfm_id === item.wfmId)?.disabled_for || [],
+          disabled_for: form.values.live_scraper.stock_item.blacklist?.find((bl) => bl.wfmId === item.wfmId)?.disabled_for || [],
         } as BlackList;
       }),
     );
@@ -246,7 +246,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             rightTitle={useTranslateBlacklist("selected_items_label")}
             selectedItems={form.values.live_scraper.stock_item.blacklist || []}
             onChange={(items) => form.setFieldValue(getFieldPath("stock_item"), { ...form.values.live_scraper.stock_item, blacklist: items })}
-            getId={(item) => item.wfm_id}
+            getId={(item) => item.wfmId}
             onBeforeAdd={(item) => {
               if (!formLeft.values.disable_for || formLeft.values.disable_for.length === 0) {
                 notifications.show({ color: "red.7", message: useTranslateBlacklist("no_trade_selected") });
@@ -268,7 +268,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             }}
             leftConfig={{
               items: availableItems || [],
-              idAccessor: "wfm_id",
+              idAccessor: "wfmId",
               columns: [
                 { sortable: true, accessor: "name", title: useTranslateBlacklist("name_title") },
                 { sortable: true, accessor: "trade_tax", title: useTranslateBlacklist("trade_tax_title") },
@@ -325,7 +325,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             }}
             rightConfig={{
               items: availableItems || [],
-              idAccessor: "wfm_id",
+              idAccessor: "wfmId",
               searchable: true,
               searchValue: formRight.values.query || "",
               searchRightSectionWidth: 45,
@@ -362,10 +362,10 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             hide_sub_type
             hide_quantity
             onSubmit={(values) => {
-              if (form.values.live_scraper.stock_item.buy_list.find((buyItem) => buyItem.wfm_id === values.raw) || values.bought <= 0) return;
+              if (form.values.live_scraper.stock_item.buy_list.find((buyItem) => buyItem.wfmId === values.raw) || values.bought <= 0) return;
               form.setFieldValue(getFieldPath("stock_item"), {
                 ...form.values.live_scraper.stock_item,
-                buy_list: form.values.live_scraper.stock_item.buy_list.concat([{ wfm_id: values.raw, max_price: values.bought }]),
+                buy_list: form.values.live_scraper.stock_item.buy_list.concat([{ wfmId: values.raw, max_price: values.bought }]),
               });
             }}
           />
@@ -377,9 +377,9 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             records={form.values.live_scraper.stock_item.buy_list || []}
             columns={[
               {
-                accessor: "wfm_id",
+                accessor: "wfmId",
                 title: useTranslateForm("columns.name"),
-                render: (item) => GetNameById(item.wfm_id),
+                render: (item) => GetNameById(item.wfmId),
               },
               {
                 accessor: "max_price",
@@ -398,7 +398,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
                     onClick={() => {
                       form.setFieldValue(getFieldPath("stock_item"), {
                         ...form.values.live_scraper.stock_item,
-                        buy_list: form.values.live_scraper.stock_item.buy_list.filter((buyItem) => buyItem.wfm_id !== item.wfm_id),
+                        buy_list: form.values.live_scraper.stock_item.buy_list.filter((buyItem) => buyItem.wfmId !== item.wfmId),
                       });
                     }}
                   />

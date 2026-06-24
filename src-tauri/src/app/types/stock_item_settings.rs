@@ -5,6 +5,7 @@ use crate::enums::TradeMode;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BlackListItemSetting {
     // WTB Settings
+    #[serde(rename = "wfmId", alias = "wfm_id")]
     pub wfm_id: String,
     pub disabled_for: Vec<TradeMode>,
 }
@@ -18,6 +19,7 @@ impl BlackListItemSetting {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BuyListItemSetting {
     // WTB Settings
+    #[serde(rename = "wfmId", alias = "wfm_id")]
     pub wfm_id: String,
     pub max_price: i64,
 }

@@ -445,11 +445,11 @@ export namespace TauriTypes {
     max_stock_quantity: number;
   }
   export interface BlackListItemSetting {
-    wfm_id: string;
+    wfmId: string;
     disabled_for: TradeMode[];
   }
   export interface BuyListItemSetting {
-    wfm_id: string;
+    wfmId: string;
     max_price: number;
   }
   export interface SettingsStockRiven {
