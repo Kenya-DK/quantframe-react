@@ -19,7 +19,6 @@ use crate::{
     cache::{
         derive_riven_summary_attributes, grade_riven, scale_attributes, CacheState, CacheWeaponBase,
     },
-    types::OperationSet,
     utils::{auction_list_ext::AuctionWithOwnerListExt, ErrorFromExt, OrderListExt, SubTypeExt},
     APP, DATABASE,
 };

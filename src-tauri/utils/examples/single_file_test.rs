@@ -7,8 +7,8 @@ fn main() -> Result<(), Error> {
     init_logger();
 
     // Create a zip logger
-    let zip_logger = ZipLogger::start("single_file_test.zip")?;
-    println!("Started zip archive: {}", zip_logger.archive_name());
+    let zip_logger = ZipLogger::new();
+    println!("Started zip archive: single_file_test.zip");
 
     // Add multiple log entries
     println!("\n=== Adding multiple log entries ===");
@@ -22,11 +22,11 @@ fn main() -> Result<(), Error> {
 
     // Add a custom text file for comparison
     let metadata = "Archive Metadata\n================\nCreated: 2025-07-26\nEntries: 5\nNote: All logs are now in combined_logs.txt\n";
-    zip_logger.add_text_file(metadata, "archive_info.txt")?;
+    zip_logger.create_file_from_path(metadata, "archive_info.txt")?;
 
     // Finalize the zip
     println!("\n=== Finalizing zip archive ===");
-    zip_logger.finalize()?;
+    zip_logger.finalize("single_file_test.zip")?;
 
     println!("\n=== Test completed ===");
     println!("Check logs/2025-07-26/single_file_test.zip");

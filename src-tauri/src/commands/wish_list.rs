@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Mutex};
 use entity::{dto::*, wish_list::*};
 use service::{WishListMutation, WishListQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, LoggerOptions};
+use utils::{get_location, group_by, info, Error, LoggerOptions, OperationSet};
 use wf_market::enums::OrderType;
 
 use crate::{
@@ -12,7 +12,7 @@ use crate::{
     cache::CacheState,
     handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity},
     helper,
-    types::{OperationSet, PermissionsFlags},
+    types::PermissionsFlags,
     APP, DATABASE,
 };
 

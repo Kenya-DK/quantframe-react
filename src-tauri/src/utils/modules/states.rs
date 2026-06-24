@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use crate::{
     app::{client::AppState, Settings},
     cache::client::CacheState,
+    log_parser::LogParserState,
     APP,
 };
 use tauri::Manager;
@@ -24,6 +25,12 @@ pub fn get_settings() -> Result<Settings, Error> {
 pub fn cache_client() -> Result<CacheState, Error> {
     let app = APP.get().expect("APP not initialized");
     let state = app.state::<Mutex<CacheState>>();
+    let guard = state.lock()?;
+    Ok(guard.clone())
+}
+pub fn log_parser_state() -> Result<LogParserState, Error> {
+    let app = APP.get().expect("APP not initialized");
+    let state = app.state::<Mutex<LogParserState>>();
     let guard = state.lock()?;
     Ok(guard.clone())
 }

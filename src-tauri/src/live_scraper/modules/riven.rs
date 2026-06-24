@@ -3,7 +3,9 @@ use std::sync::{atomic::Ordering, Arc, Weak};
 use entity::{dto::PriceHistory, enums::*, stock_riven::*};
 use serde_json::json;
 use service::{StockRivenMutation, StockRivenQuery};
-use utils::{average_filtered_lowest_prices, get_location, info, warning, Error, LoggerOptions};
+use utils::{
+    average_filtered_lowest_prices, get_location, info, warning, Error, LoggerOptions, OperationSet,
+};
 use wf_market::{
     enums::{AuctionType, Polarity, StatusType},
     types::{

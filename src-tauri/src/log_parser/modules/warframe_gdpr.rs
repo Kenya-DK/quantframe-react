@@ -341,7 +341,7 @@ impl WarframeGDPRModule {
 
                 /* ---------- Create + Validate Item ---------- */
 
-                let (_, mut item) = TradeItem::from_string(&raw, "", &detection, false);
+                let (_, mut item) = TradeItem::from_string(&raw, "", &detection, &[]);
 
                 if item.item_type == TradeItemType::Unknown {
                     let validations = [
@@ -352,7 +352,7 @@ impl WarframeGDPRModule {
 
                     for attempt in validations {
                         item.raw = attempt;
-                        match item.validate("", &detection) {
+                        match item.validate("", &detection, &[]) {
                             Ok(status) => {
                                 if status.is_found() {
                                     break;

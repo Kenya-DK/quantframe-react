@@ -2,7 +2,7 @@ use std::vec;
 
 use entity::{dto::*, enums::*, wish_list::*};
 use service::WishListMutation;
-use utils::{get_location, info, warning, Error};
+use utils::{get_location, info, warning, Error, OperationSet};
 use wf_market::enums::OrderType;
 
 use crate::{handlers::*, types::*, utils::*, DATABASE};

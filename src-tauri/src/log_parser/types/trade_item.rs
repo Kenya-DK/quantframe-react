@@ -60,139 +60,134 @@ impl TradeItem {
         line: impl Into<String>,
         prev_line: impl Into<String>,
         detection: &TradeDetection,
-        ignore_combined: bool,
+        ignored_combinations: &[DetectionStatus],
     ) -> (DetectionStatus, TradeItem) {
         let mut line = line.into();
-        let mut next_line = prev_line.into();
-        let mut raw = line.clone();
+        let mut prev_line = prev_line.into();
 
-        // Text for the last item in the list, can be either ", title= " or ", leftItem=/"
-        let matches = vec![", title= ", ", leftItem=/"];
-        let match_text = matches
-            .iter()
-            .find(|mach| line.contains(*mach))
-            .unwrap_or(&", leftItem=/");
+        let (parse_text, last_item_status) =
+            detection.is_last_item(&line, &prev_line, ignored_combinations);
 
-        // Check if the item is platinum
-        let (is_currency_combined, is_currency_status, is_currency_type) =
-            detection.is_currency(&line, &next_line, ignore_combined);
-
-        if is_currency_status.is_combined() {
-            line = is_currency_combined.clone();
-            raw = line.clone();
-            next_line = "".to_string();
+        match last_item_status {
+            DetectionStatus::Line => {
+                line = parse_text;
+            }
+            ref s if *s == DetectionStatus::PreviousLine || s.is_combined() => {
+                prev_line = parse_text;
+            }
+            _ => {}
         }
 
-        // Check if the item is the last item
-        let (mut last_item_combined, last_item_status) =
-            detection.is_last_item(&line, &next_line, ignore_combined);
-        if last_item_status == DetectionStatus::PreviousLine {
-            next_line.truncate(next_line.find(match_text).unwrap());
-        } else if last_item_status == DetectionStatus::Line {
-            line.truncate(line.find(match_text).unwrap());
-            raw = line.clone();
-        } else if last_item_status.is_combined() {
-            last_item_combined.truncate(last_item_combined.find(match_text).unwrap());
-            line = last_item_combined.clone();
-            raw = line.clone();
-        }
+        let mut item = TradeItem::new(&line, 1, TradeItemType::Unknown, None);
 
-        let status = if last_item_status.is_combined() || is_currency_status.is_combined() {
-            DetectionStatus::Combined
-        } else if last_item_status.is_found() || is_currency_status.is_found() {
-            DetectionStatus::Line
-        } else {
-            DetectionStatus::None
-        };
-
-        // Get the quantity of the item
-        let (raw, quantity) = parse_quantity(&raw);
-
-        let mut item = TradeItem {
-            raw,
-            quantity,
-            unique_name: "".to_string(),
-            item_type: is_currency_type,
-            sub_type: None,
-            error: None,
-            properties: Properties::default(),
-        };
-        if matches!(
-            item.item_type,
-            TradeItemType::Platinum | TradeItemType::Credits
-        ) {
-            return (status, item);
-        }
-        // Validate the item
-        let status = item
-            .validate(&next_line, detection)
+        let item_status = item
+            .validate(&prev_line, detection, ignored_combinations)
             .unwrap_or(DetectionStatus::None);
-        if !status.is_found() {
+
+        if !item_status.is_found() {
             item.error = Some(("Item not found".to_string(), Value::Null));
-        }
-        if item.item_type == TradeItemType::Mod && item.sub_type.is_none() {
+        } else if matches!(item.item_type, TradeItemType::Mod) && item.sub_type.is_none() {
             item.error = Some(("Mod Rank not found".to_string(), Value::Null));
-            item.unique_name = "".to_string();
+            item.unique_name.clear();
             item.item_type = TradeItemType::Unknown;
         }
+
+        let status = match (last_item_status, item_status) {
+            (a, b) if a == b => b,
+            (a, b) if a.is_combined() || b.is_combined() => DetectionStatus::Combined,
+            (_, b) => b,
+        };
+
         (status, item)
     }
 
     /* -------------------------------------------------------------
         Detection's for specific item types
     ------------------------------------------------------------- */
+    pub fn is_platinum_or_credits(
+        &mut self,
+        line: &str,
+        prev_line: &str,
+        detection: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
+    ) -> Result<DetectionStatus, Error> {
+        // Check if the item is platinum
+        let (combine, status, item_type) =
+            detection.is_currency(&line, &prev_line, ignored_combinations);
+
+        if !status.is_found() {
+            return Ok(DetectionStatus::None);
+        }
+
+        match item_type {
+            TradeItemType::Platinum => {
+                self.unique_name = "WFSpecial/Currency/Platinum".to_string();
+            }
+            TradeItemType::Credits => {
+                self.unique_name = "WFSpecial/Currency/Credits".to_string();
+            }
+            _ => {}
+        }
+
+        if let Some((_, qty)) = combine.split_once(" x ") {
+            self.quantity = qty.trim().parse().unwrap_or(1);
+        }
+        self.item_type = item_type;
+        Ok(status)
+    }
     pub fn is_arcane(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let arcane = cache.arcane();
-
-        let (combine, status) = contains_unicode(&line, next_line, false);
+        let (combine, status) = contains_unicode(&line, prev_line, false);
 
         if !status.is_found() {
             return Ok(DetectionStatus::None);
         }
 
         let index = combine.rfind(' ').unwrap_or(0);
-        let name = &combine[..index];
-        let apply_arcane = |this: &mut Self, info: &CacheArcane| {
-            this.unique_name = info.base.unique_name.clone();
-            // Default to Max Rank since we cant determine the rank from the logs...
-            this.sub_type = Some(SubType::rank(info.fusion_limit as i64));
-            this.item_type = TradeItemType::Arcane;
-        };
-
-        if let Ok(info) = arcane.get_by(name) {
-            apply_arcane(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-        Ok(DetectionStatus::None)
+        let name = combine[..index].trim();
+        lookup_item(
+            name,
+            "",
+            |name| cache.arcane().get_by(name),
+            ignored_combinations,
+            |info: CacheArcane| {
+                self.unique_name = info.base.unique_name.clone();
+                // Default to Max Rank since we cant determine the rank from the logs...
+                self.sub_type = Some(SubType::rank(info.fusion_limit as i64));
+                self.item_type = TradeItemType::Arcane;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_imprint(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         detection: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let pets = cache.pet();
-
         // Imprint of |NAME|
         let (stripped, status) = strip_prefix(
             detection.imprint_name.as_str(),
             &line.to_lowercase(),
-            &next_line.to_lowercase(),
-            false,
+            &prev_line.to_lowercase(),
+            ignored_combinations,
         );
 
         if !status.is_found() {
             return Ok(DetectionStatus::None);
         }
 
-        if let Ok(info) = pets.get_by("/WFSpecial/CreaturePet/Imprint") {
+        if let Ok(info) = cache.pet().get_by("/WFSpecial/CreaturePet/Imprint") {
             self.unique_name = info.base.unique_name.clone();
             self.sub_type = Some(SubType::variant(&stripped));
             self.item_type = TradeItemType::Imprint;
@@ -211,112 +206,92 @@ impl TradeItem {
     pub fn is_relic(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-
+        let mut line = line.to_string();
+        let mut prev_line = prev_line.to_string();
         let relics = cache.relics();
 
-        let apply_relic = |this: &mut Self, info: &CacheRelics| {
-            this.unique_name = info.base.unique_name.clone();
-            this.sub_type = info.base.sub_type.clone();
-            this.item_type = TradeItemType::Relic;
-        };
-
-        if let Ok(info) = relics.get_by(line) {
-            apply_relic(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = relics.get_by(&combined_line) {
-            apply_relic(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-
-        let (status, name, tier) = extract_item_variant(line, next_line, '[', ']')?;
+        let (status, name, tier) = extract_item_variant(&line, &prev_line, '[', ']')?;
         if status.is_found() {
-            let relic_name = format!("{} {}", name, tier.to_lowercase());
-            if let Ok(info) = relics.get_by(&relic_name) {
-                apply_relic(self, &info);
-                return Ok(status);
-            }
+            line = format!("{} {}", name, tier.to_lowercase());
+            prev_line = "".to_string();
         }
-        Ok(DetectionStatus::None)
+
+        lookup_item(
+            &line,
+            &prev_line,
+            |name| relics.get_by(name),
+            ignored_combinations,
+            |info: CacheRelics| {
+                self.unique_name = info.base.unique_name.clone();
+                self.sub_type = info.base.sub_type.clone();
+                self.item_type = TradeItemType::Relic;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_misc(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-
-        let misc = cache.misc();
-
-        let apply_misc = |this: &mut Self, info: &CacheMisc| {
-            this.unique_name = info.base.unique_name.clone();
-            this.sub_type = info.base.sub_type.clone();
-            if info.base.unique_name.contains("FusionTreasures") {
-                this.properties.set_property_value("requireSubType", true);
-                this.sub_type = Some(SubType::ayatan(0, 0));
-            }
-            this.item_type = TradeItemType::Misc;
-        };
-
-        if let Ok(info) = misc.get_by(line) {
-            apply_misc(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = misc.get_by(&combined_line) {
-            apply_misc(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.misc().get_by(name),
+            ignored_combinations,
+            |info: CacheMisc| {
+                self.unique_name = info.base.unique_name.clone();
+                self.sub_type = info.base.sub_type.clone();
+                if info.base.unique_name.contains("FusionTreasures") {
+                    self.properties.set_property_value("requireSubType", true);
+                    self.sub_type = Some(SubType::ayatan(0, 0));
+                }
+                self.item_type = TradeItemType::Misc;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_recipe(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-
-        let recipes = cache.recipe();
-
-        let apply_recipe = |this: &mut Self, info: &CacheRecipe| {
-            this.unique_name = info.base.unique_name.clone();
-            this.sub_type = info.base.sub_type.clone();
-            this.item_type = TradeItemType::Recipe;
-        };
-
-        if let Ok(info) = recipes.get_by(line) {
-            apply_recipe(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = recipes.get_by(&combined_line) {
-            apply_recipe(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.recipe().get_by(name),
+            ignored_combinations,
+            |info: CacheRecipe| {
+                self.unique_name = info.base.unique_name.clone();
+                self.sub_type = info.base.sub_type.clone();
+                self.item_type = TradeItemType::Recipe;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_mod(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-
-        let (status, name, rank_str) = extract_item_variant(line, next_line, '(', ')')?;
+        let (status, name, rank_str) = extract_item_variant(line, prev_line, '(', ')')?;
         if !status.is_found() {
             return Ok(DetectionStatus::None);
         }
@@ -326,63 +301,61 @@ impl TradeItem {
             .find_map(|s| s.parse::<i64>().ok())
             .unwrap_or(0);
 
-        let mods = cache.mods();
+        lookup_item(
+            name.as_str(),
+            "",
+            |name| cache.mods().get_by(name),
+            ignored_combinations,
+            |info: CacheMod| {
+                let trade_item = cache.tradable_item().get_by(&info.base.unique_name).ok();
 
-        let apply_mod = |this: &mut Self, info: &CacheMod| {
-            let trade_item = cache.tradable_item().get_by(&info.base.unique_name).ok();
-
-            let variant = info
-                .base
-                .sub_type
-                .as_ref()
-                .and_then(|s| s.variant.as_deref())
-                .unwrap_or("");
-
-            let mut sub_type = SubType::default();
-            this.unique_name = info.base.unique_name.clone();
-            this.item_type = TradeItemType::ModWithNoRank;
-
-            if let Some(trade_item) = trade_item {
-                if trade_item
+                let variant = info
+                    .base
                     .sub_type
-                    .unwrap_or_default()
-                    .has_variants(&["regular", "atragraph"])
-                {
-                    sub_type.variant = Some("regular".to_string());
+                    .as_ref()
+                    .and_then(|s| s.variant.as_deref())
+                    .unwrap_or("");
+
+                let mut sub_type = SubType::default();
+                self.unique_name = info.base.unique_name.clone();
+                self.item_type = TradeItemType::ModWithNoRank;
+
+                if let Some(trade_item) = trade_item {
+                    if trade_item
+                        .sub_type
+                        .unwrap_or_default()
+                        .has_variants(&["regular", "atragraph"])
+                    {
+                        sub_type.variant = Some("regular".to_string());
+                    }
                 }
-            }
 
-            if info.fusion_limit > 0 && variant.is_empty() {
-                sub_type.rank = Some(rank);
-                this.item_type = TradeItemType::Mod;
-                this.sub_type = Some(sub_type);
-                return;
-            }
-            this.sub_type = info.base.sub_type.clone();
-            this.properties.set_property_value("requireSubType", true);
-            this.item_type = TradeItemType::RivenUnVeiled;
-        };
-
-        if let Ok(info) = mods.get_by(name) {
-            apply_mod(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        Ok(DetectionStatus::None)
+                if info.fusion_limit > 0 && variant.is_empty() {
+                    sub_type.rank = Some(rank);
+                    self.item_type = TradeItemType::Mod;
+                    self.sub_type = Some(sub_type);
+                    return info.base.unique_name;
+                }
+                self.sub_type = info.base.sub_type.clone();
+                self.properties.set_property_value("requireSubType", true);
+                self.item_type = TradeItemType::RivenUnVeiled;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_riven_mod(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-
-        let (status, name, _) = extract_item_variant(line, next_line, '(', ')')?;
+        let (status, name, _) = extract_item_variant(line, prev_line, '(', ')')?;
         if !status.is_found() {
             return Ok(DetectionStatus::None);
         }
-        let weapons = cache.weapon();
 
         let pos = name.rfind(' ').unwrap_or(1);
         if pos == 0 {
@@ -391,27 +364,28 @@ impl TradeItem {
 
         let (weapon, _att) = name.split_at(pos);
 
-        let apply_weapon = |this: &mut Self, info: &CacheWeaponBase| {
-            this.unique_name = info.unique_name.clone();
-            this.item_type = TradeItemType::RivenUnVeiled;
-        };
-
-        if let Ok(info) = weapons.get_by(weapon.trim_end()) {
-            apply_weapon(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            weapon.trim_end(),
+            "",
+            |name| cache.weapon().get_by(name),
+            ignored_combinations,
+            |info: CacheWeaponBase| {
+                self.unique_name = info.unique_name.clone();
+                self.item_type = TradeItemType::RivenUnVeiled;
+                info.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_fish(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let fish = cache.fish();
-
-        let (status, name, size) = extract_item_variant(line, next_line, '(', ')')?;
+        let (status, name, size) = extract_item_variant(line, prev_line, '(', ')')?;
         if !status.is_found() {
             return Ok(DetectionStatus::None);
         }
@@ -430,215 +404,178 @@ impl TradeItem {
             }
         };
 
-        let variants = variant.split('|').collect::<Vec<&str>>();
-
-        let apply_fish = |this: &mut Self, info: &CacheFish| {
-            this.unique_name = info.base.unique_name.clone();
-            this.sub_type = info.base.sub_type.clone();
-            this.item_type = TradeItemType::Fish;
-        };
-
-        for var in variants {
+        for var in variant.split('|') {
             let combined_name = format!("{}|{}", name, var);
-            if let Ok(info) = fish.get_by(combined_name) {
-                apply_fish(self, &info);
-                return Ok(DetectionStatus::Line);
+            let found_status = lookup_item(
+                combined_name.as_str(),
+                "",
+                |name| cache.fish().get_by(name),
+                ignored_combinations,
+                |info: CacheFish| {
+                    self.unique_name = info.base.unique_name.clone();
+                    self.sub_type = info.base.sub_type.clone();
+                    self.item_type = TradeItemType::Fish;
+                    info.base.unique_name
+                },
+                cache,
+            )?;
+
+            if found_status.is_found() {
+                return Ok(status);
             }
         }
+
         Ok(DetectionStatus::None)
     }
     pub fn is_bundle(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let bundle = cache.bundle();
-
-        let apply_bundle = |this: &mut Self, info: &CacheBundle| {
-            this.unique_name = info.base.unique_name.clone();
-            this.sub_type = info.base.sub_type.clone();
-            this.item_type = TradeItemType::Bundle;
-        };
-
-        if let Ok(info) = bundle.get_by(line) {
-            apply_bundle(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = bundle.get_by(&combined_line) {
-            apply_bundle(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.bundle().get_by(name),
+            ignored_combinations,
+            |info: CacheBundle| {
+                self.sub_type = info.base.sub_type.clone();
+                self.item_type = TradeItemType::Bundle;
+                self.unique_name = info.base.unique_name.clone();
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_weapon(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let weapons = cache.weapon();
-
-        let apply_weapon = |this: &mut Self, info: &CacheWeaponBase| {
-            this.unique_name = info.unique_name.clone();
-            this.item_type = TradeItemType::Weapon;
-        };
-
-        if let Ok(info) = weapons.get_by(line) {
-            apply_weapon(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = weapons.get_by(&combined_line) {
-            apply_weapon(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.weapon().get_by(name),
+            ignored_combinations,
+            |info: CacheWeaponBase| {
+                self.unique_name = info.unique_name.clone();
+                self.item_type = TradeItemType::Weapon;
+                info.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_quest(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let quests = cache.quest();
-
-        let apply_quest = |this: &mut Self, info: &CacheQuest| {
-            this.unique_name = info.base.unique_name.clone();
-            this.item_type = TradeItemType::Quest;
-        };
-
-        if let Ok(info) = quests.get_by(line) {
-            apply_quest(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = quests.get_by(&combined_line) {
-            apply_quest(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.quest().get_by(name),
+            ignored_combinations,
+            |info: CacheQuest| {
+                self.unique_name = info.base.unique_name.clone();
+                self.item_type = TradeItemType::Quest;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_resource(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let resources = cache.resource();
-
-        let apply_resource = |this: &mut Self, info: &CacheResource| {
-            this.unique_name = info.base.unique_name.clone();
-            this.item_type = TradeItemType::Resource;
-        };
-
-        if let Ok(info) = resources.get_by(line) {
-            apply_resource(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = resources.get_by(&combined_line) {
-            apply_resource(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.resource().get_by(name),
+            ignored_combinations,
+            |info: CacheResource| {
+                self.unique_name = info.base.unique_name.clone();
+                self.item_type = TradeItemType::Resource;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_gear(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let gear = cache.gear();
-
-        let apply_gear = |this: &mut Self, info: &CacheGear| {
-            this.unique_name = info.base.unique_name.clone();
-            this.sub_type = info.base.sub_type.clone();
-            this.item_type = TradeItemType::Gear;
-        };
-
-        if let Ok(info) = gear.get_by(line) {
-            apply_gear(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = gear.get_by(&combined_line) {
-            apply_gear(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.gear().get_by(name),
+            ignored_combinations,
+            |info: CacheGear| {
+                self.unique_name = info.base.unique_name.clone();
+                self.item_type = TradeItemType::Gear;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_skin(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let skins = cache.skin();
-
-        let apply_skin = |this: &mut Self, info: &CacheSkin| {
-            this.unique_name = info.base.unique_name.clone();
-            this.sub_type = info.base.sub_type.clone();
-            this.item_type = TradeItemType::Skin;
-        };
-
-        if let Ok(info) = skins.get_by(line) {
-            apply_skin(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = skins.get_by(&combined_line) {
-            apply_skin(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.skin().get_by(name),
+            ignored_combinations,
+            |info: CacheSkin| {
+                self.unique_name = info.base.unique_name.clone();
+                self.sub_type = info.base.sub_type.clone();
+                self.item_type = TradeItemType::Skin;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
     pub fn is_sentinel(
         &mut self,
         line: &str,
-        next_line: &str,
+        prev_line: &str,
         _: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
+        cache: &CacheState,
     ) -> Result<DetectionStatus, Error> {
-        let cache = states::cache_client().expect("Cache not found");
-        let sentinels = cache.sentinel();
-
-        let apply_sentinel = |this: &mut Self, info: &CacheSentinel| {
-            this.unique_name = info.base.unique_name.clone();
-            this.sub_type = info.base.sub_type.clone();
-            this.item_type = TradeItemType::Sentinel;
-        };
-
-        if let Ok(info) = sentinels.get_by(line) {
-            apply_sentinel(self, &info);
-            return Ok(DetectionStatus::Line);
-        }
-
-        let combined_line = format!("{}{}", line, next_line);
-
-        if let Ok(info) = sentinels.get_by(&combined_line) {
-            apply_sentinel(self, &info);
-            return Ok(DetectionStatus::Combined);
-        }
-        Ok(DetectionStatus::None)
+        lookup_item(
+            line,
+            prev_line,
+            |name| cache.sentinel().get_by(name),
+            ignored_combinations,
+            |info: CacheSentinel| {
+                self.unique_name = info.base.unique_name.clone();
+                self.sub_type = info.base.sub_type.clone();
+                self.item_type = TradeItemType::Sentinel;
+                info.base.unique_name
+            },
+            cache,
+        )
     }
 
     /* -------------------------------------------------------------
@@ -646,10 +583,13 @@ impl TradeItem {
     ------------------------------------------------------------- */
     pub fn validate(
         &mut self,
-        next_line: &str,
+        prev_line: &str,
         detection: &TradeDetection,
+        ignored_combinations: &[DetectionStatus],
     ) -> Result<DetectionStatus, Error> {
+        let cache = states::cache_client().expect("Cache not found");
         for check in [
+            Self::is_platinum_or_credits,
             Self::is_relic,
             Self::is_recipe,
             Self::is_arcane,
@@ -666,7 +606,14 @@ impl TradeItem {
             Self::is_gear,
             Self::is_sentinel,
         ] {
-            let status = check(self, &self.raw.clone(), next_line, detection)?;
+            let status = check(
+                self,
+                &self.raw.clone(),
+                prev_line,
+                detection,
+                ignored_combinations,
+                &cache,
+            )?;
             if status.is_found() {
                 return Ok(status);
             }
@@ -678,8 +625,8 @@ impl TradeItem {
         Trade Item Info Retrieval
     ------------------------------------------------------------- */
     pub fn get_trade_item_info(&self) -> Result<CacheTradableItem, Error> {
-        let ch = states::cache_client().expect("Cache not found");
-        let info = ch.tradable_item().get_by(&self.unique_name)?;
+        let cache = states::cache_client().expect("Cache not found");
+        let info = cache.tradable_item().get_by(&self.unique_name)?;
         Ok(info)
     }
     pub fn item_name(&self) -> String {
@@ -690,7 +637,7 @@ impl TradeItem {
     }
 
     pub fn is_valid(&self) -> bool {
-        !self.raw.is_empty()
+        self.item_type != TradeItemType::Unknown && self.error.is_none()
     }
 }
 
@@ -710,37 +657,69 @@ impl Default for TradeItem {
 
 impl Display for TradeItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "TradeItem ")?;
-        if self.raw.is_empty() {
-            write!(f, "Raw: Not provided | ")?;
-        } else {
-            write!(f, "Raw: {} | ", self.raw)?;
+        let mut message: Vec<String> = vec![];
+        if !self.raw.is_empty() {
+            message.push(format!("Raw: '{}'", self.raw));
         }
-        write!(f, "Quantity: {} | ", self.quantity)?;
-        if self.unique_name.is_empty() {
-            write!(f, "Unique Name: Not provided | ")?;
-        } else {
-            write!(f, "Unique Name: {} | ", self.unique_name)?;
+        if !self.unique_name.is_empty() {
+            message.push(format!("Unique Name: '{}'", self.unique_name));
         }
+        message.push(format!("Quantity: {}", self.quantity));
+        message.push(format!("Item Type: {:?}", self.item_type));
+
         if let Some(sub_type) = &self.sub_type {
-            write!(f, "Sub Type: {} | ", sub_type.display())?;
-        } else {
-            write!(f, "Sub Type: Not provided | ")?;
+            message.push(format!("Sub Type: {}", sub_type.display()));
         }
         if let Some((error, _)) = &self.error {
-            write!(f, "Error: {}", error)?;
-        } else {
-            write!(f, "Error: None")?;
+            message.push(format!("Error: {}", error));
         }
-        Ok(())
+        write!(f, "{}", message.join(" | "))
     }
 }
 
-pub fn parse_quantity(raw: &str) -> (String, i64) {
-    if let Some((name, qty)) = raw.split_once(" x ") {
-        let quantity = qty.trim().parse().unwrap_or(1);
-        (name.to_string(), quantity)
-    } else {
-        (raw.to_string(), 1)
+fn lookup_item<T>(
+    line: &str,
+    prev_line: &str,
+    get_by: impl Fn(&str) -> Result<T, Error>,
+    ignored_combinations: &[DetectionStatus],
+    mut apply: impl FnMut(T) -> String,
+    cache: &CacheState,
+) -> Result<DetectionStatus, Error> {
+    if let Ok(info) = get_by(line) {
+        let trade_item = cache.tradable_item().get_by(apply(info)).ok();
+        if trade_item.is_some() {
+            return Ok(DetectionStatus::Line);
+        }
     }
+
+    if !is_ignored(ignored_combinations, DetectionStatus::PreviousLine) {
+        if let Ok(info) = get_by(prev_line) {
+            let trade_item = cache.tradable_item().get_by(apply(info)).ok();
+            if trade_item.is_some() {
+                return Ok(DetectionStatus::PreviousLine);
+            }
+        }
+    }
+
+    if !is_ignored(ignored_combinations, DetectionStatus::LineThenPreviousLine) {
+        let line_then_previous = format!("{line}{prev_line}");
+        if let Ok(info) = get_by(&line_then_previous) {
+            let trade_item = cache.tradable_item().get_by(apply(info)).ok();
+            if trade_item.is_some() {
+                return Ok(DetectionStatus::LineThenPreviousLine);
+            }
+        }
+    }
+
+    if !is_ignored(ignored_combinations, DetectionStatus::PreviousLineThenLine) {
+        let previous_then_line = format!("{prev_line}{line}");
+        if let Ok(info) = get_by(&previous_then_line) {
+            let trade_item = cache.tradable_item().get_by(apply(info)).ok();
+            if trade_item.is_some() {
+                return Ok(DetectionStatus::PreviousLineThenLine);
+            }
+        }
+    }
+
+    Ok(DetectionStatus::None)
 }

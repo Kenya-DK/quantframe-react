@@ -1,10 +1,10 @@
 use entity::{dto::*, enums::*, stock_item::*};
 use serde::{Deserialize, Serialize};
 use service::StockItemMutation;
-use utils::{get_location, info, warning, Error};
+use utils::{get_location, info, warning, Error, OperationSet};
 use wf_market::enums::OrderType;
 
-use crate::{handlers::*, types::OperationSet, utils::CreateStockItemExt, DATABASE};
+use crate::{handlers::*, utils::CreateStockItemExt, DATABASE};
 #[derive(Serialize, Deserialize)]
 pub struct ItemEntity {
     pub wfm_url: String,

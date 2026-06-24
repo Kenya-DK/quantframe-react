@@ -1,11 +1,10 @@
 use entity::{dto::*, enums::*, stock_riven::*};
 use service::{sea_orm::DatabaseConnection, StockRivenMutation, StockRivenQuery};
-use utils::{get_location, info, Error};
+use utils::{get_location, info, Error, OperationSet};
 use wf_market::enums::OrderType;
 
 use crate::{
     handlers::*,
-    types::OperationSet,
     utils::{modules::states, CreateStockRivenExt},
     DATABASE,
 };

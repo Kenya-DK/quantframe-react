@@ -1,10 +1,9 @@
 use entity::{dto::SubType, enums::TransactionType, transaction::TransactionPaginationQueryDto};
 use service::{TransactionMutation, TransactionQuery};
-use utils::{get_location, info, Error, SortDirection};
+use utils::{get_location, info, Error, OperationSet, SortDirection};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 
 use crate::{
-    types::OperationSet,
     utils::{modules::states, ErrorFromExt, SubTypeExt},
     DATABASE,
 };

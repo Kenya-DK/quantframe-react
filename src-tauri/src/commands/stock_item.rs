@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Mutex};
 use entity::{dto::*, stock_item::*};
 use service::{StockItemMutation, StockItemQuery};
 use tauri_plugin_dialog::DialogExt;
-use utils::{get_location, group_by, info, Error, LoggerOptions};
+use utils::{get_location, group_by, info, Error, LoggerOptions, OperationSet};
 use wf_market::enums::OrderType;
 
 use crate::{
@@ -12,7 +12,7 @@ use crate::{
     cache::CacheState,
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::{self},
-    types::{OperationSet, PermissionsFlags},
+    types::PermissionsFlags,
     APP, DATABASE,
 };
 

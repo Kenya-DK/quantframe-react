@@ -1,5 +1,5 @@
 use crate::handlers::*;
-use utils::{get_location, Error};
+use utils::{get_location, Error, OperationSet};
 
 #[tauri::command]
 pub async fn handles_handle_items(items: Vec<ItemEntity>) -> Result<i32, Error> {

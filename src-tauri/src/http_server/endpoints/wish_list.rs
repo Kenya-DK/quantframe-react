@@ -9,7 +9,7 @@ use crate::{
     handlers::handle_wish_list_by_entity,
     http_server::{respond_json, respond_text},
     send_event,
-    types::{OperationSet, UIEvent},
+    types::UIEvent,
 };
 
 #[derive(Debug)]

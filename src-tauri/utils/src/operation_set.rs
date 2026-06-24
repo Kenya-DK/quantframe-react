@@ -17,6 +17,10 @@ impl OperationSet {
             self.operations.push(operation);
         }
     }
+    pub fn remove(&mut self, operation: impl Into<String>) {
+        let operation = operation.into();
+        self.operations.retain(|op| op != &operation);
+    }
     pub fn has(&self, operation: impl Into<String>) -> bool {
         let operation = operation.into();
         self.operations.iter().any(|op| op == &operation)

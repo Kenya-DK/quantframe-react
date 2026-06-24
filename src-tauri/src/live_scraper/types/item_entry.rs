@@ -4,10 +4,10 @@ use entity::dto::SubType;
 use entity::stock_item::Model as StockItemModel;
 use serde::{Deserialize, Serialize};
 use service::{sea_orm::DatabaseConnection, StockItemQuery, WishListQuery};
-use utils::{get_location, Error};
+use utils::{get_location, Error, OperationSet};
 use wf_market::enums::OrderType;
 
-use crate::{cache::types::ItemPriceInfo, types::OperationSet};
+use crate::cache::types::ItemPriceInfo;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ItemEntry {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use serde_json::json;
-use utils::{info, Error, LineEntry, LineHandler, LoggerOptions};
+use utils::{info, DetectionStatus, Error, LineEntry, LineHandler, LoggerOptions};
 
 use crate::{add_metric, utils::modules::states};
 
@@ -15,7 +15,7 @@ impl OnConversationEvent {
 }
 
 impl LineHandler for OnConversationEvent {
-    fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, bool), Error> {
+    fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, DetectionStatus), Error> {
         if entry
             .line
             .contains("ChatRedux::AddTab: Adding tab with channel name")
@@ -29,7 +29,7 @@ impl LineHandler for OnConversationEvent {
 
                     // Check if channel name starts with "F"
                     if !player_name.starts_with('F') {
-                        return Ok((false, false));
+                        return Ok((false, DetectionStatus::None));
                     }
 
                     // Handle multi-byte UTF-8 characters at the end
@@ -49,7 +49,7 @@ impl LineHandler for OnConversationEvent {
                 }
             }
         }
-        Ok((false, false)) // no match → process normally
+        Ok((false, DetectionStatus::None)) // no match → process normally
     }
 }
 

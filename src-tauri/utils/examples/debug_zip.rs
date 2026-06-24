@@ -36,11 +36,11 @@ fn main() -> Result<(), Error> {
 
     // Try to create the zip logger
     println!("Creating ZipLogger...");
-    let zip_logger = ZipLogger::start("debug_archive.zip")?;
+    let zip_logger = ZipLogger::new();
 
     // Finalize
     println!("Finalizing zip...");
-    zip_logger.finalize()?;
+    zip_logger.finalize("debug_archive.zip")?;
 
     // Check if file was created
     let check_path = format!("{}/{}/debug_archive.zip", base_path, date_folder);

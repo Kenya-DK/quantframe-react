@@ -1,12 +1,11 @@
 use entity::stock_item::*;
 use std::{net::TcpStream, sync::Arc};
-use utils::get_location;
+use utils::{get_location, OperationSet};
 use wf_market::enums::OrderType;
 
 use crate::{
     handlers::handle_item_by_entity,
     http_server::{respond_json, respond_text},
-    types::OperationSet,
 };
 #[derive(Debug)]
 pub struct StockItemRoute {}

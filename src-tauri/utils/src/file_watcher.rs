@@ -9,10 +9,10 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{Error, LoggerOptions, get_location, info, trace, warning};
+use crate::{DetectionStatus, Error, LoggerOptions, get_location, info, trace, warning};
 
 pub trait LineHandler: Send {
-    fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, bool), Error>;
+    fn process_line(&mut self, entry: &LineEntry) -> Result<(bool, DetectionStatus), Error>;
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -20,28 +20,41 @@ pub struct LineEntry {
     pub index: usize,
     pub line: String,
     pub prev_line: String,
-    pub ignore_combined: bool,
+    pub prev_detection: DetectionStatus,
     pub date: i64,
 }
 impl LineEntry {
-    pub fn new(index: usize, line: String, prev_line: String, ignore_combined: bool) -> Self {
+    pub fn new(
+        index: usize,
+        line: String,
+        prev_line: String,
+        prev_detection: DetectionStatus,
+    ) -> Self {
         LineEntry {
             index,
             line,
             prev_line,
-            ignore_combined,
+            prev_detection,
             date: chrono::Utc::now().timestamp_millis(),
         }
     }
-    pub fn get_combined(&self) -> String {
-        if self.prev_line.is_empty() {
-            self.line.clone()
-        } else {
-            self.prev_line.clone() + &self.line
+    pub fn clear_newlines(&mut self) {
+        self.line = self.line.replace('\n', "").replace('\r', "");
+        self.prev_line = self.prev_line.replace('\n', "").replace('\r', "");
+    }
+}
+impl Default for LineEntry {
+    fn default() -> Self {
+        LineEntry {
+            index: 0,
+            line: String::new(),
+            prev_line: String::new(),
+            prev_detection: DetectionStatus::None,
+            date: chrono::Utc::now().timestamp_millis(),
         }
     }
 }
-
+#[derive(Clone)]
 pub struct FileWatcher {
     path: Arc<Mutex<String>>,
     last_pos: Arc<Mutex<u64>>,
@@ -110,7 +123,7 @@ impl FileWatcher {
         handlers.push(handler);
     }
     pub fn watch(&self) -> Result<(), Error> {
-        let mut ignore_combined = false;
+        let mut prev_detection = DetectionStatus::None;
         loop {
             let path = { self.path.lock().unwrap().clone() };
 
@@ -176,22 +189,26 @@ impl FileWatcher {
                     if self.skip_empty_lines && line.is_empty() {
                         continue;
                     }
-                    let mut cache = self.cache.lock().unwrap();
-                    let mut prev = self.prev_line.lock().unwrap();
+                    // Build the entry and immediately drop both locks so that
+                    // handlers calling back into the watcher (e.g. get_all_cached_lines,
+                    // set_path) do not deadlock.
+                    let entry = {
+                        let cache = self.cache.lock().unwrap();
+                        let prev = self.prev_line.lock().unwrap();
+                        let prev_line_str = prev.as_deref().unwrap_or("");
+                        LineEntry::new(
+                            cache.len() + 1,
+                            line.clone(),
+                            prev_line_str.to_string(),
+                            prev_detection.clone(),
+                        )
+                    }; // cache and prev locks released here
 
-                    let prev_line_str = prev.as_deref().unwrap_or("");
-
-                    let entry = LineEntry::new(
-                        cache.len() + 1,
-                        line.clone(),
-                        prev_line_str.to_string(),
-                        ignore_combined,
-                    );
                     let mut handlers = self.handlers.lock().unwrap();
                     for handler in handlers.iter_mut() {
                         match handler.process_line(&entry) {
                             Ok((break_loop, combined)) => {
-                                ignore_combined = combined;
+                                prev_detection = combined;
                                 if break_loop {
                                     break;
                                 }
@@ -201,9 +218,11 @@ impl FileWatcher {
                             }
                         }
                     }
+                    drop(handlers); // release handlers lock before re-locking cache
+
                     // Add line to cache
-                    cache.push(entry.clone());
-                    *prev = Some(line);
+                    self.cache.lock().unwrap().push(entry);
+                    *self.prev_line.lock().unwrap() = Some(line);
                 }
                 if current_file_size != 0 {
                     *pos = current_file_size;
@@ -354,18 +373,23 @@ impl Display for LineEntry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut items: Vec<String> = vec![];
 
-        items.push(format!("Index: {}", self.index));
+        items.push(format!("Index: '{}'", self.index));
         if !self.line.is_empty() {
-            items.push(format!("Line: {}", self.line.replace("\n", "\\n")));
+            items.push(format!(
+                "Line: '{}'",
+                self.line.replace("\n", "\\n").replace("\r", "\\r")
+            ));
         }
         if !self.prev_line.is_empty() {
             items.push(format!(
-                "Prev Line: {}",
-                self.prev_line.replace("\n", "\\n")
+                "Prev Line: '{}'",
+                self.prev_line.replace("\n", "\\n").replace("\r", "\\r")
             ));
         }
-        items.push(format!("Ignore Combined: {}", self.ignore_combined));
-        items.push(format!("Date: {}", self.date));
+        if self.prev_detection != DetectionStatus::None {
+            items.push(format!("Previous Detection: '{:?}'", self.prev_detection));
+        }
+        items.push(format!("Date: '{}'", self.date));
         write!(f, "{}", items.join(" | "))
     }
 }

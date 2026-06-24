@@ -7,16 +7,16 @@ fn main() -> Result<(), Error> {
     println!("=== utils Zip Logging Demo ===\n");
 
     // Start a new zip archive
-    let zip_logger = ZipLogger::start("application_logs.zip")?;
-    println!("Started zip archive: {}", zip_logger.archive_name());
+    let zip_logger = ZipLogger::new();
+    println!("Started zip archive: application_logs.zip");
 
     // Add individual log entries to the zip
     println!("\n=== Adding individual log entries to zip ===");
-    zip_logger.add_log("Application started successfully")?;
-    zip_logger.add_log("Connection pool running low")?;
-    zip_logger.add_log("Failed login attempt from user 'admin'")?;
-    zip_logger.add_log("Cache hit ratio: 85%")?;
-    zip_logger.add_log("Low disk space warning")?;
+    zip_logger.add_log("Application started successfully");
+    zip_logger.add_log("Connection pool running low");
+    zip_logger.add_log("Failed login attempt from user 'admin'");
+    zip_logger.add_log("Cache hit ratio: 85%");
+    zip_logger.add_log("Low disk space warning");
 
     // Also log to console and file simultaneously
     let file_opts = LoggerOptions {
@@ -40,29 +40,29 @@ fn main() -> Result<(), Error> {
     // Add the session log file to the zip archive
     let current_date = chrono::Local::now().format("%Y-%m-%d").to_string();
     let log_file_path = format!("logs/{}/session.log", current_date);
-    zip_logger.add_log_file(&log_file_path, "session_logs.txt")?;
+    zip_logger.create_file_from_path(&log_file_path, "session_logs.txt")?;
     println!("Added session.log to zip archive");
 
     // Add some custom text files to the zip
     let system_info = "System Information\n=================\nOS: Windows\nMemory: 16GB\nCPU: Intel i7\nDisk: 512GB SSD\n";
-    zip_logger.add_text_file(system_info, "system_info.txt")?;
+    zip_logger.create_file_from_path(system_info, "system_info.txt")?;
 
     let error_summary =
         "Error Summary\n============\nTotal Errors: 5\nCritical: 1\nWarnings: 2\nInfo: 10\n";
-    zip_logger.add_text_file(error_summary, "error_summary.txt")?;
+    zip_logger.create_file_from_path(error_summary, "error_summary.txt")?;
 
     println!("Added custom text files to zip archive");
 
     // Add the existing demo.log to the zip as well
     if std::path::Path::new("logs/demo.log").exists() {
-        zip_logger.add_log_file("logs/demo.log", "previous_demo_logs.txt")?;
+        zip_logger.create_file_from_path("logs/demo.log", "previous_demo_logs.txt")?;
         println!("Added existing demo.log to zip archive");
     }
 
     println!("\n=== Finalizing zip archive ===");
 
     // Finalize the zip archive
-    zip_logger.finalize()?;
+    zip_logger.finalize("application_logs.zip")?;
 
     println!("\n=== Demo completed ===");
     println!("Check the logs/ directory for:");

@@ -19,7 +19,7 @@ fn main() -> Result<(), Error> {
     };
 
     // Start a zip archive for this session
-    let zip_logger = ZipLogger::start("session_archive.zip")?;
+    let zip_logger = ZipLogger::new();
 
     // Simulate some application activity
     log_info_opt!("App", &log_opts.clone(), "Application starting up...");
@@ -51,17 +51,17 @@ fn main() -> Result<(), Error> {
     // Add the session log file to the zip archive
     let current_date = chrono::Local::now().format("%Y-%m-%d").to_string();
     let log_file_path = format!("logs/{}/app_session.log", current_date);
-    zip_logger.add_log_file(&log_file_path, "complete_session.log")?;
+    zip_logger.create_file_from_path(&log_file_path, "complete_session.log")?;
 
     // Add some metadata
     let metadata = format!(
         "Session Metadata\n================\nStart Time: {}\nTotal Log Entries: 7\nWarnings: 1\nErrors: 1\nCritical: 1\n",
         chrono::Local::now().format("%Y-%m-%d %H:%M:%S")
     );
-    zip_logger.add_text_file(metadata, "session_metadata.txt")?;
+    zip_logger.create_file_from_path(metadata, "session_metadata.txt")?;
 
     // Finalize the zip archive
-    zip_logger.finalize()?;
+    zip_logger.finalize("session_archive.zip")?;
 
     // Clean up old logs (keep logs from last 30 days)
     println!("\n=== Cleaning up old logs ===");

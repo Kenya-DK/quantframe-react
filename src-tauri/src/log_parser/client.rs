@@ -6,6 +6,7 @@ use std::{
 };
 use utils::*;
 
+#[derive(Clone)]
 pub struct LogParserState {
     watcher: FileWatcher,
     // Modules's'
@@ -22,8 +23,10 @@ impl LogParserState {
             watcher: FileWatcher::new(path.to_str().unwrap()),
             warframe_gdpr_module: OnceLock::new(),
         });
-        this.watcher
-            .add_handler(Box::new(OnTradeEvent::new("LogParserState")));
+        this.watcher.add_handler(Box::new(OnTradeEvent::new(
+            "LogParserState",
+            this.watcher.clone(),
+        )));
         this.watcher
             .add_handler(Box::new(OnConversationEvent::new()));
         LogParserState::start(this.clone()); // pass Arc

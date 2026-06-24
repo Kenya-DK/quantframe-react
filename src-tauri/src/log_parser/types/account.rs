@@ -28,8 +28,8 @@ pub struct Account {
 
 impl Account {
     pub fn add_trade(&mut self, mut trade: PlayerTrade) {
-        trade.calculate();
-        trade.calculate_items();
+        trade.finalize_trade();
+        trade.finalize_items();
         apply_item_info(&mut trade);
 
         let items = trade

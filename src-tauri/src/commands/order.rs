@@ -4,7 +4,9 @@ use std::{
 };
 
 use entity::{dto::*, enums::*};
-use utils::{filters_by, get_location, group_by, sorting::SortDirection, Error, Properties};
+use utils::{
+    filters_by, get_location, group_by, sorting::SortDirection, Error, OperationSet, Properties,
+};
 use wf_market::{enums::OrderType, types::Order};
 
 use crate::{
