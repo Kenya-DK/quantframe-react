@@ -26,6 +26,9 @@ impl WeaponModule {
             if !weapon.wfm_riven_url.is_empty() {
                 keys.push(weapon.wfm_riven_url.clone());
             }
+            if !weapon.wfm_riven_id.is_empty() {
+                keys.push(weapon.wfm_riven_id.clone());
+            }
 
             lookup.insert_value(weapon.clone(), keys);
         };
@@ -66,6 +69,7 @@ impl WeaponModule {
     /// - `id`: The identifier to search for (name, unique_name, wfm_url)
     pub fn get_by(&self, id: impl Into<String>) -> Result<CacheWeaponBase, Error> {
         let id = id.into();
+        println!("Looking up weapon by id: {}", id);
         self.lookup
             .lock()
             .unwrap()

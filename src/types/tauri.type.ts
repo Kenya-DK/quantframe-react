@@ -299,7 +299,7 @@ export namespace TauriTypes {
   }
   export interface CacheItemBase {
     name: string;
-    unique_name: string;
+    uniqueName: string;
   }
   export interface CacheTheme {
     name: string;
@@ -330,6 +330,7 @@ export namespace TauriTypes {
     name: string;
     icon: string;
     wfmUrl: string;
+    wfmRivenId: string;
     wfmRivenUrl: string;
     rivenType: string;
     wfmId: string;

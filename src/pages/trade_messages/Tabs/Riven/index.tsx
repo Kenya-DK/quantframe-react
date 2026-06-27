@@ -3,7 +3,7 @@ import api, { HasPermission } from "@api/index";
 import { SelectRivenWeapon } from "@components/Forms/SelectRivenWeapon";
 import { modals } from "@mantine/modals";
 import { default as dayjs, default as utc } from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TradeEntryList } from "../../helpers/TradeEntryList";
 import { FindInterestingRivensModal } from "./FindInterestingRivensModal";
 dayjs.extend(utc);
@@ -19,14 +19,16 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
     price: 1,
     group: "riven",
   });
-
+  useEffect(() => {
+    console.log("tradeEntry.raw", tradeEntry);
+  }, [tradeEntry.raw]);
   // Mutations
   return (
     <TradeEntryList
       createComponent={
         <SelectRivenWeapon
           value={tradeEntry?.wfm_url || ""}
-          onChange={(item) => setTradeEntry({ ...tradeEntry, raw: item.wfmId, wfm_url: item.wfmRivenUrl })}
+          onChange={(item) => setTradeEntry({ ...tradeEntry, raw: item.wfmRivenId, wfm_url: item.wfmRivenUrl })}
         />
       }
       isActive={isActive}

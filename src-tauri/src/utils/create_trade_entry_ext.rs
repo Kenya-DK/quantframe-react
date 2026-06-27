@@ -26,7 +26,7 @@ impl CreateTradeEntryExt for CreateTradeEntry {
                     e.with_location(get_location!())
                         .set_log_level(LogLevel::Warning)
                 })?;
-                self.wfm_id = item.wfm_id.clone();
+                self.wfm_id = item.wfm_riven_id.clone();
             }
             "custom" => {
                 self.wfm_id = "custom".to_string();
