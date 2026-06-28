@@ -69,7 +69,6 @@ impl WeaponModule {
     /// - `id`: The identifier to search for (name, unique_name, wfm_url)
     pub fn get_by(&self, id: impl Into<String>) -> Result<CacheWeaponBase, Error> {
         let id = id.into();
-        println!("Looking up weapon by id: {}", id);
         self.lookup
             .lock()
             .unwrap()
