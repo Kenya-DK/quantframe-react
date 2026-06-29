@@ -2,7 +2,7 @@
 
 ## Fix's
 
-✨ - You can now edit the item sub type when editing an item in the item details modal.
+🛠️ - Fix some issues with the chat websocket connection, so it doesn't cancel the user status
 
 ## Dev Notes
 

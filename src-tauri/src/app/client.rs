@@ -4,9 +4,9 @@ use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::app::{Settings, User};
 use crate::http_server::HttpServer;
-use crate::types::*;
 use crate::utils::modules::states;
 use crate::utils::ErrorFromExt;
+use crate::{clear_error, emit_error, types::*, APP_ERROR};
 use crate::{emit_update_user, helper, send_event, APP, HAS_STARTED};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
@@ -14,7 +14,7 @@ use qf_api::Client as QFClient;
 use serde_json::json;
 use sha256::digest;
 use tauri::{AppHandle, Manager};
-use utils::{get_location, info, Error, LogLevel, LoggerOptions};
+use utils::{get_location, info, Error, LogLevel, LoggerOptions, OperationSet, Properties};
 use wf_market::client::Authenticated as WFAuthenticated;
 use wf_market::enums::ApiVersion;
 use wf_market::types::websocket::{WsClient, WsMessage};
@@ -69,18 +69,44 @@ fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate)
     cu_user
 }
 
-fn send_ws_state(event: UIEvent, cause: &str, data: &WsMessage) -> Error {
-    let mut payload = data.payload.clone().unwrap_or(json!({}));
-    payload["route"] = json!(data.route.clone());
-    payload["version"] = json!(data.version.websocket_url());
+fn send_ws_state(key: impl Into<String>, data: &WsMessage) {
+    let key = key.into();
+    let mut current_error = match states::get_app_error().as_mut() {
+        Some(err) => err.clone(),
+        None => Error::new("WebSocket", "Connection state", get_location!())
+            .set_log_level(LogLevel::Warning),
+    };
 
-    let err = Error::new("WebSocket", "Connection state", get_location!())
-        .with_context(payload)
-        .with_cause(cause)
-        .set_log_level(LogLevel::Warning);
-    err.log("websocket_info.log");
-    send_event!(event, Some(json!(err)));
-    err
+    if current_error.component != "WebSocket" {
+        return;
+    }
+
+    current_error
+        .properties
+        .merge_properties(data.payload.clone(), true);
+
+    let mut operations = OperationSet::from(
+        current_error
+            .properties
+            .get_property_value::<Vec<String>>("operations", vec![]),
+    );
+
+    let ws_type = key.split(':').next().unwrap_or("unknown").to_string();
+    operations.remove_prefix(&ws_type);
+    operations.add(&key);
+
+    current_error
+        .properties
+        .set_property_value("operations", operations.operations.clone());
+
+    if !operations.ends_with("Disconnected") {
+        clear_error!();
+        states::set_app_error(None);
+        return;
+    }
+    current_error.log("websocket_info.log");
+    emit_error!(current_error);
+    states::set_app_error(Some(current_error.clone()));
 }
 
 fn update_user_status(states: impl Into<String>) {
@@ -219,17 +245,17 @@ async fn setup_socket(
         .create_websocket(ApiVersion::V2)
         .set_log_unhandled(true)
         .register_callback("internal/connected", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "connected", msg);
+            send_ws_state("Main:Connected", msg);
             Ok(())
         })
         .unwrap()
         .register_callback("internal/disconnected", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "disconnected", msg);
+            send_ws_state("Main:Disconnected", msg);
             Ok(())
         })
         .unwrap()
         .register_callback("internal/reconnecting", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "reconnecting", msg);
+            send_ws_state("Main:Disconnected", msg);
             Ok(())
         })
         .unwrap()
@@ -287,17 +313,17 @@ async fn setup_socket(
     let ws_client_chat = wfm_client
         .create_websocket(ApiVersion::V1)
         .register_callback("internal/connected", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "connected", msg);
+            send_ws_state("Chat:Connected", msg);
             Ok(())
         })
         .unwrap()
         .register_callback("internal/disconnected", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "disconnected", msg);
+            send_ws_state("Chat:Disconnected", msg);
             Ok(())
         })
         .unwrap()
         .register_callback("internal/reconnecting", move |msg, _, _| {
-            send_ws_state(UIEvent::OnError, "reconnecting", msg);
+            send_ws_state("Chat:Disconnected", msg);
             Ok(())
         })
         .unwrap()

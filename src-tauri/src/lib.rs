@@ -14,6 +14,7 @@ use ::utils::LoggerOptions;
 use app::client::AppState;
 use migration::{Migrator, MigratorTrait};
 use service::sea_orm::{Database, DatabaseConnection};
+use std::collections::HashMap;
 
 use std::panic;
 use std::sync::{Mutex, OnceLock};
@@ -43,7 +44,7 @@ mod types;
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
 pub static HAS_STARTED: OnceLock<bool> = OnceLock::new();
-
+pub static APP_ERROR: OnceLock<Mutex<Option<Error>>> = OnceLock::new();
 // If use_debug is true the debug database will be used and all data will be lost on restart
 async fn init_database(use_debug: bool) -> Result<(), Error> {
     // Create the database connection and store it

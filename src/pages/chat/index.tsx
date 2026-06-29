@@ -1,22 +1,22 @@
-import { Container, Grid, Group, ScrollArea } from "@mantine/core";
-import { useChatQueries } from "./queries";
-import { useMutations } from "./mutations";
-import { useModals } from "./modals";
 import { TauriTypes, WFMarketTypes } from "$types";
-import { useLocalStorage } from "@mantine/hooks";
-import { ChatListItem } from "@components/DataDisplay/ChatListItem";
-import { useAuthContext } from "@contexts/auth.context";
-import { ChatRome } from "@components/DataDisplay/ChatRome";
-import { useEffect, useState } from "react";
 import api from "@api/index";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { ChatListItem } from "@components/DataDisplay/ChatListItem";
+import { ChatRome } from "@components/DataDisplay/ChatRome";
 import { SearchField } from "@components/Forms/SearchField";
-import { faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import classes from "./Chat.module.css";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { useAppContext } from "@contexts/app.context";
+import { useAuthContext } from "@contexts/auth.context";
+import { faRefresh, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { Container, Grid, Group, ScrollArea } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
+import { useEffect, useState } from "react";
+import classes from "./Chat.module.css";
+import { useModals } from "./modals";
+import { useMutations } from "./mutations";
+import { useChatQueries } from "./queries";
 
 export default function ChatPage() {
   // Contexts
@@ -115,7 +115,7 @@ export default function ChatPage() {
             <ChatRome
               chat={activeChat}
               goBack={() => setActiveChat(undefined)}
-              disableChat={app_error && app_error.isWebSocket() && app_error.isV1()}
+              disableChat={app_error && app_error.hasOperation("Chat:Disconnected")}
             />
           </Grid.Col>
         )}

@@ -9,12 +9,12 @@ import { QuantframeApiTypes } from "./quantframe.type";
 import { TauriTypes } from "./tauri.type";
 import { WFMarketTypes } from "./warframeMarket.type";
 
-export interface ResponseError extends Error {
+export interface ResponseError<T = any> extends Error {
   component: string;
   message: string;
   location: string;
   cause?: string;
-  context: Record<string, any>;
+  properties: T;
   log_level: string;
 }
 export interface SubType {

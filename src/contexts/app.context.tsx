@@ -1,27 +1,27 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import api from "@api/index";
 import { QuantframeApiTypes, ResponseError, TauriTypes } from "$types";
-import { AuthContextProvider } from "./auth.context";
-import { AppError } from "../model/appError";
+import api from "@api/index";
 import { SplashScreen } from "@components/Layouts/Shared/SplashScreen";
-import { useQuery } from "@tanstack/react-query";
-import { invoke } from "@tauri-apps/api/core";
-import { check } from "@tauri-apps/plugin-updater";
-import { modals } from "@mantine/modals";
-import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
-import { useTranslateCommon, useTranslateComponent, useTranslateContexts } from "@hooks/useTranslate.hook";
-import { resolveResource } from "@tauri-apps/api/path";
-import { readTextFile } from "@tauri-apps/plugin-fs";
-import { LiveScraperContextProvider } from "./liveScraper.context";
-import { CacheContextProvider } from "./cache.context";
-import { notifications } from "@mantine/notifications";
+import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import i18n from "i18next";
+import { useTranslateCommon, useTranslateComponent, useTranslateContexts } from "@hooks/useTranslate.hook";
 import { useLocalStorage } from "@mantine/hooks";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
+import { useQuery } from "@tanstack/react-query";
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { resolveResource } from "@tauri-apps/api/path";
+import { readTextFile } from "@tauri-apps/plugin-fs";
+import { check } from "@tauri-apps/plugin-updater";
 import { PlaySound } from "@utils/helper";
+import i18n from "i18next";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { AppError } from "../model/appError";
+import { AuthContextProvider } from "./auth.context";
+import { CacheContextProvider } from "./cache.context";
+import { LiveScraperContextProvider } from "./liveScraper.context";
 export async function loadLanguage(lang: string) {
   try {
     const response = await fetch(`/lang/${lang}.json`);
@@ -80,8 +80,8 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
   const handleAppError = (error: ResponseError | undefined) => {
     // setError(error ? new AppError(error) : undefined);
-    setError((prevError) => {
-      if (prevError && !prevError.isWebSocket()) return prevError; // No error to set
+    setError(() => {
+      if (!error || Object.keys(error).length === 0) return undefined; // No error to set
       return error ? new AppError(error) : undefined;
     });
   };

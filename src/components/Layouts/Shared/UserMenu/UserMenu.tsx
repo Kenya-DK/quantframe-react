@@ -1,16 +1,16 @@
-import { Text, Group, Menu, Avatar, Button, Indicator } from "@mantine/core";
-import api, { SendTauriDataEvent, SendTauriEvent, WFMThumbnail } from "@api/index";
 import { TauriTypes, UserStatus } from "$types";
-import classes from "./UserMenu.module.css";
-import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
-import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useMutation } from "@tanstack/react-query";
-import { notifications } from "@mantine/notifications";
-import { modals } from "@mantine/modals";
+import api, { SendTauriDataEvent, SendTauriEvent, WFMThumbnail } from "@api/index";
+import { SettingsForm } from "@components/Forms/Settings";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
-import { SettingsForm } from "@components/Forms/Settings";
+import { faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
+import { Avatar, Button, Group, Indicator, Menu, Text } from "@mantine/core";
+import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
+import { useMutation } from "@tanstack/react-query";
+import classes from "./UserMenu.module.css";
 
 export function UserMenu() {
   // States
@@ -36,7 +36,7 @@ export function UserMenu() {
       notifications.show({ title: useTranslateSuccess("logout.title"), message: useTranslateSuccess("logout.message"), color: "green.7" });
       SendTauriDataEvent(TauriTypes.Events.UpdateUser, TauriTypes.EventOperations.SET, u);
     },
-    onError: () => notifications.show({ title: useTranslateErrors("logout.title"), message: useTranslateErrors("logout.message"), color: "green.7" }),
+    onError: () => notifications.show({ title: useTranslateErrors("logout.title"), message: useTranslateErrors("logout.message"), color: "red.7" }),
   });
   const updateSettingsMutation = useMutation({
     mutationFn: (s: TauriTypes.Settings) => api.app.updateSettings(s),
@@ -61,10 +61,7 @@ export function UserMenu() {
     if (!user) return false;
     if (user.anonymous) return false;
     if (user.qf_banned || user.wfm_banned) return false;
-    if (app_error && app_error?.isWebSocket() && app_error?.isV1()) return true;
-    if (app_error && !app_error?.isWebSocket()) return false;
-    if (app_error && app_error?.isWebSocketError()) return false;
-
+    if (app_error && app_error.hasOperation("Main:Disconnected")) return false;
     // return !!user && !user.anonymous && !app_error;
     return true;
   };
@@ -74,9 +71,6 @@ export function UserMenu() {
     if (user.anonymous) return false;
     if (user.qf_banned || user.wfm_banned) return false;
     if (!user.verification) return false;
-    if (app_error && app_error?.isWebSocket() && app_error?.isV1()) return true;
-    if (app_error && !app_error?.isWebSocket()) return false;
-    if (app_error && app_error?.isWebSocketError()) return false;
     return true;
   };
 
@@ -110,43 +104,49 @@ export function UserMenu() {
       </Menu.Target>
 
       <Menu.Dropdown>
-        {IsConnected() && (
-          <>
-            <Menu.Item
-              leftSection={
-                <Avatar
-                  variant="subtle"
-                  src={user?.wfm_avatar && user?.wfm_avatar != "" ? WFMThumbnail(user?.wfm_avatar) : "/default_avatar.png"}
-                  alt={user?.wfm_username}
-                  radius="xl"
-                  size={"md"}
-                />
-              }
-            >
-              {user?.wfm_username || "Unknown"}
-            </Menu.Item>
-            <Menu.Divider />
-            <Group gap={3} mt="xs" classNames={{ root: classes.user_status }}>
-              {Object.values(UserStatus).map((status) => (
-                <Button
-                  key={status}
-                  p={3}
-                  fullWidth
-                  variant="subtle"
-                  data-color-mode="text"
-                  data-user-status={status}
-                  data-active={status == user?.wfm_status}
-                  onClick={() => api.user.set_status(status)}
-                >
-                  <Text tt="uppercase" fw={500}>
-                    {useTranslateUserStatus(status)}
-                  </Text>
-                </Button>
-              ))}
-            </Group>
-            <Menu.Divider />
-          </>
+        <Menu.Item
+          leftSection={
+            <Avatar
+              variant="subtle"
+              src={user?.wfm_avatar && user?.wfm_avatar != "" ? WFMThumbnail(user?.wfm_avatar) : "/default_avatar.png"}
+              alt={user?.wfm_username}
+              radius="xl"
+              size={"md"}
+            />
+          }
+        >
+          {user?.wfm_username || "Unknown"}
+        </Menu.Item>
+        <Menu.Divider />
+        {!IsConnected() && (
+          <Group mt="xs" grow>
+            <Text ta={"center"} size="lg" c="red.7" fw={700}>
+              {useTranslateErrors("connection_websocket_error")}
+            </Text>
+          </Group>
         )}
+        {IsConnected() && (
+          <Group gap={3} mt="xs" classNames={{ root: classes.user_status }}>
+            {Object.values(UserStatus).map((status) => (
+              <Button
+                key={status}
+                disabled={user?.wfm_status == status}
+                p={3}
+                fullWidth
+                variant="subtle"
+                data-color-mode="text"
+                data-user-status={status}
+                data-active={status == user?.wfm_status}
+                onClick={() => api.user.set_status(status)}
+              >
+                <Text tt="uppercase" fw={500}>
+                  {useTranslateUserStatus(status)}
+                </Text>
+              </Button>
+            ))}
+          </Group>
+        )}
+        <Menu.Divider />
         <Menu.Label>{useTranslateUserMenu("items.app_label")}</Menu.Label>
         <Menu.Item
           leftSection={<FontAwesomeIcon icon={faGear} />}

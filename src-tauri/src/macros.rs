@@ -60,6 +60,14 @@ macro_rules! emit_error {
         send_event!(UIEvent::OnError, Some(json!($err)));
     }};
 }
+#[macro_export]
+macro_rules! clear_error {
+    () => {{
+        use crate::send_event;
+        use crate::types::*;
+        send_event!(UIEvent::OnError, Some(json!({})));
+    }};
+}
 
 #[macro_export]
 macro_rules! emit_startup {

@@ -689,6 +689,7 @@
         "logout": "Logout"
       },
       "errors": {
+        "connection_websocket_error": "Loading...",
         "logout": {
           "title": "Logout Error",
           "message": "An error occurred while trying to log out."
