@@ -104,6 +104,13 @@ impl Properties {
             }
         }
     }
+    pub fn mask_sensitive_data(&mut self, properties: &[&str]) {
+        if let Some(props) = &mut self.properties {
+            if let Some(map) = props.as_object_mut() {
+                crate::helper::mask_sensitive_data(map, properties);
+            }
+        }
+    }
 }
 
 impl From<serde_json::Value> for Properties {

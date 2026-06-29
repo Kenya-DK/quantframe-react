@@ -1,5 +1,6 @@
 use qf_api::errors::ApiError as QFRequestError;
-use utils::{Error, LogLevel};
+use serde_json::json;
+use utils::{Error, LogLevel, Properties};
 use wf_market::errors::ApiError as WFRequestError;
 
 /// Extension trait for creating Error instances from different error types
@@ -35,7 +36,7 @@ impl ErrorFromExt for Error {
             cause: error.to_string(),
             message: message.into(),
             log_level: LogLevel::Critical,
-            context: Some(error.to_json()),
+            properties: Properties::from(json!(error.to_string())),
             location: Some(location.into()),
         }
     }
@@ -52,17 +53,18 @@ impl ErrorFromExt for Error {
             cause: error.to_string(),
             message: message.into(),
             log_level: LogLevel::Critical,
-            context: Some(error.to_json()),
+            properties: Properties::from(json!(error.to_string())),
             location: Some(location.into()),
         }
     }
     fn new_permission_denied(flag: impl Into<String>) -> Self {
+        let flag = flag.into();
         Error {
             component: "AuthModule".into(),
             cause: "Permission Denied".to_string(),
-            message: format!("User does not have permission: {}", flag.into()),
+            message: format!("User does not have permission: {}", flag),
             log_level: LogLevel::Warning,
-            context: None,
+            properties: Properties::from(json!({ "flag": flag })),
             location: None,
         }
     }

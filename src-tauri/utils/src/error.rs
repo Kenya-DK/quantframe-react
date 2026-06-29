@@ -24,9 +24,9 @@ pub struct Error {
     pub cause: String,
     /// The severity level of this error
     pub log_level: LogLevel,
-    /// Additional context information (optional JSON data)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub context: Option<Value>,
+    /// Additional properties providing context (optional JSON data)
+    #[serde(flatten)]
+    pub properties: Properties,
     /// Location information for debugging (captured when error is created)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<String>,
@@ -53,7 +53,7 @@ impl Error {
             message: message.into(),
             log_level: LogLevel::Critical,
             cause: String::new(),
-            context: None,
+            properties: Properties::default(),
             location: Some(location.into()),
         }
     }
@@ -133,7 +133,25 @@ impl Error {
     ///     }));
     /// ```
     pub fn with_context(mut self, context: Value) -> Self {
-        self.context = Some(context);
+        self.properties = Properties::from(context);
+        self
+    }
+    /// Add contextual information to this error
+    ///
+    /// # Arguments
+    /// * `context` - Additional Properties data providing context
+    ///
+    /// # Example
+    /// ```
+    /// use serde_json::json;
+    /// let error = Error::new("Database", "Query failed")
+    ///     .with_properties(Properties::from(json!({
+    ///         "query": "SELECT * FROM users",
+    ///         "execution_time_ms": 5000
+    ///     })));
+    /// ```
+    pub fn with_properties(mut self, context: Properties) -> Self {
+        self.properties = context;
         self
     }
 
@@ -171,9 +189,7 @@ impl Error {
     /// error.mask_sensitive_data(&["email"]);
     /// ```
     pub fn mask_sensitive_data(&mut self, properties: &[&str]) {
-        if let Some(Value::Object(ref mut context)) = self.context {
-            crate::helper::mask_sensitive_data(context, properties);
-        }
+        self.properties.mask_sensitive_data(properties);
     }
 
     /// Mask sensitive data in a JSON file and return the masked content
@@ -289,7 +305,7 @@ impl Error {
             }
         }
 
-        if let Some(context) = &self.context {
+        if let Some(context) = &self.properties.properties {
             let context_str = context.to_string();
 
             if context_str.len() > MAX_CONTEXT_LENGTH {
@@ -373,7 +389,7 @@ impl Error {
             message: format!("An I/O error occurred while {}: {}", message, err),
             cause: err.to_string(),
             log_level: LogLevel::Critical,
-            context: Some(json!({ "path": path })),
+            properties: Properties::from(json!({ "path": path })),
             location: Some(location.into()),
         }
     }
@@ -411,7 +427,7 @@ impl Error {
             message: message.into(),
             cause: detailed_cause,
             log_level: LogLevel::Critical,
-            context: Some(json!({
+            properties: Properties::from(json!({
                 "path": path.to_str(),
                 "content": content_str,
                 "line": line_info,
@@ -435,7 +451,7 @@ impl Error {
             message: message.into(),
             cause: err.to_string(),
             log_level: LogLevel::Critical,
-            context: Some(json!({ "file_name": file_name.into() })),
+            properties: Properties::from(json!({ "file_name": file_name.into() })),
             location: Some(location.into()),
         }
     }
@@ -452,7 +468,7 @@ impl Error {
             cause: err.to_string(),
             location: Some(location.into()),
             log_level: LogLevel::Critical,
-            context: Some(json!({ "archive_name": archive_name })),
+            properties: Properties::from(json!({ "archive_name": archive_name })),
         }
     }
 }

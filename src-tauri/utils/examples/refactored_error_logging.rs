@@ -29,7 +29,7 @@ fn example_simple_error() {
         }));
 
     // Show how the helper could be used
-    if let Some(context) = &error.context {
+    if let Some(context) = &error.properties.properties {
         let context_str = context.to_string();
         let (console_text, file_text) = smart_text_processing(
             &context_str,
@@ -72,7 +72,7 @@ fn example_large_context_error() {
         .with_context(large_context);
 
     // Demonstrate the helper usage
-    if let Some(context) = &error.context {
+    if let Some(context) = &error.properties.properties {
         let context_str = context.to_string();
         let (console_text, file_text) = smart_text_processing(
             &context_str,
@@ -127,7 +127,7 @@ fn example_complex_error() {
         .with_context(complex_context);
 
     // Process context
-    if let Some(context) = &error.context {
+    if let Some(context) = &error.properties.properties {
         let context_str = context.to_string();
         let (console_context, file_context) = smart_text_processing(
             &context_str,
@@ -195,7 +195,7 @@ fn demonstrate_dual_logging(error: &Error, stack_trace: &str) {
     );
 
     // Process context
-    let (console_context, file_context) = if let Some(context) = &error.context {
+    let (console_context, file_context) = if let Some(context) = &error.properties.properties {
         let context_str = context.to_string();
         smart_text_processing(
             &context_str,

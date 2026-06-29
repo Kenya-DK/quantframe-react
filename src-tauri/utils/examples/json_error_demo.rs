@@ -72,7 +72,7 @@ fn test_json_parsing(test_name: &str, json_content: &str) {
             println!("    Message: {}", error.message);
             println!("    Cause: {}", error.cause);
 
-            if let Some(context) = &error.context {
+            if let Some(context) = &error.properties.properties {
                 if let Some(line) = context.get("line") {
                     println!("    Line: {}", line);
                 }

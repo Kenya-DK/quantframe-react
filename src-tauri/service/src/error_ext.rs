@@ -1,6 +1,6 @@
 use sea_orm::DbErr;
 use serde_json::json;
-use utils::{Error, LogLevel};
+use utils::{Error, LogLevel, Properties};
 
 /// Extension trait for creating Error instances from different error types
 pub trait ErrorFromExt {
@@ -25,7 +25,7 @@ impl ErrorFromExt for Error {
             cause: error.to_string(),
             message: message.into(),
             log_level: LogLevel::Critical,
-            context: Some(json!(error.to_string())),
+            properties: Properties::from(json!(error.to_string())),
             location: Some(location.into()),
         }
     }
