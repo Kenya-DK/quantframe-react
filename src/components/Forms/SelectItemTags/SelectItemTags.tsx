@@ -1,8 +1,8 @@
-import { MultiSelect } from "@mantine/core";
-import { useEffect, useState } from "react";
-import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import api from "@api/index";
+import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { MultiSelect } from "@mantine/core";
 import { upperFirst } from "@mantine/hooks";
+import { useEffect, useState } from "react";
 
 export type SelectItemTagsProps = {
   value: string[];

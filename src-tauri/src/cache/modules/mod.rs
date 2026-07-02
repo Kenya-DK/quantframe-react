@@ -87,3 +87,6 @@ pub use quest::*;
 
 pub mod gear;
 pub use gear::*;
+
+pub mod syndicate;
+pub use syndicate::*;

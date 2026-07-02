@@ -21,3 +21,6 @@ pub use riven::*;
 
 pub mod market;
 pub use market::*;
+
+pub mod syndicate;
+pub use syndicate::*;

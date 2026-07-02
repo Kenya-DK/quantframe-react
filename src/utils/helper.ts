@@ -196,6 +196,7 @@ const setValue = (display: Record<string, DisplaySettings>, settings: Record<str
 const extractSubType = (value: ItemWithMeta): ItemWithSubType | undefined => {
   if (!value) return;
   if ("sub_type" in value && value.sub_type) return value.sub_type as TauriTypes.SubType;
+  if ("subType" in value && value.subType) return value.subType as TauriTypes.SubType;
   if ("properties" in value) return value as TauriTypes.SubType;
 };
 
@@ -278,7 +279,9 @@ export const GetItemDisplay = (
   if ("weapon_name" in value && !fullName) fullName = value.weapon_name;
   if ("item_name" in value && !fullName) fullName = value.item_name;
   if ("wfm_id" in value && !fullName) fullName = tradableItems?.find((i) => i.wfmId === value.wfm_id)?.name;
+  if ("wfmId" in value && !fullName) fullName = tradableItems?.find((i) => i.wfmId === value.wfmId)?.name;
   if ("wfm_id" in value && !fullName) fullName = weapons?.find((i) => i.wfmRivenId === value.wfm_id)?.name;
+  if ("wfmId" in value && !fullName) fullName = weapons?.find((i) => i.wfmRivenId === value.wfmId)?.name;
   if ("name" in value && !fullName) fullName = value.name;
   if ("wfm_url" in value && !fullName) fullName = tradableItems?.find((i) => i.wfmUrl === value.wfm_url)?.name;
 

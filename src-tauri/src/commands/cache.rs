@@ -24,6 +24,21 @@ pub async fn cache_get_tradable_items(
     }
 }
 #[tauri::command]
+pub async fn cache_get_syndicates(
+    cache: tauri::State<'_, Mutex<CacheState>>,
+) -> Result<Vec<CacheSyndicate>, Error> {
+    let cache = cache.lock()?;
+    match cache.syndicate().get_items() {
+        Ok(items) => {
+            return Ok(items);
+        }
+        Err(e) => {
+            e.log("cache_get_syndicates.log");
+            return Err(e);
+        }
+    }
+}
+#[tauri::command]
 pub async fn cache_get_riven_attributes(
     cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Vec<CacheAttribute>, Error> {

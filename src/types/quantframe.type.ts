@@ -159,7 +159,51 @@ export namespace QuantframeApiTypes {
   export type ItemPriceControllerGetListData = PaginatedDto & {
     results?: ItemPriceDto[];
   };
+  export interface SyndicateItemPrice {
+    /** The WFM ID of the item. */
+    wfmId: string;
+    /** The trading volume of the item. */
+    volume: number;
+    /** The standing cost of the item. */
+    standingCost: number;
+    /** The syndicate name of the item. */
+    syndicate: number;
+    /** The minimum price of the item. */
+    minPrice: number;
+    /** The maximum price of the item. */
+    maxPrice: number;
+    /** Details about the sub-type of the item, if applicable. */
+    sub_type?: ItemSubTypeDto;
+  }
+  export interface SyndicateItemPriceControllerGetListParams {
+    /** Search for orders that contain this query. */
+    query?: string;
+    /**
+     * For pagination. Defines which page the results are fetched from.
+     * @min 1
+     * @default 1
+     */
+    page: number;
+    /**
+     * For pagination. Defines how many entries are returned per page.
+     * @min 0
+     * @max 100
+     * @default 25
+     */
+    limit: number;
+    syndicates?: string[];
+    sort_by?: string;
+    /** Sort direction used when sorting by a specific field. */
+    sort_direction?: "asc" | "desc";
 
+    volume_gt?: number;
+    volume_lt?: number;
+    standing_cost_gt?: number;
+  }
+  /** PaginatedResponseOfSyndicateItemPrice */
+  export type SyndicateItemPriceControllerGetListData = PaginatedDto & {
+    results?: SyndicateItemPrice[];
+  };
   export interface RivenPriceDto {
     /** The WFM ID of the item. */
     wfm_id: string;

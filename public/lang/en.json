@@ -2223,6 +2223,20 @@
             }
           }
         },
+        "syndicate": {
+          "title": "Syndicate",
+          "export_json_tooltip": "Export Syndicate to JSON (Patreon T1+)",
+          "volume_label": "Volume",
+          "datatable": {
+            "columns": {
+              "volume": "Volume",
+              "min_price": "Min Price",
+              "max_price": "Max Price",
+              "syndicate": "Syndicate",
+              "standing_cost": "Standing Cost"
+            }
+          }
+        },
         "riven": {
           "title": "Riven",
           "export_json_tooltip": "Export Riven to JSON (Patreon T1+)",

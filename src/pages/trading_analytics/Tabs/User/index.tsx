@@ -1,13 +1,13 @@
-import { Box, Grid, Group, Paper, Select, useMantineTheme } from "@mantine/core";
-import { PatreonOverlay } from "@components/Shared/PatreonOverlay/PatreonOverlay";
 import { QuantframeApiTypes, TauriTypes } from "$types";
+import { PatreonOverlay } from "@components/Shared/PatreonOverlay/PatreonOverlay";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { Box, Grid, Group, Paper, Select, useMantineTheme } from "@mantine/core";
+import { DatePickerInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import dayjs from "dayjs";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { useEffect, useState } from "react";
-import { DatePickerInput } from "@mantine/dates";
-import { useQueries } from "./queries";
 import { Bar } from "react-chartjs-2";
+import { useQueries } from "./queries";
 interface UserPanelProps {
   isActive?: boolean;
 }

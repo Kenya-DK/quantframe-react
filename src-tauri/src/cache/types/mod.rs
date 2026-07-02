@@ -101,3 +101,6 @@ pub use cache_quest::*;
 
 pub mod cache_gear;
 pub use cache_gear::*;
+
+pub mod cache_syndicate;
+pub use cache_syndicate::*;

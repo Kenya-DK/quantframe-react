@@ -79,6 +79,7 @@ pub struct Client {
     riven_price_route: OnceLock<Arc<RivenPriceRoute>>,
     market_route: OnceLock<Arc<MarketRoute>>,
     alecaframe_route: OnceLock<Arc<AlecaframeRoute>>,
+    syndicate_route: OnceLock<Arc<SyndicateRoute>>,
 }
 impl Client {
     fn arc(&self) -> Arc<Self> {
@@ -108,6 +109,7 @@ impl Client {
                     riven_price_route: self.riven_price_route.clone(),
                     market_route: self.market_route.clone(),
                     alecaframe_route: self.alecaframe_route.clone(),
+                    syndicate_route: self.syndicate_route.clone(),
                 })
             })
             .clone()
@@ -168,6 +170,7 @@ impl Client {
             riven_price_route: OnceLock::new(),
             market_route: OnceLock::new(),
             alecaframe_route: OnceLock::new(),
+            syndicate_route: OnceLock::new(),
         }
     }
     pub async fn call_api<T: serde::de::DeserializeOwned>(
@@ -417,6 +420,11 @@ impl Client {
             .get_or_init(|| AlecaframeRoute::new(self.arc()))
             .clone()
     }
+    pub fn syndicate(&self) -> Arc<SyndicateRoute> {
+        self.syndicate_route
+            .get_or_init(|| SyndicateRoute::new(self.arc()))
+            .clone()
+    }
 }
 
 // ---------- Client Get/Set Methods ----------
@@ -515,6 +523,11 @@ impl Client {
             let new_alecaframe = AlecaframeRoute::from_existing(&old_alecaframe, self.arc());
             self.alecaframe_route = OnceLock::new();
             let _ = self.alecaframe_route.set(new_alecaframe);
+        }
+        if let Some(old_syndicate) = self.syndicate_route.get().cloned() {
+            let new_syndicate = SyndicateRoute::from_existing(&old_syndicate, self.arc());
+            self.syndicate_route = OnceLock::new();
+            let _ = self.syndicate_route.set(new_syndicate);
         }
     }
 }

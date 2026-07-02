@@ -61,6 +61,7 @@ pub struct CacheState {
     bundle_module: OnceLock<Arc<BundleModule>>,
     quest_module: OnceLock<Arc<QuestModule>>,
     gear_module: OnceLock<Arc<GearModule>>,
+    syndicate_module: OnceLock<Arc<SyndicateModule>>,
 }
 
 impl CacheState {
@@ -103,6 +104,7 @@ impl CacheState {
                     bundle_module: self.bundle_module.clone(),
                     quest_module: self.quest_module.clone(),
                     gear_module: self.gear_module.clone(),
+                    syndicate_module: self.syndicate_module.clone(),
                 })
             })
             .clone()
@@ -152,6 +154,7 @@ impl CacheState {
             bundle_module: OnceLock::new(),
             quest_module: OnceLock::new(),
             gear_module: OnceLock::new(),
+            syndicate_module: OnceLock::new(),
         };
         if !user.verification || user.qf_banned || user.wfm_banned {
             warning(
@@ -287,6 +290,7 @@ impl CacheState {
         self.recipe().load(language)?;
         self.bundle().load(language)?;
         self.gear().load(language)?;
+        self.syndicate().load(language)?;
         self.weapon().load(&self)?;
         self.all_items().load(&self)?;
         Ok((cache_version_id, price_version_id))
@@ -615,6 +619,11 @@ impl CacheState {
     pub fn gear(&self) -> Arc<GearModule> {
         self.gear_module
             .get_or_init(|| GearModule::new(self.arc()))
+            .clone()
+    }
+    pub fn syndicate(&self) -> Arc<SyndicateModule> {
+        self.syndicate_module
+            .get_or_init(|| SyndicateModule::new(self.arc()))
             .clone()
     }
 }

@@ -7,6 +7,7 @@ enum CacheType {
   RivenAttributes = "riven_attributes",
   ChatIcons = "chat_icons",
   RivenDataByInternalId = "riven_data_by_internal_id",
+  Syndicate = "syndicate",
 }
 export class CacheModule {
   private readonly _cache: Map<string, any> = new Map();
@@ -16,6 +17,12 @@ export class CacheModule {
     if (!forceRefresh && this._cache.has(CacheType.TradableItems)) return this._cache.get(CacheType.TradableItems);
     const items = await this.client.sendInvoke<TauriTypes.CacheTradableItem[]>("cache_get_tradable_items");
     this._cache.set(CacheType.TradableItems, items);
+    return items;
+  }
+  async getSyndicates(forceRefresh = false): Promise<TauriTypes.CacheSyndicate[]> {
+    if (!forceRefresh && this._cache.has(CacheType.Syndicate)) return this._cache.get(CacheType.Syndicate);
+    const items = await this.client.sendInvoke<TauriTypes.CacheSyndicate[]>("cache_get_syndicates");
+    this._cache.set(CacheType.Syndicate, items);
     return items;
   }
   async getTradableItemById(id: string): Promise<TauriTypes.CacheTradableItem | undefined> {

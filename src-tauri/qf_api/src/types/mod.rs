@@ -33,3 +33,9 @@ pub use pagination_riven_price::*;
 
 pub mod pagination_user_activity;
 pub use pagination_user_activity::*;
+
+pub mod syndicate_item_price;
+pub use syndicate_item_price::*;
+
+pub mod pagination_syndicate_item;
+pub use pagination_syndicate_item::*;

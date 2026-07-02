@@ -233,6 +233,7 @@ pub fn run() {
             commands::cache::cache_open_theme_folder,
             commands::cache::cache_get_chat_link,
             commands::cache::cache_get_chat_icons,
+            commands::cache::cache_get_syndicates,
             // Log commands
             commands::logs::log_export,
             commands::logs::log,
@@ -314,6 +315,9 @@ pub fn run() {
             commands::item::item_prices_lookup,
             commands::item::item_price_lookup,
             commands::item::export_item_price_data,
+            // Syndicate Item Price commands
+            commands::syndicate_price::syndicate_item_prices_lookup,
+            commands::syndicate_price::export_syndicate_item_price_data,
             // Riven commands
             commands::riven::riven_prices_lookup,
             commands::riven::export_riven_price_data,

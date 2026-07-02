@@ -79,6 +79,7 @@ export type ItemWithMeta =
   | (TauriTypes.TransactionDto & ItemMeta)
   | (TauriTypes.ItemPriceInfo & ItemMeta)
   | (QuantframeApiTypes.ItemPriceDto & ItemMeta)
+  | (QuantframeApiTypes.SyndicateItemPrice & ItemMeta)
   | (TauriTypes.DebuggingLiveItemEntry & ItemMeta)
   | (TauriTypes.TradeEntry & ItemMeta)
   | null;

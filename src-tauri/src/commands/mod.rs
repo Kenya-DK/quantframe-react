@@ -25,6 +25,7 @@ pub mod riven;
 pub mod sound;
 pub mod stock_item;
 pub mod stock_riven;
+pub mod syndicate_price;
 pub mod trade_entry;
 pub mod transaction;
 pub mod warframe_gdpr;
