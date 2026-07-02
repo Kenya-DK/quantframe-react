@@ -1,11 +1,11 @@
-import { memo } from "react";
-import { alpha, Card, Image, Group, Text, Center } from "@mantine/core";
-import classes from "./RivenPreview.module.css";
-import { upperFirst, useHover } from "@mantine/hooks";
-import { RivenAttribute } from "../RivenAttribute";
 import { ItemRiven } from "$types";
 import { TextTranslate, TextTranslateProps } from "@components/Shared/TextTranslate";
 import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { alpha, Card, Center, Group, Image, Text } from "@mantine/core";
+import { upperFirst, useHover } from "@mantine/hooks";
+import { memo } from "react";
+import { RivenAttribute } from "../RivenAttribute";
+import classes from "./RivenPreview.module.css";
 
 interface Properties {
   grade?: string;
@@ -89,7 +89,7 @@ export const WithoutBackground = memo(function WithoutBackground({
           </Center>
         )}
         {value.attributes.map((attr) => (
-          <RivenAttribute i18nKey="full" key={attr.url_name} groupProps={{ p: 1 }} value={attr} hideDetails centered hideGrade />
+          <RivenAttribute i18nKey="formattedValue" key={attr.url_name} groupProps={{ p: 1 }} value={attr} hideDetails centered hideGrade />
         ))}
       </Card.Section>
       <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3} className={classes.footerSection}>

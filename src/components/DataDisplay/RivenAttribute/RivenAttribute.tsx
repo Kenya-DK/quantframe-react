@@ -13,7 +13,7 @@ export type RivenAttributeProps = {
   compact?: boolean;
   groupProps?: GroupProps;
   centered?: boolean;
-  i18nKey?: "formattedValue" | "highlightedLabel" | "label";
+  i18nKey?: "formattedValue" | "highlightedLabel" | "label" | "full";
   i18nIdKey?: "wfmUrl" | "url_name";
   textDecoration?: React.CSSProperties["textDecoration"];
 };

@@ -1,12 +1,12 @@
-import { memo } from "react";
-import { Box, PaperProps, Stack, Text } from "@mantine/core";
-import classes from "./RivenPreview.module.css";
-import { useHover } from "@mantine/hooks";
-import { RivenAttribute } from "../RivenAttribute";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
-import { getPolarityIcon } from "@icons";
 import { ItemRiven } from "$types";
+import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getPolarityIcon } from "@icons";
+import { Box, PaperProps, Stack, Text } from "@mantine/core";
+import { useHover } from "@mantine/hooks";
+import { memo } from "react";
+import { RivenAttribute } from "../RivenAttribute";
+import classes from "./RivenPreview.module.css";
 
 export type RivenWithBackgroundProps = {
   value: ItemRiven;
@@ -29,7 +29,16 @@ export const WithBackground = memo(function WithBackground({ paperProps, value: 
       </Text>
       <Stack gap={0} data-compact={compact} className={classes.attributes}>
         {riven.attributes.map((attr) => (
-          <RivenAttribute i18nKey="full" key={attr.url_name} groupProps={{ p: 0, gap: 0 }} value={attr} hideDetails centered hideGrade compact />
+          <RivenAttribute
+            i18nKey="formattedValue"
+            key={attr.url_name}
+            groupProps={{ p: 0, gap: 0 }}
+            value={attr}
+            hideDetails
+            centered
+            hideGrade
+            compact
+          />
         ))}
       </Stack>
       <Text data-compact={compact} className={classes.mastery}>

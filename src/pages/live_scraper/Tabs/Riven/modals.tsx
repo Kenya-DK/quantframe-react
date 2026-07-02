@@ -182,7 +182,7 @@ export const useStockModals = ({
 
   const OpenFilterModal = (item: TauriTypes.StockRiven) => {
     const filter = item.filter || { enabled: false, attributes: [] };
-    if (!filter.attributes) filter.attributes = item.attributes.map((x) => ({ positive: x.positive, url_name: x.url_name, is_required: false }));
+    if (!filter.attributes) filter.attributes = item.attributes.map((x) => ({ positive: x.positive, url_name: x.url_name ?? "", is_required: false }));
 
     modals.open({
       title: useTranslateBasePrompt("update_filter.title"),
