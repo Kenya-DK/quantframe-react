@@ -51,18 +51,20 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
   const { refetchQueries, paginationQuery, statusCountsQuery } = useStockQueries({ queryData, isActive });
 
   // Mutations
-  const { refreshOrdersMutation, deleteAllOrdersMutation, deleteStockMutation, createStockMutation, sellStockMutation } = useStockMutations({
-    refetchQueries,
-    setLoadingRows,
-  });
+  const { refreshOrdersMutation, deleteAllOrdersMutation, deleteStockMutation, createStockMutation, sellStockMutation, blacklistOrderMutation } =
+    useStockMutations({
+      refetchQueries,
+      setLoadingRows,
+    });
 
   // Modals
-  const { OpenDeleteAllModal, OpenInfoModal, OpenDeleteModal, HandleModalOrder } = useStockModals({
+  const { OpenDeleteAllModal, OpenInfoModal, OpenDeleteModal, OpenBlacklistModal, HandleModalOrder } = useStockModals({
     createStockMutation,
     sellStockMutation,
     useTranslateBasePrompt,
     deleteStockMutation,
     deleteAllOrdersMutation,
+    blacklistOrderMutation,
   });
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
@@ -302,6 +304,18 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                     onClick={(e) => {
                       e.stopPropagation();
                       OpenInfoModal(order);
+                    }}
+                  />
+                  <ActionWithTooltip
+                    tooltip={useTranslateButtons("blacklist_tooltip")}
+                    icon={faBan}
+                    loading={loadingRows.includes(`${order.id}`)}
+                    color={"orange.7"}
+                    actionProps={{ size: "sm" }}
+                    iconProps={{ size: "xs" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      OpenBlacklistModal(order);
                     }}
                   />
                   <ActionWithTooltip

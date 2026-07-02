@@ -9,6 +9,9 @@ interface ModalHooks {
   deleteStockMutation: {
     mutateAsync: (id: string) => Promise<any>;
   };
+  blacklistOrderMutation: {
+    mutateAsync: (order: WFMarketTypes.Order) => Promise<any>;
+  };
   deleteAllOrdersMutation: {
     mutateAsync: (order_type?: WFMarketTypes.OrderType) => Promise<any>;
   };
@@ -20,7 +23,7 @@ interface ModalHooks {
   };
 }
 
-export const useStockModals = ({ deleteStockMutation, deleteAllOrdersMutation, createStockMutation, sellStockMutation }: ModalHooks) => {
+export const useStockModals = ({ deleteStockMutation, deleteAllOrdersMutation, createStockMutation, sellStockMutation, blacklistOrderMutation }: ModalHooks) => {
   const OpenSellModal = (order: WFMarketTypes.Order) => {
     modals.openContextModal({
       modal: "prompt",
@@ -111,6 +114,14 @@ export const useStockModals = ({ deleteStockMutation, deleteAllOrdersMutation, c
       onConfirm: async () => await deleteStockMutation.mutateAsync(id),
     });
   };
+  const OpenBlacklistModal = (order: WFMarketTypes.Order) => {
+    modals.openConfirmModal({
+      title: useTranslateCommon("prompts.blacklist_item.title"),
+      children: <Text size="sm">{useTranslateCommon("prompts.blacklist_item.message")}</Text>,
+      labels: { confirm: useTranslateCommon("prompts.blacklist_item.confirm"), cancel: useTranslateCommon("prompts.blacklist_item.cancel") },
+      onConfirm: () => blacklistOrderMutation.mutateAsync(order),
+    });
+  };
   const OpenDeleteAllModal = () => {
     modals.openContextModal({
       modal: "prompt",
@@ -145,6 +156,7 @@ export const useStockModals = ({ deleteStockMutation, deleteAllOrdersMutation, c
   return {
     HandleModalOrder,
     OpenDeleteModal,
+    OpenBlacklistModal,
     OpenDeleteAllModal,
     OpenInfoModal,
   };
