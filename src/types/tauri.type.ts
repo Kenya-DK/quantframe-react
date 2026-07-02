@@ -312,6 +312,7 @@ export namespace TauriTypes {
   export interface CacheRivenAttribute {
     exclusiveTo?: unknown[];
     formattedValue: string;
+    full: string;
     group: string;
     unit?: string;
     highlightedLabel: string;
@@ -320,8 +321,10 @@ export namespace TauriTypes {
     positiveIsNegative?: boolean;
     positiveOnly?: boolean;
     prefix: string;
+    short: string;
     suffix: string;
     uniqueName: string;
+    url_name: string;
     wfmId: string;
     wfmUrl: string;
   }

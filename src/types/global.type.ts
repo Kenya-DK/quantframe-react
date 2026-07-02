@@ -14,6 +14,7 @@ export interface ResponseError<T = any> extends Error {
   message: string;
   location: string;
   cause?: string;
+  context?: any;
   properties: T;
   log_level: string;
 }
