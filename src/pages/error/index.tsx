@@ -1,8 +1,8 @@
+import { ErrorModal } from "@components/Modals/Error";
+import { useAppContext } from "@contexts/app.context";
 import { Center } from "@mantine/core";
 import { useEffect } from "react";
-import { useAppContext } from "@contexts/app.context";
 import { useNavigate } from "react-router-dom";
-import { ErrorModal } from "@components/Modals/Error";
 
 export default function ErrorPage() {
   const { app_error, app_info } = useAppContext();

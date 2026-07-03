@@ -58,6 +58,7 @@ export function AppRoutes() {
   const ShowErrorPage = () => {
     if (window.location.href.includes("clean")) return false;
     if (!app_error) return false;
+    if (app_error?.error.component == "WebSocket") return false;
     return true;
   };
 

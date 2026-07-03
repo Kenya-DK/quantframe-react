@@ -8,6 +8,7 @@
 ## Fixes
 
 - 🛠️ No additional user-facing fixes documented in this edit.
+- 🛠️ Fix the error was showing when the websocket was down
 
 ## Dev Notes
 
