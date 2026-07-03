@@ -1,10 +1,10 @@
 import { TauriTypes } from "$types";
-import { UseFormReturnType } from "@mantine/form";
+import api from "@api/index";
+import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { Box, Button, Grid, Group, TextInput } from "@mantine/core";
-import { TooltipIcon } from "@components/Shared/TooltipIcon";
+import { UseFormReturnType } from "@mantine/form";
 import { exists } from "@tauri-apps/plugin-fs";
-import api from "@api/index";
 export type AdvancedPanelProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
 };
@@ -53,7 +53,7 @@ export const AdvancedPanel = ({ form }: AdvancedPanelProps) => {
               {...form.getInputProps(getFieldPath("wf_log_path"))}
             />
           </Group>
-          <Button mt="md" onClick={() => exportLogsMutation.mutate()} color="blue">
+          <Button mt="md" onClick={() => exportLogsMutation.mutate()} color="blue" loading={exportLogsMutation.isPending}>
             {useTranslateForm("button_export_logs")}
           </Button>
         </Grid.Col>
