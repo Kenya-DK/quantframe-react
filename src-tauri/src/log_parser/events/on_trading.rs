@@ -153,7 +153,7 @@ impl OnTradeEvent {
 //----------------------------
 
 impl OnTradeEvent {
-    pub fn add_item(&mut self, item: TradeItem) {
+    pub fn add_item(&mut self, item: TradeItem, status: &DetectionStatus) {
         let (items, id) = if self.operations.has("Receiving") {
             (&mut self.current_trade.received_items, "Received")
         } else {
@@ -167,13 +167,16 @@ impl OnTradeEvent {
             existing.quantity += item.quantity;
             self.logger
                 .add_log(format!("Updating item in {} items", id));
-            self.logger
-                .add_log(format!("       Quantity: {} -> {}", existing, item));
+            self.logger.add_log(format!(
+                "       Quantity: {} -> {} | Status: {:?}",
+                existing, item, status
+            ));
             return;
         }
 
         self.logger.add_log(format!("Adding item to {} items", id));
-        self.logger.add_log(format!("       {item}"));
+        self.logger
+            .add_log(format!("       {item} | Status: {:?}", status));
         items.push(item);
     }
 }
@@ -201,8 +204,6 @@ impl OnTradeEvent {
             let line = lines[i].line.clone();
             let next_line = lines.get(i + 1).map(|l| l.line.clone()).unwrap_or_default();
 
-            let log_line = format!("Line: '{}' | Next Line: '{}'", line, next_line);
-
             let (player_name, status) = self.detection.is_offer_line(&line, &next_line, &[]);
 
             if status.is_found() && status != DetectionStatus::PreviousLine {
@@ -215,7 +216,7 @@ impl OnTradeEvent {
             let (status, item) = TradeItem::from_string(&line, &next_line, &self.detection, &[]);
 
             if status.is_found() {
-                self.add_item(item);
+                self.add_item(item, &status);
             }
 
             i += advance(status);
@@ -639,10 +640,11 @@ impl LineHandler for OnTradeEvent {
                     .add_log("Switching to mode: Waiting for Trade Confirmation");
                 return Ok((false, trade_end));
             } else if !is_start_of_log(&entry.line) {
-                let mut lie = entry.clone();
-                lie.clear_newlines();
-                self.logger.add_log(format!("Add message {entry}"));
-                self.logs.push(lie);
+                let mut clone = entry.clone();
+                clone.clear_newlines();
+                self.logger.add_log(format!("Add message {clone}"));
+                self.logs.push(clone);
+                return Ok((false, DetectionStatus::Line));
             } else {
                 return Ok((false, DetectionStatus::None));
             }

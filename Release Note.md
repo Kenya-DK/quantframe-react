@@ -11,6 +11,7 @@
 
 - 🛠️ No additional user-facing fixes documented in this edit.
 - 🛠️ Fix the error was showing when the websocket was down
+- 🛠️ Fix the parsing errors in the trade parsing.
 
 ## Dev Notes
 

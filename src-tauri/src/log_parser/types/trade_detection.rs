@@ -296,7 +296,10 @@ impl TradeDetection {
         prev_line: &str,
         ignored_combinations: &[DetectionStatus],
     ) -> (String, DetectionStatus) {
-        let matches = vec![", title", ", leftItem"];
+        let matches = vec![
+            ", title= leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)",
+            ", leftItem=/Menu/Confirm_Item_Ok, rightItem=/Menu/Confirm_Item_Cancel)",
+        ];
         for mach in matches.iter() {
             let (full_text, status) =
                 combine_and_detect_match(&line, prev_line, mach, ignored_combinations, false);

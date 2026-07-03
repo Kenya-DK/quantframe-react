@@ -465,7 +465,7 @@ impl AppState {
                 info(
                     "WarframeMarket:API",
                     &format!(
-                        "Method: {} | Route: {} |  Took {}ms",
+                        "Method: {} | Route: {} | Took {}ms",
                         data.get_property_value("method", String::new()),
                         data.get_property_value("url", String::new()),
                         data.get_property_value("duration_ms", 0)

@@ -67,13 +67,17 @@ impl TradeItem {
 
         let (parse_text, last_item_status) =
             detection.is_last_item(&line, &prev_line, ignored_combinations);
+        let same = line == parse_text;
 
-        match last_item_status {
-            DetectionStatus::Line => {
-                line = parse_text;
+        match (last_item_status.clone(), same) {
+            (DetectionStatus::Line, false) => {
+                line = parse_text.clone();
             }
-            ref s if *s == DetectionStatus::PreviousLine || s.is_combined() => {
-                prev_line = parse_text;
+            (DetectionStatus::LineThenPreviousLine, false) => {
+                line = parse_text.clone();
+            }
+            (DetectionStatus::PreviousLine, false) => {
+                prev_line = parse_text.clone();
             }
             _ => {}
         }
@@ -92,13 +96,7 @@ impl TradeItem {
             item.item_type = TradeItemType::Unknown;
         }
 
-        let status = match (last_item_status, item_status) {
-            (a, b) if a == b => b,
-            (a, b) if a.is_combined() || b.is_combined() => DetectionStatus::Combined,
-            (_, b) => b,
-        };
-
-        (status, item)
+        (item_status, item)
     }
 
     /* -------------------------------------------------------------
@@ -110,7 +108,7 @@ impl TradeItem {
         prev_line: &str,
         detection: &TradeDetection,
         ignored_combinations: &[DetectionStatus],
-        cache: &CacheState,
+        _: &CacheState,
     ) -> Result<DetectionStatus, Error> {
         // Check if the item is platinum
         let (combine, status, item_type) =
@@ -129,8 +127,10 @@ impl TradeItem {
             }
             _ => {}
         }
-
-        if let Some((_, qty)) = combine.split_once(" x ") {
+        let (_, qty) = combine.split_once(" x ").unwrap_or(("", ""));
+        if qty.is_empty() {
+            self.quantity = prev_line.trim().parse().unwrap_or(1);
+        } else {
             self.quantity = qty.trim().parse().unwrap_or(1);
         }
         self.item_type = item_type;
@@ -692,14 +692,14 @@ fn lookup_item<T>(
         }
     }
 
-    if !is_ignored(ignored_combinations, DetectionStatus::PreviousLine) {
-        if let Ok(info) = get_by(prev_line) {
-            let trade_item = cache.tradable_item().get_by(apply(info)).ok();
-            if trade_item.is_some() {
-                return Ok(DetectionStatus::PreviousLine);
-            }
-        }
-    }
+    // if !is_ignored(ignored_combinations, DetectionStatus::PreviousLine) {
+    //     if let Ok(info) = get_by(prev_line) {
+    //         let trade_item = cache.tradable_item().get_by(apply(info)).ok();
+    //         if trade_item.is_some() {
+    //             return Ok(DetectionStatus::PreviousLine);
+    //         }
+    //     }
+    // }
 
     if !is_ignored(ignored_combinations, DetectionStatus::LineThenPreviousLine) {
         let line_then_previous = format!("{line}{prev_line}");
@@ -711,15 +711,15 @@ fn lookup_item<T>(
         }
     }
 
-    if !is_ignored(ignored_combinations, DetectionStatus::PreviousLineThenLine) {
-        let previous_then_line = format!("{prev_line}{line}");
-        if let Ok(info) = get_by(&previous_then_line) {
-            let trade_item = cache.tradable_item().get_by(apply(info)).ok();
-            if trade_item.is_some() {
-                return Ok(DetectionStatus::PreviousLineThenLine);
-            }
-        }
-    }
+    // if !is_ignored(ignored_combinations, DetectionStatus::PreviousLineThenLine) {
+    //     let previous_then_line = format!("{prev_line}{line}");
+    //     if let Ok(info) = get_by(&previous_then_line) {
+    //         let trade_item = cache.tradable_item().get_by(apply(info)).ok();
+    //         if trade_item.is_some() {
+    //             return Ok(DetectionStatus::PreviousLineThenLine);
+    //         }
+    //     }
+    // }
 
     Ok(DetectionStatus::None)
 }

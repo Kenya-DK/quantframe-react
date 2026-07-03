@@ -268,13 +268,13 @@ impl Display for PlayerTrade {
         if self.trade_type == TradeClassification::Purchase && self.received_items.len() == 1 {
             write!(
                 f,
-                " | Item: {}",
+                "Item: {}",
                 self.received_items.first().unwrap().item_name()
             )?;
         } else if self.trade_type == TradeClassification::Sale && self.offered_items.len() == 1 {
             write!(
                 f,
-                " | Item: {}",
+                "Item: {}",
                 self.offered_items.first().unwrap().item_name()
             )?;
         }
