@@ -103,12 +103,10 @@ fn send_ws_state(key: impl Into<String>, data: &WsMessage) {
 
     if !operations.ends_with("Disconnected") {
         clear_error!();
-        states::set_app_error(None);
         return;
     }
     current_error.log("websocket_info.log");
     emit_error!(current_error);
-    states::set_app_error(Some(current_error.clone()));
 }
 
 fn update_user_status(states: impl Into<String>) {

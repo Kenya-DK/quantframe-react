@@ -11,6 +11,8 @@ pub struct ZipOptions<'a> {
     pub mask_properties: Option<&'a [&'a str]>,
     /// Optional list of file/folder patterns to exclude (supports wildcards)
     pub exclude_patterns: Option<&'a [&'a str]>,
+    /// Internal storage for files to be added to the ZIP archive
+    pub files: std::sync::Arc<std::sync::Mutex<Vec<(String, Vec<u8>)>>>,
 }
 
 impl<'a> ZipOptions<'a> {
@@ -20,23 +22,27 @@ impl<'a> ZipOptions<'a> {
     }
 
     /// Set whether to include hidden files and folders
-    pub fn include_hidden(mut self, include: bool) -> Self {
+    pub fn include_hidden(&mut self, include: bool) -> &mut Self {
         self.include_hidden = include;
         self
     }
 
     /// Set JSON properties to mask in .json files
-    pub fn mask_properties(mut self, properties: &'a [&'a str]) -> Self {
+    pub fn mask_properties(&mut self, properties: &'a [&'a str]) -> &mut Self {
         self.mask_properties = Some(properties);
         self
     }
 
     /// Set file/folder patterns to exclude
-    pub fn exclude_patterns(mut self, patterns: &'a [&'a str]) -> Self {
+    pub fn exclude_patterns(&mut self, patterns: &'a [&'a str]) -> &mut Self {
         self.exclude_patterns = Some(patterns);
         self
     }
-
+    /// Add a file to be included in the ZIP archive
+    pub fn create_file(&self, archive_path: impl Into<String>, content: impl AsRef<[u8]>) {
+        let mut files = self.files.lock().unwrap();
+        files.push((archive_path.into(), content.as_ref().to_vec()));
+    }
     /// Create a ZIP archive from a folder with the configured options
     ///
     /// # Arguments
@@ -433,6 +439,28 @@ impl<'a> ZipOptions<'a> {
 
         // Start the recursive zipping
         zip_dir_recursive(&mut zip, &source, "", self, file_options)?;
+
+        for (archive_path, content) in self.files.lock().unwrap().iter() {
+            zip.start_file(archive_path, file_options).map_err(|e| {
+                Error::from_zip(
+                    "ZipFolder",
+                    archive_path,
+                    "starting file in zip",
+                    e,
+                    "ZipOptions::create_zip",
+                )
+            })?;
+
+            zip.write_all(content).map_err(|e| {
+                Error::from_io(
+                    "ZipFolder",
+                    &PathBuf::from(archive_path),
+                    "writing file to zip",
+                    e,
+                    "ZipOptions::create_zip",
+                )
+            })?;
+        }
 
         // Finish the zip file
         zip.finish().map_err(|e| {

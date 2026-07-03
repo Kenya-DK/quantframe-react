@@ -1,12 +1,23 @@
-use serde_json::Value;
-use utils::{Error, ZipOptions};
+use std::sync::{Arc, Mutex};
 
-use crate::{helper, APP};
+use serde_json::{json, Value};
+use utils::{Error, Properties, ZipOptions};
+
+use crate::{
+    app::client::AppState, helper, live_scraper::LiveScraperState, log_parser::LogParserState,
+    utils::modules::states::get_app_error, APP,
+};
 
 #[tauri::command]
-pub async fn log_export() -> Result<String, Error> {
-    let app = APP.get().expect("App handle not found");
-    let info = app.package_info().clone();
+pub async fn log_export(
+    app: tauri::State<'_, Mutex<AppState>>,
+    log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
+    live_scraper: tauri::State<'_, Arc<LiveScraperState>>,
+) -> Result<String, Error> {
+    let app = app.lock()?.clone();
+    let log_parser = log_parser.lock()?;
+    let app_info = APP.get().expect("App handle not found");
+    let info = app_info.package_info().clone();
     let date = chrono::Local::now()
         .naive_utc()
         .format("%Y-%m-%d")
@@ -19,11 +30,60 @@ pub async fn log_export() -> Result<String, Error> {
 
     let zip_path =
         helper::get_desktop_path().join(format!("{} v{} {} Logs.zip", info.name, version, date));
-    let path = ZipOptions::new()
-        .exclude_patterns(&["EBWebView/"])
-        .mask_properties(&["check_code", "qf_token", "wfm_token", "webhook"])
-        .create_zip(app_path, zip_path)?;
-    Ok(path)
+
+    let mut zip = ZipOptions::new();
+    zip.exclude_patterns(&["EBWebView/"]);
+    zip.mask_properties(&["check_code", "qf_token", "wfm_token", "webhook"]);
+    zip.create_file(
+        "AppError.json",
+        json!(get_app_error()).to_string().as_bytes(),
+    );
+    zip.create_file(
+        "LogParser.json",
+        json!({
+            "totalLines": log_parser.get_all_cached_lines().len(),
+        })
+        .to_string()
+        .as_bytes(),
+    );
+    zip.create_file(
+        "LiveScraper.json",
+        json!({
+            "isRunning": live_scraper.is_running(),
+            "justStarted": live_scraper.just_started(),
+        })
+        .to_string()
+        .as_bytes(),
+    );
+    zip.create_file(
+        "AppInfo.json",
+        json!({
+        "isDevelopment": app.is_development,
+        "isPreRelease": app.is_pre_release,
+        })
+        .to_string()
+        .as_bytes(),
+    );
+    let mut wfm_info = Properties::default();
+    wfm_info.set_property_value("tracking", app.wfm_client.get_tracking());
+
+    let per_rate_limit = app.wfm_client.get_per_route_limiter().clone();
+    for (key, route) in per_rate_limit.lock()?.iter() {
+        wfm_info.update_property("limiters", |data: &mut Vec<String>| {
+            data.push(format!(
+                "{}: limit: {}, wait_time_sec: {}, quota_type: {}",
+                key,
+                route.quota_type.current_limit(),
+                route.wait_time_sec,
+                route.quota_type.quota_type()
+            ));
+        });
+    }
+    zip.create_file(
+        "WfmInfo.json",
+        json!(wfm_info.properties).to_string().as_bytes(),
+    );
+    Ok(zip.create_zip(app_path, zip_path)?)
 }
 
 #[tauri::command]

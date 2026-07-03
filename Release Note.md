@@ -4,6 +4,7 @@
 
 - ✨ Improved logging workflow and logging-related groundwork.
 - ✨ Add login feedback to the user during startup.
+- ✨ Export logs will now have the state of the app
 
 ## Fixes
 

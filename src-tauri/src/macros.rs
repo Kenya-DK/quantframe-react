@@ -57,7 +57,9 @@ macro_rules! emit_error {
     ($err:expr) => {{
         use crate::send_event;
         use crate::types::*;
+        use crate::utils::modules::states;
         send_event!(UIEvent::OnError, Some(json!($err)));
+        states::set_app_error(Some($err));
     }};
 }
 #[macro_export]
@@ -65,7 +67,9 @@ macro_rules! clear_error {
     () => {{
         use crate::send_event;
         use crate::types::*;
+        use crate::utils::modules::*;
         send_event!(UIEvent::OnError, Some(json!({})));
+        states::set_app_error(None);
     }};
 }
 

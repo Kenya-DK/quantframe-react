@@ -8,7 +8,7 @@ use utils::*;
 
 #[derive(Clone)]
 pub struct LogParserState {
-    watcher: FileWatcher,
+    pub watcher: FileWatcher,
     // Modules's'
     warframe_gdpr_module: OnceLock<Arc<WarframeGDPRModule>>,
 }
