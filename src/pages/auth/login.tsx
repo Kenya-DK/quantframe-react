@@ -1,13 +1,14 @@
-import { Center, Progress } from "@mantine/core";
-import { LogInForm } from "@components/Forms/LogIn";
-import api, { SendTauriDataEvent } from "@api/index";
-import { useMutation } from "@tanstack/react-query";
-import { notifications } from "@mantine/notifications";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { TextTranslate } from "@components/Shared/TextTranslate";
 import { ResponseError, TauriTypes } from "$types";
-import { useState } from "react";
+import api, { SendTauriDataEvent } from "@api/index";
+import { LogInForm } from "@components/Forms/LogIn";
+import { TextTranslate } from "@components/Shared/TextTranslate";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslateContexts, useTranslatePages } from "@hooks/useTranslate.hook";
+import { Center, Progress } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { useMutation } from "@tanstack/react-query";
 import { PlaySound } from "@utils/helper";
+import { useState } from "react";
 
 export default function LoginPage() {
   // States
@@ -61,6 +62,12 @@ export default function LoginPage() {
     },
   });
 
+  const handleStartupProgress = (data: { i18n_key: string; values?: { [key: string]: any } }) => {
+    setInterval((prev) => prev + 1);
+    setProgressText(useTranslateContexts(`app.${data.i18n_key}`, data.values));
+  };
+
+  useTauriEvent(TauriTypes.Events.OnStartingUp, handleStartupProgress, []);
   return (
     <Center w={"100%"} h={"92vh"}>
       <LogInForm
@@ -71,7 +78,7 @@ export default function LoginPage() {
           <>
             {logInMutation.isPending && (
               <Progress.Root size="xl">
-                <Progress.Section value={(interval / 6) * 100}>
+                <Progress.Section value={(interval / 5) * 100}>
                   <Progress.Label>{progressText}</Progress.Label>
                 </Progress.Section>
               </Progress.Root>

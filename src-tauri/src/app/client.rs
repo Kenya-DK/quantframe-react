@@ -6,7 +6,7 @@ use crate::app::{Settings, User};
 use crate::http_server::HttpServer;
 use crate::utils::modules::states;
 use crate::utils::ErrorFromExt;
-use crate::{clear_error, emit_error, types::*, APP_ERROR};
+use crate::{clear_error, emit_error, emit_startup, types::*, APP_ERROR};
 use crate::{emit_update_user, helper, send_event, APP, HAS_STARTED};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
@@ -14,7 +14,9 @@ use qf_api::Client as QFClient;
 use serde_json::json;
 use sha256::digest;
 use tauri::{AppHandle, Manager};
-use utils::{get_location, info, Error, LogLevel, LoggerOptions, OperationSet, Properties};
+use utils::{
+    get_location, info, log_json, Error, LogLevel, LoggerOptions, OperationSet, Properties,
+};
 use wf_market::client::Authenticated as WFAuthenticated;
 use wf_market::enums::ApiVersion;
 use wf_market::types::websocket::{WsClient, WsMessage};
@@ -375,7 +377,6 @@ impl AppState {
             wfm_chat_socket: None,
             http_server: HttpServer::new(&http_settings.host, http_settings.port),
         };
-
         state
             .qf_client
             .analytics()
@@ -398,7 +399,6 @@ impl AppState {
                 }
             }
         }
-
         state.user.save().expect("Failed to save user to auth.json");
         if http_settings.enable {
             state.http_server.start();
@@ -423,7 +423,8 @@ impl AppState {
         Error,
     > {
         // Login to WFM client
-        let mut wfm_client = match WFClient::new()
+        let mut wfm_client = match self
+            .new_base_wfm_client()
             .login(email, password, &self.wfm_client.get_device_id())
             .await
         {
@@ -460,7 +461,35 @@ impl AppState {
         updated_user.save()?;
         Ok((qf_client, wfm_client, updated_user, ws, ws_chat))
     }
-
+    fn new_base_wfm_client(&self) -> WFClient {
+        let wfm_client = WFClient::new()
+            .with_callback("api:after", |_, data| {
+                info(
+                    "WarframeMarket:API",
+                    &format!(
+                        "Method: {} | Route: {} |  Took {}ms",
+                        data.get_property_value("method", String::new()),
+                        data.get_property_value("url", String::new()),
+                        data.get_property_value("duration_ms", 0)
+                    ),
+                    &LoggerOptions::default(),
+                );
+            })
+            .with_callback("api:refresh", |_, data| {
+                let state = data.get_property_value("state", String::from("unknown"));
+                emit_startup!(format!("wfm.{}", state), json!({}));
+            })
+            .with_callback("api:error", |_, data| {
+                let timestamp = chrono::Local::now()
+                    .with_timezone(&chrono::Utc)
+                    .format("%Y_%m_%d_%H_%M_%S")
+                    .to_string();
+                if let Some(data) = data.properties.clone() {
+                    log_json(data, &format!("wfm_api_error_{}.json", timestamp)).ok();
+                }
+            });
+        wfm_client
+    }
     pub async fn validate(&mut self) -> Result<(WFUserPrivate, QFUserPrivate), Error> {
         if self.user.wfm_token == "" || self.user.qf_token == "" {
             return Err(Error::new(
@@ -469,7 +498,8 @@ impl AppState {
                 get_location!(),
             ));
         }
-        let wfm_client = match WFClient::new()
+        let wfm_client = match self
+            .new_base_wfm_client()
             .login_with_token(&self.user.wfm_token, &self.wfm_client.get_device_id())
             .await
         {

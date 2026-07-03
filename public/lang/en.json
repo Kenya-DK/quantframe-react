@@ -628,6 +628,12 @@
         "initializing": "Initializing cache...",
         "updating": "Updating cache...",
         "item_price_updating": "Updating item prices..."
+      },
+      "wfm": {
+        "user": "Fetching user data...",
+        "orders": "Fetching orders...",
+        "auctions": "Fetching auctions...",
+        "chats": "Fetching chats..."
       }
     }
   },
