@@ -103,15 +103,15 @@ impl OnTradeEvent {
             .with_timezone(&chrono::Utc)
             .format("%Y_%m_%d_%H_%M_%S")
             .to_string();
-        // let log_start = self.logs.first().cloned().unwrap_or_default();
-        // let log_end = self.logs.last().cloned().unwrap_or_default();
-        // let raw_logs = self
-        //     .watcher
-        //     .get_cached_lines_between(log_start.index.saturating_sub(10), log_end.index + 10);
-        // self.logger.create_file(
-        //     "RawEELogs.txt",
-        //     format!("{}", json!(raw_logs).to_string()).as_bytes(),
-        // );
+        let log_start = self.logs.first().cloned().unwrap_or_default();
+        let log_end = self.logs.last().cloned().unwrap_or_default();
+        let raw_logs = self
+            .watcher
+            .get_cached_lines_between(log_start.index.saturating_sub(5), log_end.index + 5);
+        self.logger.create_file(
+            "RawEELogs.txt",
+            format!("{}", json!(raw_logs).to_string()).as_bytes(),
+        );
         self.logger.finalize(format!("{}_TRADE.zip", timestamp))?;
         Ok(())
     }

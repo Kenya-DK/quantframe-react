@@ -241,17 +241,20 @@ impl FileWatcher {
         }
     }
     pub fn get_cached_lines_between(&self, mut start: usize, mut end: usize) -> Vec<LineEntry> {
-        if start >= 1 {
+        let cache = self.cache.lock().unwrap();
+        if start < 1 {
             start = 1;
         }
-        let cache = self.cache.lock().unwrap();
-        if end == 0 {
+        if end > cache.len() {
             end = cache.len();
         }
-        if start > end {
-            std::mem::swap(&mut start, &mut end);
+        let mut lines = vec![];
+        for line in cache.iter() {
+            if line.index >= start && line.index <= end {
+                lines.push(line.clone());
+            }
         }
-        cache[start..end.min(cache.len())].to_vec()
+        lines
     }
     pub fn get_all_cached_lines(&self) -> Vec<LineEntry> {
         let cache = self.cache.lock().unwrap();
