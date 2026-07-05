@@ -24,6 +24,8 @@ pub struct SyndicateItemPricePaginationQueryDto {
     pub standing_cost_gt: FieldChange<i64>,
     #[serde(default)]
     pub standing_cost_lt: FieldChange<i64>,
+    #[serde(default)]
+    pub syndicates: FieldChange<Vec<String>>,
 }
 impl SyndicateItemPricePaginationQueryDto {
     pub fn new(page: i64, limit: i64) -> Self {
@@ -36,6 +38,7 @@ impl SyndicateItemPricePaginationQueryDto {
             volume_lt: FieldChange::Ignore,
             standing_cost_gt: FieldChange::Ignore,
             standing_cost_lt: FieldChange::Ignore,
+            syndicates: FieldChange::Ignore,
         }
     }
     pub fn get_query(&self) -> String {
@@ -69,6 +72,14 @@ impl SyndicateItemPricePaginationQueryDto {
         }
         match &self.standing_cost_lt {
             Value(v) => query.push(format!("standingCostLt={}", v)),
+            _ => {}
+        }
+        match &self.syndicates {
+            Value(s) => {
+                for syndicate in s {
+                    query.push(format!("syndicates={}", syndicate));
+                }
+            }
             _ => {}
         }
         query.join("&")

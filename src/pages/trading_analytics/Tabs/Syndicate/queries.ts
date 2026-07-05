@@ -9,7 +9,7 @@ interface QueriesHooks {
 
 export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
   const getPaginationQuery = useQuery({
-    queryKey: ["get_item_pagination", queryData.page, queryData.limit, queryData.query, queryData.sort_by, queryData.sort_direction],
+    queryKey: ["get_syndicate_item_prices", "_pagination", queryData.page, queryData.limit, queryData.sort_by, queryData.sort_direction],
     queryFn: () => api.syndicate.getAll(queryData),
     retry: false,
     throwOnError(error: ResponseError, query) {

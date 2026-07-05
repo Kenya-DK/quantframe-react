@@ -3,7 +3,7 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { Tabs } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { useMemo } from "react";
-import { ItemPanel, RivenPanel, TransactionPanel, UserPanel, WarframeGDPRParser } from "./Tabs";
+import { ItemPanel, RivenPanel, SyndicatePanel, TransactionPanel, UserPanel, WarframeGDPRParser } from "./Tabs";
 import classes from "./TradingAnalytics.module.css";
 
 export default function TradingAnalyticsPage() {
@@ -25,12 +25,12 @@ export default function TradingAnalyticsPage() {
         component: (isActive: boolean) => <ItemPanel isActive={isActive} />,
         id: "item",
       },
-      // {
-      //   label: useTranslateTabs("syndicate.title"),
-      //   component: (isActive: boolean) => <SyndicatePanel isActive={isActive} />,
-      //   id: "syndicate",
-      //   isPremium: true,
-      // },
+      {
+        label: useTranslateTabs("syndicate.title"),
+        component: (isActive: boolean) => <SyndicatePanel isActive={isActive} />,
+        id: "syndicate",
+        isPremium: true,
+      },
       {
         label: useTranslateTabs("riven.title"),
         component: (isActive: boolean) => <RivenPanel isActive={isActive} />,

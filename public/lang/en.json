@@ -2233,6 +2233,12 @@
           "title": "Syndicate",
           "export_json_tooltip": "Export Syndicate to JSON (Patreon T1+)",
           "volume_label": "Volume",
+          "fields": {
+            "syndicate": {
+              "label": "Syndicate",
+              "placeholder": "Select syndicate"
+            }
+          },
           "datatable": {
             "columns": {
               "volume": "Volume",

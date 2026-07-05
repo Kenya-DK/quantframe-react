@@ -162,6 +162,8 @@ export namespace QuantframeApiTypes {
   export interface SyndicateItemPrice {
     /** The WFM ID of the item. */
     wfmId: string;
+    /** The WFM ID of the item. */
+    uuid: string;
     /** The trading volume of the item. */
     volume: number;
     /** The standing cost of the item. */

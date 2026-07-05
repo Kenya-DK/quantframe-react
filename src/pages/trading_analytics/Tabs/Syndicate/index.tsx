@@ -9,7 +9,7 @@ import { PatreonOverlay } from "@components/Shared/PatreonOverlay";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
-import { Box, Grid, Group, MultiSelect, NumberFormatter, Paper, SimpleGrid } from "@mantine/core";
+import { Box, Group, MultiSelect, NumberFormatter, Paper, SimpleGrid } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useQuery } from "@tanstack/react-query";
 import { getSafePage } from "@utils/helper";
@@ -37,10 +37,12 @@ export const SyndicatePanel = ({ isActive }: SyndicatePanelProps = {}) => {
     useTranslateTabItem(`datatable.columns.${key}`, { ...context }, i18Key);
   const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`fields.${key}`, { ...context }, i18Key);
+
   // States
   const [filterOpened, setFilterOpened] = useState<boolean>(false);
   const [canExport, setCanExport] = useState<boolean>(false);
   const [canUse, setCanUse] = useState<boolean>(false);
+
   // Fetch data from rust side
   const { data } = useQuery({
     queryKey: ["cache_syndicates"],
@@ -62,12 +64,11 @@ export const SyndicatePanel = ({ isActive }: SyndicatePanelProps = {}) => {
 
   return (
     <Box p={"md"} pos={"relative"}>
-      <PatreonOverlay permission={TauriTypes.PermissionsFlags.SYNDICATE_PRICES_SEARCH} tier="T1+" />
+      <PatreonOverlay permission={TauriTypes.PermissionsFlags.SYNDICATE_PRICES_SEARCH} tier="T2+" />
       <SearchField
         value={queryData.values.query || ""}
         onSearch={() => {
-          queryData.validate();
-          if (queryData.isValid()) refetchQueries();
+          refetchQueries();
         }}
         searchDisabled={paginationQuery.isLoading}
         onChange={(text) => queryData.setFieldValue("query", text)}
@@ -86,37 +87,30 @@ export const SyndicatePanel = ({ isActive }: SyndicatePanelProps = {}) => {
         }
         filter={
           <Paper p={"sm"} mt={"md"}>
-            <Grid>
-              <Grid.Col span={6}>
-                <MultiSelect
-                  searchable
-                  limit={5}
-                  label={useTranslateFormFields("syndicate.label")}
-                  description={useTranslateFormFields("syndicate.description")}
-                  data={data?.filter((item) => item.canSelect).map((item) => ({ label: item.name, value: item.uniqueName })) ?? []}
-                  value={queryData.values.syndicates || []}
-                  onChange={(value) => queryData.setFieldValue("syndicates", value)}
-                  clearable
-                />
-              </Grid.Col>
-              <Grid.Col span={6}>
-                <SimpleGrid cols={3} spacing={"sm"}>
-                  <MinMax
-                    label={useTranslateTabItem("volume_label")}
-                    value={{ min: queryData.values.volume_gt, max: queryData.values.volume_lt }}
-                    onChange={(value) => {
-                      queryData.setFieldValue("volume_gt", value?.min);
-                      queryData.setFieldValue("volume_lt", value?.max);
-                    }}
-                  />
-                </SimpleGrid>
-              </Grid.Col>
-            </Grid>
+            <SimpleGrid cols={3} spacing={"sm"}>
+              <MultiSelect
+                searchable
+                limit={5}
+                label={useTranslateFormFields("syndicate.label")}
+                data={data?.filter((item) => item.canSelect).map((item) => ({ label: item.name, value: item.uniqueName })) ?? []}
+                value={queryData.values.syndicates || []}
+                onChange={(value) => queryData.setFieldValue("syndicates", value)}
+                clearable
+              />
+              <MinMax
+                label={useTranslateTabItem("volume_label")}
+                value={{ min: queryData.values.volume_gt, max: queryData.values.volume_lt }}
+                onChange={(value) => {
+                  queryData.setFieldValue("volume_gt", value?.min);
+                  queryData.setFieldValue("volume_lt", value?.max);
+                }}
+              />
+            </SimpleGrid>
           </Paper>
         }
       />
       <DataTable
-        className={`${classes.databaseItem} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
+        className={`${classes.databaseSyndicate} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
         mt={"md"}
         striped
         customLoader={<Loading />}
@@ -128,7 +122,7 @@ export const SyndicatePanel = ({ isActive }: SyndicatePanelProps = {}) => {
         recordsPerPage={queryData.values.limit || 10}
         recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
         onRecordsPerPageChange={(limit) => queryData.setFieldValue("limit", limit)}
-        idAccessor={(record) => record.wfmId}
+        idAccessor={(record) => `${record.uuid}-${record.syndicate}`}
         sortStatus={{
           columnAccessor: queryData.values.sort_by || "name",
           direction: queryData.values.sort_direction || "desc",

@@ -12,6 +12,8 @@ pub struct SyndicateItemPrice {
     pub standing_cost: i64,
     #[serde(default, rename = "wfmId")]
     pub wfm_id: String,
+    #[serde(default, rename = "uuid")]
+    pub uuid: String,
     #[serde(default, rename = "subType")]
     pub sub_type: Option<SubType>,
     #[serde(default, rename = "maxPrice")]

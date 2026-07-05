@@ -6,10 +6,10 @@
 - ✨ Add login feedback to the user during startup.
 - ✨ Export logs will now have the state of the app
 - ✨ Add raw lines of logs to the trade for debugging purposes.
+- ✨ Add Lookup for syndicate items in the trading analytics tab. (Patreon T2+)
 
 ## Fixes
 
-- 🛠️ No additional user-facing fixes documented in this edit.
 - 🛠️ Fix the error was showing when the websocket was down
 - 🛠️ Fix the parsing errors in the trade parsing.
 

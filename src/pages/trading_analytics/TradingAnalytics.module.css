@@ -59,3 +59,21 @@
     --offset: 636px;
   }
 }
+
+.databaseSyndicate {
+  --offset: 230px;
+  height: calc(100vh - var(--offset)) !important;
+  transition: height 0.2s ease;
+
+  &.alert {
+    --offset: 250px;
+  }
+
+  &.filterOpened {
+    --offset: 332px;
+  }
+
+  &.alert.filterOpened {
+    --offset: 416px;
+  }
+}
