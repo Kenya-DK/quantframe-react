@@ -1798,10 +1798,6 @@
         "export_log": "Export Log"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "Delete Conversation",
-      "last_update": "Last update "
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2172,9 +2168,13 @@
           "confirm": "Delete"
         }
       },
+      "chat_item": {
+        "last_update": "Last update "
+      },
       "buttons": {
         "refresh_tooltip": "Refresh the chat list",
-        "delete_all_tooltip": "Delete all chats"
+        "delete_all_tooltip": "Delete all chats",
+        "delete_tooltip": "Delete Conversation"
       }
     },
     "trading_analytics": {

@@ -3677,6 +3677,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "es": {
@@ -7357,6 +7501,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "fr": {
@@ -11037,6 +11325,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "it": {
@@ -14717,6 +15149,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "ja": {
@@ -18397,6 +18973,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "ko": {
@@ -22077,6 +22797,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "pl": {
@@ -25757,6 +26621,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "pt": {
@@ -29437,6 +30445,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "ru": {
@@ -33117,6 +34269,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "tc": {
@@ -36797,6 +38093,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "th": {
@@ -40477,6 +41917,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "tr": {
@@ -44157,6 +45741,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "uk": {
@@ -47837,6 +49565,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   },
   "zh": {
@@ -51517,6 +53389,150 @@
     },
     "pages.wf_inventory.tabs.riven.filters.unveiled": {
       "hash": "86d0ce99fb22c9c5f855a221d2a8ef75ddc29d8b1fee4b720b53683c6fc53a41"
+    },
+    "common.buttons.reset_defaults.label": {
+      "hash": "c0334bae10532242090727ce60382123981e61c854e8b29e78b787a71f48b898"
+    },
+    "common.buttons.cancel.label": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.dialogs.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "common.dialogs.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "common.notifications.blacklist_order.error.title": {
+      "hash": "94645e2d767866be77db19ef8332b28b90e9e2a0139c59e303b37245ebba5cd7"
+    },
+    "common.notifications.blacklist_order.error.message": {
+      "hash": "d902216f8f0c487f8b33bc37c9d884e884042216791760da8a739980fad7a142"
+    },
+    "common.notifications.blacklist_order.success.title": {
+      "hash": "03c3371eb7ecce6a8a38ed0aedd2669b25f27b070583bbc4f80d4daf344b695e"
+    },
+    "common.notifications.blacklist_order.success.message": {
+      "hash": "4d5c3224fc17283ab04c90991c26249e6726284e672ff69a1d41522379455fc3"
+    },
+    "common.notifications.calculate_tax_transaction.error.title": {
+      "hash": "4d8c76eb2bd40f2defb67fd4ad73f9eee713a076521d0ea7f31bc65a878bb69a"
+    },
+    "common.notifications.calculate_tax_transaction.error.message": {
+      "hash": "301b34e72bc07574bd56418b993899ae8bcb0e5bb1601c1d8eb6a69eaf719749"
+    },
+    "common.notifications.calculate_tax_transaction.success.title": {
+      "hash": "0abafb9c79f068a535c2943edabfc809bcb9592b4e1384c90cd94ef389abd064"
+    },
+    "common.notifications.calculate_tax_transaction.success.message": {
+      "hash": "8b09ba59868b072e3262f0d742a14b33df2fd31d9395262c90c0dbf1abcbbda6"
+    },
+    "common.prompts.blacklist_item.title": {
+      "hash": "4c173e840df943d281ac06e39051a099cf1d7e35d12bd17e6ce83f0aad5a0a63"
+    },
+    "common.prompts.blacklist_item.message": {
+      "hash": "99b710a269ae799549fff34b807c3f71bf5a08b449dc75ae5a2d7ada35747f1f"
+    },
+    "common.prompts.blacklist_item.cancel": {
+      "hash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+    },
+    "common.prompts.blacklist_item.confirm": {
+      "hash": "3094851745d4be7ea898da7ccabd6ce8a7436816bf363b5eff554e3be477cd3e"
+    },
+    "context.app.wfm.user": {
+      "hash": "59db5eee2a257bb66d8ece8ca59345aa6124b64c3ef8d2b88d24a6e4c2981500"
+    },
+    "context.app.wfm.orders": {
+      "hash": "a4ec135cee5f61438d78875e4fc5a92e8665210159ef01c033222d30ff28c779"
+    },
+    "context.app.wfm.auctions": {
+      "hash": "66ed7fa24450e9818283536d757aafc8129939ea01479db2595970f2dd243e85"
+    },
+    "context.app.wfm.chats": {
+      "hash": "740ef4bef3ce778f7eaa9905be50c2200796f368be6e2dd8a44275b7d9653301"
+    },
+    "components.user_menu.errors.connection_websocket_error": {
+      "hash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+    },
+    "components.forms.select_sub_type.fields.variant.label": {
+      "hash": "3f19fe84a2de0508e87ae6a75e4e4aa9d838d67ade3e479ed21430796de89ac2"
+    },
+    "components.forms.select_sub_type.fields.variant.placeholder": {
+      "hash": "50e73ce2dea1c8bd31dd3e013d22869a566014aa8e279ba089ca24dc2490a629"
+    },
+    "components.forms.select_sub_type.fields.variant.description": {
+      "hash": "853559714aa4bba56860084677b67af283cf400a51df6d1028c9817b0b61bdc2"
+    },
+    "components.forms.select_sub_type.fields.rank.label": {
+      "hash": "a4130d7d2c3a137f362d28ba21eedd525b7e42e7551c3e62817b048c9a0bd425"
+    },
+    "components.forms.select_sub_type.fields.rank.placeholder": {
+      "hash": "329095d72141289622d44f1365865a11069e3ab34547872d7780e3603c8ba233"
+    },
+    "components.forms.select_sub_type.fields.rank.description": {
+      "hash": "7a06fb062f6c71c68f7dbe7d57e58c4529d1b51b1d9abc9fdb2fa4a95117fb16"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.label": {
+      "hash": "17fdd89e57968e1a332ecf88d2525104c0394e56e4e39987ffe6c08273aec5e9"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.placeholder": {
+      "hash": "82d2f5e1de70d6cd026950f88171f9bf1c39318870a5991e28d62b1ae4a507b8"
+    },
+    "components.forms.select_sub_type.fields.cyan_stars.description": {
+      "hash": "bdec70ac7619ae515ea32d733c0fe5dce38240b592b8b339b5885e40535b215b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.label": {
+      "hash": "1a42d2e7d3c82de5bc74836cd8f21c658c7f2ad9c0d5b55c28420c1780d5f51b"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.placeholder": {
+      "hash": "3e2cd9663ed747bdc44a986966c22cd84a817ed1ab94690d38d8e7d7a10ac30f"
+    },
+    "components.forms.select_sub_type.fields.amber_stars.description": {
+      "hash": "72348a9e5e9583f07d710837c1a102c9ce6839d169648e43b76e7e28e85177f4"
+    },
+    "components.forms.select_sub_type.messages.nothing_found": {
+      "hash": "949da6a3278e2d66078bda0e06f569110d872e46548e354c508af456e3c18715"
+    },
+    "pages.warframe_market.tabs.orders.buttons.blacklist_tooltip": {
+      "hash": "26afb145ea64e09b531348acc6b7b08fc52ff50c9a1bd87bf32dee72ba986c88"
+    },
+    "pages.chat.chat_item.last_update": {
+      "hash": "95161d7b5ecf1b96778bf7170b2c12f392c260bc84b16be9c7b2e4f1304c289b"
+    },
+    "pages.chat.buttons.delete_tooltip": {
+      "hash": "9ccd1fb969eb027481bbe6136cf502ebcd43746a96c3eda0099f87d7324fad6c"
+    },
+    "pages.trading_analytics.tabs.syndicate.title": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.export_json_tooltip": {
+      "hash": "42f1f5f7933f739be63667e3935ffdf793651f11a46316f9e2aaf06ad2448d95"
+    },
+    "pages.trading_analytics.tabs.syndicate.volume_label": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.label": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.fields.syndicate.placeholder": {
+      "hash": "b8571e010ee2a7e877f7cabc6be4ee182db5d1775264714cd6658749218c107a"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.volume": {
+      "hash": "b10fb966d72063f534774c7c6b404f4decca76ac283093ae65fef78d07c1b75e"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.min_price": {
+      "hash": "29401c119b6244320fe692b564b81676ab3dadad6f9fcea7bc85a327326a56b7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.max_price": {
+      "hash": "d51863abd343f4a87f1bbc134ad207965488109a32079301a3251d938846e78d"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.syndicate": {
+      "hash": "bf27245ee74c300f0a67e11257683d198c880cad3ab167409fca5e9c60ac05d7"
+    },
+    "pages.trading_analytics.tabs.syndicate.datatable.columns.standing_cost": {
+      "hash": "e37ee7659ff1dd2c9f356bf7b9e856b8df427fa2a3ff20cbb84709859949ab04"
+    },
+    "pages.process_trade.datatable.columns.sub_type": {
+      "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
     }
   }
 }

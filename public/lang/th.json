@@ -19,8 +19,20 @@
       "save": {
         "label": "บันทึก"
       },
+      "reset_defaults": {
+        "label": "รีเซ็ตเป็นค่าเริ่มต้น"
+      },
       "delete": {
         "label": "ลบ"
+      },
+      "cancel": {
+        "label": "ยกเลิก"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "รีเซ็ตการตั้งค่า",
+        "message": "รีเซ็ตการตั้งค่าทั้งหมดเป็นค่าเริ่มต้นหรือไม่"
       }
     },
     "notifications": {
@@ -352,6 +364,16 @@
           "message": "ลบคำสั่งซื้อเรียบร้อยแล้ว"
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "ข้อผิดพลาดบัญชีดำ",
+          "message": "เกิดข้อผิดพลาดขณะพยายามขึ้นบัญชีดำรายการ"
+        },
+        "success": {
+          "title": "ความสำเร็จของบัญชีดำ",
+          "message": "รายการดังกล่าวถูกขึ้นบัญชีดำและรายการดังกล่าวถูกลบออก"
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "ลบข้อผิดพลาดคำสั่งซื้อทั้งหมด",
@@ -400,6 +422,16 @@
         "success": {
           "title": "รีเฟรชความสำเร็จในการประมูล",
           "message": "รีเฟรชการประมูลเรียบร้อยแล้ว"
+        }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "คำนวณข้อผิดพลาดทางภาษี",
+          "message": "เกิดข้อผิดพลาดขณะพยายามคำนวณภาษีสำหรับธุรกรรม"
+        },
+        "success": {
+          "title": "คำนวณความสำเร็จด้านภาษี",
+          "message": "คำนวณภาษีสำหรับธุรกรรมสำเร็จแล้ว"
         }
       }
     },
@@ -450,6 +482,12 @@
         "message": "การดำเนินการนี้ไม่สามารถยกเลิกได้",
         "cancel": "ยกเลิก",
         "confirm": "ยืนยัน"
+      },
+      "blacklist_item": {
+        "title": "รายการแบล็คลิสต์?",
+        "message": "การดำเนินการนี้จะลบรายการของคุณออกจาก Warframe Market และเพิ่มรายการลงในบัญชีดำของคุณ การดำเนินการนี้ไม่สามารถยกเลิกได้",
+        "cancel": "ยกเลิก",
+        "confirm": "บัญชีดำ"
       },
       "delete_multiple_items": {
         "title": "คุณแน่ใจเหรอ?",
@@ -606,6 +644,12 @@
         "initializing": "กำลังเริ่มต้นแคช...",
         "updating": "กำลังอัปเดตแคช...",
         "item_price_updating": "กำลังอัปเดตราคาสินค้า..."
+      },
+      "wfm": {
+        "user": "กำลังดึงข้อมูลผู้ใช้...",
+        "orders": "กำลังเรียกคำสั่งซื้อ...",
+        "auctions": "กำลังดึงข้อมูลการประมูล...",
+        "chats": "กำลังเรียกแชท..."
       }
     }
   },
@@ -679,6 +723,7 @@
         "logout": "ออกจากระบบ"
       },
       "errors": {
+        "connection_websocket_error": "กำลังโหลด...",
         "logout": {
           "title": "ข้อผิดพลาดในการออกจากระบบ",
           "message": "เกิดข้อผิดพลาดขณะพยายามออกจากระบบ"
@@ -1119,7 +1164,14 @@
           "item": {
             "label": "รายการ",
             "placeholder": "เลือกรายการ..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "ไม่พบรายการ"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "ตัวแปร",
             "placeholder": "เลือกรุ่น...",
@@ -1746,10 +1798,6 @@
         "export_log": "บันทึกการส่งออก"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "ลบการสนทนา",
-      "last_update": "อัปเดตล่าสุด"
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2071,6 +2119,7 @@
             "refresh_tooltip": "รีเฟรชรายการคำสั่งซื้อ",
             "delete_all_tooltip": "ลบคำสั่งซื้อทั้งหมด",
             "delete_tooltip": "ลบคำสั่งซื้อนี้",
+            "blacklist_tooltip": "รายการที่ไม่อนุญาตและลบรายการออก",
             "info_tooltip": "ดูรายละเอียดการสั่งซื้อ",
             "sell_manual": {
               "buy_tooltip": "ซื้อด้วยตนเอง",
@@ -2119,9 +2168,13 @@
           "confirm": "ลบ"
         }
       },
+      "chat_item": {
+        "last_update": "อัปเดตล่าสุด"
+      },
       "buttons": {
         "refresh_tooltip": "รีเฟรชรายการแชท",
-        "delete_all_tooltip": "ลบแชททั้งหมด"
+        "delete_all_tooltip": "ลบแชททั้งหมด",
+        "delete_tooltip": "ลบการสนทนา"
       }
     },
     "trading_analytics": {
@@ -2190,6 +2243,26 @@
               "trading_tax": "ภาษีการค้า",
               "supply": "จัดหา",
               "demand": "ความต้องการ"
+            }
+          }
+        },
+        "syndicate": {
+          "title": "ซินดิเคท",
+          "export_json_tooltip": "ส่งออกซินดิเคทเป็น JSON (Patreon T1+)",
+          "volume_label": "ปริมาณ",
+          "fields": {
+            "syndicate": {
+              "label": "ซินดิเคท",
+              "placeholder": "เลือกซินดิเคท"
+            }
+          },
+          "datatable": {
+            "columns": {
+              "volume": "ปริมาณ",
+              "min_price": "ราคาขั้นต่ำ",
+              "max_price": "ราคาสูงสุด",
+              "syndicate": "ซินดิเคท",
+              "standing_cost": "ต้นทุนยืน"
             }
           }
         },
@@ -2418,6 +2491,7 @@
       "datatable": {
         "columns": {
           "item_name": "ชื่อ",
+          "sub_type": "ประเภทย่อย",
           "quantity": "ปริมาณ",
           "price": "ราคา",
           "total": "ทั้งหมด",

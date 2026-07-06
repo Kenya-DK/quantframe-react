@@ -19,8 +19,20 @@
       "save": {
         "label": "Salvar"
       },
+      "reset_defaults": {
+        "label": "Redefinir para o padrão"
+      },
       "delete": {
         "label": "Excluir"
+      },
+      "cancel": {
+        "label": "Cancelar"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "Redefinir configurações",
+        "message": "Redefinir todas as configurações para os valores padrão?"
       }
     },
     "notifications": {
@@ -352,6 +364,16 @@
           "message": "O pedido foi excluído com sucesso."
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "Erro na lista negra",
+          "message": "Ocorreu um erro ao tentar colocar o item na lista negra."
+        },
+        "success": {
+          "title": "Sucesso na lista negra",
+          "message": "O item foi colocado na lista negra e sua listagem foi removida."
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "Erro ao excluir todos os pedidos",
@@ -400,6 +422,16 @@
         "success": {
           "title": "Sucesso na atualização dos leilões",
           "message": "Os leilões foram atualizados com sucesso."
+        }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "Calcular erro fiscal",
+          "message": "Ocorreu um erro ao tentar calcular o imposto da transação."
+        },
+        "success": {
+          "title": "Calcule o sucesso fiscal",
+          "message": "O imposto foi calculado com sucesso para a transação."
         }
       }
     },
@@ -450,6 +482,12 @@
         "message": "Esta ação não pode ser desfeita.",
         "cancel": "Cancelar",
         "confirm": "Confirmar"
+      },
+      "blacklist_item": {
+        "title": "Item da lista negra?",
+        "message": "Isso removerá sua listagem do Warframe Market e adicionará o item à sua lista negra. Esta ação não pode ser desfeita.",
+        "cancel": "Cancelar",
+        "confirm": "Lista negra"
       },
       "delete_multiple_items": {
         "title": "Tem certeza?",
@@ -606,6 +644,12 @@
         "initializing": "Inicializando cache...",
         "updating": "Atualizando cache...",
         "item_price_updating": "Atualizando preços de itens..."
+      },
+      "wfm": {
+        "user": "Buscando dados do usuário...",
+        "orders": "Buscando pedidos...",
+        "auctions": "Buscando leilões...",
+        "chats": "Buscando bate-papos..."
       }
     }
   },
@@ -679,6 +723,7 @@
         "logout": "Sair"
       },
       "errors": {
+        "connection_websocket_error": "Carregando...",
         "logout": {
           "title": "Erro de logout",
           "message": "Ocorreu um erro ao tentar sair."
@@ -1119,7 +1164,14 @@
           "item": {
             "label": "Item",
             "placeholder": "Selecione o item..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "Nenhum item encontrado"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "Variante",
             "placeholder": "Selecione a variante...",
@@ -1746,10 +1798,6 @@
         "export_log": "Exportar registro"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "Excluir conversa",
-      "last_update": "Última atualização"
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2071,6 +2119,7 @@
             "refresh_tooltip": "Atualizar a lista de pedidos",
             "delete_all_tooltip": "Excluir todos os pedidos",
             "delete_tooltip": "Excluir este pedido",
+            "blacklist_tooltip": "Item da lista negra e remoção da listagem",
             "info_tooltip": "Ver detalhes do pedido",
             "sell_manual": {
               "buy_tooltip": "Comprei manualmente",
@@ -2119,9 +2168,13 @@
           "confirm": "Excluir"
         }
       },
+      "chat_item": {
+        "last_update": "Última atualização"
+      },
       "buttons": {
         "refresh_tooltip": "Atualize a lista de bate-papo",
-        "delete_all_tooltip": "Excluir todos os bate-papos"
+        "delete_all_tooltip": "Excluir todos os bate-papos",
+        "delete_tooltip": "Excluir conversa"
       }
     },
     "trading_analytics": {
@@ -2190,6 +2243,26 @@
               "trading_tax": "Imposto comercial",
               "supply": "Fornecer",
               "demand": "Demanda"
+            }
+          }
+        },
+        "syndicate": {
+          "title": "Sindicato",
+          "export_json_tooltip": "Exportar Syndicate para JSON (Patreon T1+)",
+          "volume_label": "Volume",
+          "fields": {
+            "syndicate": {
+              "label": "Sindicato",
+              "placeholder": "Selecione o sindicato"
+            }
+          },
+          "datatable": {
+            "columns": {
+              "volume": "Volume",
+              "min_price": "Preço mínimo",
+              "max_price": "Preço máximo",
+              "syndicate": "Sindicato",
+              "standing_cost": "Custo Permanente"
             }
           }
         },
@@ -2418,6 +2491,7 @@
       "datatable": {
         "columns": {
           "item_name": "Nome",
+          "sub_type": "Subtipo",
           "quantity": "Quantidade",
           "price": "Preço",
           "total": "Total",

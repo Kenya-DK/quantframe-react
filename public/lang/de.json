@@ -19,8 +19,20 @@
       "save": {
         "label": "Speichern"
       },
+      "reset_defaults": {
+        "label": "Auf Standard zurücksetzen"
+      },
       "delete": {
         "label": "Löschen"
+      },
+      "cancel": {
+        "label": "Stornieren"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "Einstellungen zurücksetzen",
+        "message": "Alle Einstellungen auf Standardwerte zurücksetzen?"
       }
     },
     "notifications": {
@@ -352,6 +364,16 @@
           "message": "Die Bestellung wurde erfolgreich gelöscht."
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "Blacklist-Fehler",
+          "message": "Beim Versuch, das Element auf die schwarze Liste zu setzen, ist ein Fehler aufgetreten."
+        },
+        "success": {
+          "title": "Erfolg auf der schwarzen Liste",
+          "message": "Der Artikel wurde auf die schwarze Liste gesetzt und seine Auflistung entfernt."
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "Fehler beim Löschen aller Bestellungen",
@@ -400,6 +422,16 @@
         "success": {
           "title": "Auktionserfolg aktualisieren",
           "message": "Auktionen wurden erfolgreich aktualisiert."
+        }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "Berechnen Sie den Steuerfehler",
+          "message": "Beim Versuch, die Steuer für die Transaktion zu berechnen, ist ein Fehler aufgetreten."
+        },
+        "success": {
+          "title": "Steuererfolg berechnen",
+          "message": "Die Steuer für die Transaktion wurde erfolgreich berechnet."
         }
       }
     },
@@ -450,6 +482,12 @@
         "message": "Diese Aktion kann nicht rückgängig gemacht werden.",
         "cancel": "Stornieren",
         "confirm": "Bestätigen"
+      },
+      "blacklist_item": {
+        "title": "Eintrag auf der schwarzen Liste?",
+        "message": "Dadurch wird Ihr Eintrag vom Warframe Market entfernt und der Artikel zu Ihrer Blacklist hinzugefügt. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "cancel": "Stornieren",
+        "confirm": "Schwarze Liste"
       },
       "delete_multiple_items": {
         "title": "Bist du sicher?",
@@ -606,6 +644,12 @@
         "initializing": "Cache wird initialisiert...",
         "updating": "Cache wird aktualisiert...",
         "item_price_updating": "Artikelpreise werden aktualisiert..."
+      },
+      "wfm": {
+        "user": "Benutzerdaten werden abgerufen...",
+        "orders": "Bestellungen werden abgerufen...",
+        "auctions": "Auktionen werden abgerufen...",
+        "chats": "Chats werden abgerufen..."
       }
     }
   },
@@ -679,6 +723,7 @@
         "logout": "Abmelden"
       },
       "errors": {
+        "connection_websocket_error": "Laden...",
         "logout": {
           "title": "Abmeldefehler",
           "message": "Beim Versuch, sich abzumelden, ist ein Fehler aufgetreten."
@@ -1119,7 +1164,14 @@
           "item": {
             "label": "Artikel",
             "placeholder": "Artikel auswählen..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "Keine Artikel gefunden"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "Variante",
             "placeholder": "Variante auswählen...",
@@ -1746,10 +1798,6 @@
         "export_log": "Protokoll exportieren"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "Konversation löschen",
-      "last_update": "Letztes Update"
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2071,6 +2119,7 @@
             "refresh_tooltip": "Aktualisieren Sie die Bestellliste",
             "delete_all_tooltip": "Alle Bestellungen löschen",
             "delete_tooltip": "Diese Bestellung löschen",
+            "blacklist_tooltip": "Artikel auf die schwarze Liste setzen und Eintrag entfernen",
             "info_tooltip": "Bestelldetails anzeigen",
             "sell_manual": {
               "buy_tooltip": "Manuell gekauft",
@@ -2119,9 +2168,13 @@
           "confirm": "Löschen"
         }
       },
+      "chat_item": {
+        "last_update": "Letztes Update"
+      },
       "buttons": {
         "refresh_tooltip": "Aktualisieren Sie die Chatliste",
-        "delete_all_tooltip": "Alle Chats löschen"
+        "delete_all_tooltip": "Alle Chats löschen",
+        "delete_tooltip": "Konversation löschen"
       }
     },
     "trading_analytics": {
@@ -2190,6 +2243,26 @@
               "trading_tax": "Gewerbesteuer",
               "supply": "Liefern",
               "demand": "Nachfrage"
+            }
+          }
+        },
+        "syndicate": {
+          "title": "Syndikat",
+          "export_json_tooltip": "Syndicate nach JSON exportieren (Patreon T1+)",
+          "volume_label": "Volumen",
+          "fields": {
+            "syndicate": {
+              "label": "Syndikat",
+              "placeholder": "Syndikat auswählen"
+            }
+          },
+          "datatable": {
+            "columns": {
+              "volume": "Volumen",
+              "min_price": "Mindestpreis",
+              "max_price": "Maximaler Preis",
+              "syndicate": "Syndikat",
+              "standing_cost": "Ständige Kosten"
             }
           }
         },
@@ -2418,6 +2491,7 @@
       "datatable": {
         "columns": {
           "item_name": "Name",
+          "sub_type": "Untertyp",
           "quantity": "Menge",
           "price": "Preis",
           "total": "Gesamt",

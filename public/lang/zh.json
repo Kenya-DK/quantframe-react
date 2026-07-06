@@ -19,8 +19,20 @@
       "save": {
         "label": "节省"
       },
+      "reset_defaults": {
+        "label": "重置为默认值"
+      },
       "delete": {
         "label": "删除"
+      },
+      "cancel": {
+        "label": "取消"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "重置设置",
+        "message": "将所有设置重置为默认值？"
       }
     },
     "notifications": {
@@ -352,6 +364,16 @@
           "message": "订单已成功删除。"
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "黑名单错误",
+          "message": "尝试将该项目列入黑名单时出错。"
+        },
+        "success": {
+          "title": "黑名单成功",
+          "message": "该项目已被列入黑名单并已被删除。"
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "删除所有订单错误",
@@ -400,6 +422,16 @@
         "success": {
           "title": "刷新拍卖成功",
           "message": "拍卖已成功刷新。"
+        }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "计算税收错误",
+          "message": "尝试计算交易税费时发生错误。"
+        },
+        "success": {
+          "title": "计算税务成功",
+          "message": "已成功计算交易的税费。"
         }
       }
     },
@@ -450,6 +482,12 @@
         "message": "此操作无法撤消。",
         "cancel": "取消",
         "confirm": "确认"
+      },
+      "blacklist_item": {
+        "title": "黑名单项目？",
+        "message": "这将从 Warframe Market 中删除您的列表并将该项目添加到您的黑名单中。此操作无法撤消。",
+        "cancel": "取消",
+        "confirm": "黑名单"
       },
       "delete_multiple_items": {
         "title": "你确定吗？",
@@ -606,6 +644,12 @@
         "initializing": "正在初始化缓存...",
         "updating": "正在更新缓存...",
         "item_price_updating": "正在更新商品价格..."
+      },
+      "wfm": {
+        "user": "正在获取用户数据...",
+        "orders": "正在获取订单...",
+        "auctions": "正在获取拍卖...",
+        "chats": "正在获取聊天记录..."
       }
     }
   },
@@ -679,6 +723,7 @@
         "logout": "退出"
       },
       "errors": {
+        "connection_websocket_error": "加载中...",
         "logout": {
           "title": "注销错误",
           "message": "尝试注销时发生错误。"
@@ -1119,7 +1164,14 @@
           "item": {
             "label": "物品",
             "placeholder": "选择项目..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "没有找到物品"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "变体",
             "placeholder": "选择变体...",
@@ -1746,10 +1798,6 @@
         "export_log": "导出日志"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "删除对话",
-      "last_update": "最后更新"
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2071,6 +2119,7 @@
             "refresh_tooltip": "刷新订单列表",
             "delete_all_tooltip": "删除所有订单",
             "delete_tooltip": "删除此订单",
+            "blacklist_tooltip": "列入黑名单并删除列表",
             "info_tooltip": "查看订单详情",
             "sell_manual": {
               "buy_tooltip": "手动购买",
@@ -2119,9 +2168,13 @@
           "confirm": "删除"
         }
       },
+      "chat_item": {
+        "last_update": "最后更新"
+      },
       "buttons": {
         "refresh_tooltip": "刷新聊天列表",
-        "delete_all_tooltip": "删除所有聊天记录"
+        "delete_all_tooltip": "删除所有聊天记录",
+        "delete_tooltip": "删除对话"
       }
     },
     "trading_analytics": {
@@ -2190,6 +2243,26 @@
               "trading_tax": "交易税",
               "supply": "供应",
               "demand": "要求"
+            }
+          }
+        },
+        "syndicate": {
+          "title": "辛迪加",
+          "export_json_tooltip": "将 Syndicate 导出为 JSON (Patreon T1+)",
+          "volume_label": "体积",
+          "fields": {
+            "syndicate": {
+              "label": "辛迪加",
+              "placeholder": "选择辛迪加"
+            }
+          },
+          "datatable": {
+            "columns": {
+              "volume": "体积",
+              "min_price": "最低价格",
+              "max_price": "最高价格",
+              "syndicate": "辛迪加",
+              "standing_cost": "常设成本"
             }
           }
         },
@@ -2418,6 +2491,7 @@
       "datatable": {
         "columns": {
           "item_name": "姓名",
+          "sub_type": "子类型",
           "quantity": "数量",
           "price": "价格",
           "total": "全部的",

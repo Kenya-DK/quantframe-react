@@ -19,8 +19,20 @@
       "save": {
         "label": "Kaydetmek"
       },
+      "reset_defaults": {
+        "label": "Varsayılana Sıfırla"
+      },
       "delete": {
         "label": "Silmek"
+      },
+      "cancel": {
+        "label": "İptal etmek"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "Ayarları sıfırla",
+        "message": "Tüm ayarlar varsayılan değerlere sıfırlansın mı?"
       }
     },
     "notifications": {
@@ -352,6 +364,16 @@
           "message": "Sipariş başarıyla silindi."
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "Kara Liste Hatası",
+          "message": "Öğe kara listeye alınmaya çalışılırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Kara Liste Başarısı",
+          "message": "Öğe kara listeye alındı ​​ve listesi kaldırıldı."
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "Tüm Siparişleri Sil Hatası",
@@ -400,6 +422,16 @@
         "success": {
           "title": "Açık Artırma Başarısını Yenile",
           "message": "Açık artırmalar başarıyla yenilendi."
+        }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "Vergi Hatasını Hesapla",
+          "message": "İşlem için vergi hesaplanırken bir hata oluştu."
+        },
+        "success": {
+          "title": "Vergi Başarısını Hesaplayın",
+          "message": "İşlem için vergi başarıyla hesaplandı."
         }
       }
     },
@@ -450,6 +482,12 @@
         "message": "Bu eylem geri alınamaz.",
         "cancel": "İptal etmek",
         "confirm": "Onaylamak"
+      },
+      "blacklist_item": {
+        "title": "Kara liste öğesi?",
+        "message": "Bu, listelemenizi Warframe Market'ten kaldıracak ve öğeyi kara listenize ekleyecektir. Bu eylem geri alınamaz.",
+        "cancel": "İptal etmek",
+        "confirm": "Kara liste"
       },
       "delete_multiple_items": {
         "title": "Emin misin?",
@@ -606,6 +644,12 @@
         "initializing": "Önbellek başlatılıyor...",
         "updating": "Önbellek güncelleniyor...",
         "item_price_updating": "Ürün fiyatları güncelleniyor..."
+      },
+      "wfm": {
+        "user": "Kullanıcı verileri alınıyor...",
+        "orders": "Siparişler alınıyor...",
+        "auctions": "Açık artırmalar getiriliyor...",
+        "chats": "Sohbetler getiriliyor..."
       }
     }
   },
@@ -679,6 +723,7 @@
         "logout": "Oturumu kapat"
       },
       "errors": {
+        "connection_websocket_error": "Yükleniyor...",
         "logout": {
           "title": "Oturum Kapatma Hatası",
           "message": "Oturumu kapatmaya çalışırken bir hata oluştu."
@@ -1119,7 +1164,14 @@
           "item": {
             "label": "Öğe",
             "placeholder": "Öğeyi seç..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "Hiçbir öğe bulunamadı"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "Varyant",
             "placeholder": "Varyant seçin...",
@@ -1746,10 +1798,6 @@
         "export_log": "Günlüğü Dışa Aktar"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "Görüşmeyi Sil",
-      "last_update": "Son güncelleme"
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2071,6 +2119,7 @@
             "refresh_tooltip": "Sipariş listesini yenile",
             "delete_all_tooltip": "Tüm siparişleri sil",
             "delete_tooltip": "Bu siparişi sil",
+            "blacklist_tooltip": "Öğeyi kara listeye alma ve listeyi kaldırma",
             "info_tooltip": "Sipariş ayrıntılarını görüntüle",
             "sell_manual": {
               "buy_tooltip": "Manuel olarak satın alındı",
@@ -2119,9 +2168,13 @@
           "confirm": "Silmek"
         }
       },
+      "chat_item": {
+        "last_update": "Son güncelleme"
+      },
       "buttons": {
         "refresh_tooltip": "Sohbet listesini yenile",
-        "delete_all_tooltip": "Tüm sohbetleri sil"
+        "delete_all_tooltip": "Tüm sohbetleri sil",
+        "delete_tooltip": "Görüşmeyi Sil"
       }
     },
     "trading_analytics": {
@@ -2190,6 +2243,26 @@
               "trading_tax": "Ticaret Vergisi",
               "supply": "Tedarik",
               "demand": "Talep etmek"
+            }
+          }
+        },
+        "syndicate": {
+          "title": "Sendika",
+          "export_json_tooltip": "Syndicate'i JSON'a Aktar (Patreon T1+)",
+          "volume_label": "Hacim",
+          "fields": {
+            "syndicate": {
+              "label": "Sendika",
+              "placeholder": "Sendika seçin"
+            }
+          },
+          "datatable": {
+            "columns": {
+              "volume": "Hacim",
+              "min_price": "Minimum Fiyat",
+              "max_price": "Maksimum Fiyat",
+              "syndicate": "Sendika",
+              "standing_cost": "Daimi Maliyet"
             }
           }
         },
@@ -2418,6 +2491,7 @@
       "datatable": {
         "columns": {
           "item_name": "İsim",
+          "sub_type": "Alt Tür",
           "quantity": "Miktar",
           "price": "Fiyat",
           "total": "Toplam",

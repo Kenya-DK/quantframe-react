@@ -19,8 +19,20 @@
       "save": {
         "label": "Sauvegarder"
       },
+      "reset_defaults": {
+        "label": "Réinitialiser aux valeurs par défaut"
+      },
       "delete": {
         "label": "Supprimer"
+      },
+      "cancel": {
+        "label": "Annuler"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "Réinitialiser les paramètres",
+        "message": "Réinitialiser tous les paramètres aux valeurs par défaut ?"
       }
     },
     "notifications": {
@@ -352,6 +364,16 @@
           "message": "La commande a été supprimée avec succès."
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "Erreur de liste noire",
+          "message": "Une erreur s'est produite lors de la tentative de mise sur liste noire de l'élément."
+        },
+        "success": {
+          "title": "Succès de la liste noire",
+          "message": "L'article a été mis sur liste noire et sa liste a été supprimée."
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "Erreur de suppression de toutes les commandes",
@@ -400,6 +422,16 @@
         "success": {
           "title": "Actualiser le succès des enchères",
           "message": "Les enchères ont été actualisées avec succès."
+        }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "Calculer l'erreur fiscale",
+          "message": "Une erreur s'est produite lors de la tentative de calcul de la taxe pour la transaction."
+        },
+        "success": {
+          "title": "Calculer la réussite fiscale",
+          "message": "La taxe a été calculée avec succès pour la transaction."
         }
       }
     },
@@ -450,6 +482,12 @@
         "message": "Cette action ne peut pas être annulée.",
         "cancel": "Annuler",
         "confirm": "Confirmer"
+      },
+      "blacklist_item": {
+        "title": "Article sur liste noire ?",
+        "message": "Cela supprimera votre annonce de Warframe Market et ajoutera l'article à votre liste noire. Cette action ne peut pas être annulée.",
+        "cancel": "Annuler",
+        "confirm": "Liste noire"
       },
       "delete_multiple_items": {
         "title": "Es-tu sûr?",
@@ -606,6 +644,12 @@
         "initializing": "Initialisation du cache...",
         "updating": "Mise à jour du cache...",
         "item_price_updating": "Mise à jour des prix des articles..."
+      },
+      "wfm": {
+        "user": "Récupération des données utilisateur...",
+        "orders": "Récupération des commandes...",
+        "auctions": "Récupération des enchères...",
+        "chats": "Récupération des discussions..."
       }
     }
   },
@@ -679,6 +723,7 @@
         "logout": "Déconnexion"
       },
       "errors": {
+        "connection_websocket_error": "Chargement...",
         "logout": {
           "title": "Erreur de déconnexion",
           "message": "Une erreur s'est produite lors de la tentative de déconnexion."
@@ -1119,7 +1164,14 @@
           "item": {
             "label": "Article",
             "placeholder": "Sélectionnez l'élément..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "Aucun article trouvé"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "Variante",
             "placeholder": "Sélectionnez une variante...",
@@ -1746,10 +1798,6 @@
         "export_log": "Journal d'exportation"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "Supprimer la conversation",
-      "last_update": "Dernière mise à jour"
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2071,6 +2119,7 @@
             "refresh_tooltip": "Actualiser la liste des commandes",
             "delete_all_tooltip": "Supprimer toutes les commandes",
             "delete_tooltip": "Supprimer cette commande",
+            "blacklist_tooltip": "Article sur liste noire et suppression de la liste",
             "info_tooltip": "Afficher les détails de la commande",
             "sell_manual": {
               "buy_tooltip": "Acheté manuellement",
@@ -2119,9 +2168,13 @@
           "confirm": "Supprimer"
         }
       },
+      "chat_item": {
+        "last_update": "Dernière mise à jour"
+      },
       "buttons": {
         "refresh_tooltip": "Actualiser la liste de discussion",
-        "delete_all_tooltip": "Supprimer toutes les discussions"
+        "delete_all_tooltip": "Supprimer toutes les discussions",
+        "delete_tooltip": "Supprimer la conversation"
       }
     },
     "trading_analytics": {
@@ -2190,6 +2243,26 @@
               "trading_tax": "Taxe commerciale",
               "supply": "Fournir",
               "demand": "Demande"
+            }
+          }
+        },
+        "syndicate": {
+          "title": "Syndicat",
+          "export_json_tooltip": "Exporter le syndicat vers JSON (Patreon T1+)",
+          "volume_label": "Volume",
+          "fields": {
+            "syndicate": {
+              "label": "Syndicat",
+              "placeholder": "Sélectionnez le syndicat"
+            }
+          },
+          "datatable": {
+            "columns": {
+              "volume": "Volume",
+              "min_price": "Prix ​​minimum",
+              "max_price": "Prix ​​maximum",
+              "syndicate": "Syndicat",
+              "standing_cost": "Coût permanent"
             }
           }
         },
@@ -2418,6 +2491,7 @@
       "datatable": {
         "columns": {
           "item_name": "Nom",
+          "sub_type": "Sous-type",
           "quantity": "Quantité",
           "price": "Prix",
           "total": "Total",

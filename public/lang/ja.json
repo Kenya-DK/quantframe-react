@@ -19,8 +19,20 @@
       "save": {
         "label": "保存"
       },
+      "reset_defaults": {
+        "label": "デフォルトにリセット"
+      },
       "delete": {
         "label": "消去"
+      },
+      "cancel": {
+        "label": "キャンセル"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "設定をリセットする",
+        "message": "すべての設定をデフォルト値にリセットしますか?"
       }
     },
     "notifications": {
@@ -352,6 +364,16 @@
           "message": "注文は正常に削除されました。"
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "ブラックリストエラー",
+          "message": "アイテムをブラックリストに登録しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "ブラックリストの成功",
+          "message": "アイテムはブラックリストに登録され、リストは削除されました。"
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "すべての注文の削除エラー",
@@ -400,6 +422,16 @@
         "success": {
           "title": "オークションの更新が成功しました",
           "message": "オークションは正常に更新されました。"
+        }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "税計算エラー",
+          "message": "トランザクションの税金を計算しようとしたときにエラーが発生しました。"
+        },
+        "success": {
+          "title": "税金の計算の成功",
+          "message": "トランザクションの税金が正常に計算されました。"
         }
       }
     },
@@ -450,6 +482,12 @@
         "message": "この操作は元に戻すことができません。",
         "cancel": "キャンセル",
         "confirm": "確認する"
+      },
+      "blacklist_item": {
+        "title": "ブラックリスト項目?",
+        "message": "これにより、Warframe マーケットからあなたのリストが削除され、そのアイテムがブラックリストに追加されます。この操作は元に戻すことができません。",
+        "cancel": "キャンセル",
+        "confirm": "ブラックリスト"
       },
       "delete_multiple_items": {
         "title": "本気ですか？",
@@ -606,6 +644,12 @@
         "initializing": "キャッシュを初期化しています...",
         "updating": "キャッシュを更新しています...",
         "item_price_updating": "商品価格を更新中..."
+      },
+      "wfm": {
+        "user": "ユーザーデータを取得しています...",
+        "orders": "注文を取得中...",
+        "auctions": "オークションを取得中...",
+        "chats": "チャットを取得中..."
       }
     }
   },
@@ -679,6 +723,7 @@
         "logout": "ログアウト"
       },
       "errors": {
+        "connection_websocket_error": "読み込み中...",
         "logout": {
           "title": "ログアウトエラー",
           "message": "ログアウトしようとしたときにエラーが発生しました。"
@@ -1119,7 +1164,14 @@
           "item": {
             "label": "アイテム",
             "placeholder": "項目を選択..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "項目が見つかりませんでした"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "変異体",
             "placeholder": "バリエーションを選択...",
@@ -1746,10 +1798,6 @@
         "export_log": "エクスポートログ"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "会話の削除",
-      "last_update": "最終更新"
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2071,6 +2119,7 @@
             "refresh_tooltip": "注文リストを更新する",
             "delete_all_tooltip": "すべての注文を削除する",
             "delete_tooltip": "この注文を削除する",
+            "blacklist_tooltip": "アイテムをブラックリストに登録し、リストを削除する",
             "info_tooltip": "注文の詳細を表示する",
             "sell_manual": {
               "buy_tooltip": "手動で購入",
@@ -2119,9 +2168,13 @@
           "confirm": "消去"
         }
       },
+      "chat_item": {
+        "last_update": "最終更新"
+      },
       "buttons": {
         "refresh_tooltip": "チャットリストを更新する",
-        "delete_all_tooltip": "すべてのチャットを削除する"
+        "delete_all_tooltip": "すべてのチャットを削除する",
+        "delete_tooltip": "会話の削除"
       }
     },
     "trading_analytics": {
@@ -2190,6 +2243,26 @@
               "trading_tax": "営業税",
               "supply": "供給",
               "demand": "要求"
+            }
+          }
+        },
+        "syndicate": {
+          "title": "シンジケート",
+          "export_json_tooltip": "シンジケートを JSON にエクスポート (Patreon T1+)",
+          "volume_label": "音量",
+          "fields": {
+            "syndicate": {
+              "label": "シンジケート",
+              "placeholder": "シンジケートの選択"
+            }
+          },
+          "datatable": {
+            "columns": {
+              "volume": "音量",
+              "min_price": "最低価格",
+              "max_price": "最高価格",
+              "syndicate": "シンジケート",
+              "standing_cost": "常設コスト"
             }
           }
         },
@@ -2418,6 +2491,7 @@
       "datatable": {
         "columns": {
           "item_name": "名前",
+          "sub_type": "サブタイプ",
           "quantity": "量",
           "price": "価格",
           "total": "合計",

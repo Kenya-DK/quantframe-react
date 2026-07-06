@@ -19,8 +19,20 @@
       "save": {
         "label": "구하다"
       },
+      "reset_defaults": {
+        "label": "기본값으로 재설정"
+      },
       "delete": {
         "label": "삭제"
+      },
+      "cancel": {
+        "label": "취소"
+      }
+    },
+    "dialogs": {
+      "reset_settings": {
+        "title": "설정 재설정",
+        "message": "모든 설정을 기본값으로 재설정하시겠습니까?"
       }
     },
     "notifications": {
@@ -352,6 +364,16 @@
           "message": "주문이 성공적으로 삭제되었습니다."
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "블랙리스트 오류",
+          "message": "항목을 블랙리스트에 추가하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "블랙리스트 성공",
+          "message": "항목이 블랙리스트에 추가되었으며 목록이 삭제되었습니다."
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "모든 주문 삭제 오류",
@@ -400,6 +422,16 @@
         "success": {
           "title": "경매 성공 새로 고침",
           "message": "경매가 성공적으로 새로 고쳐졌습니다."
+        }
+      },
+      "calculate_tax_transaction": {
+        "error": {
+          "title": "세금 오류 계산",
+          "message": "거래에 대한 세금을 계산하는 중에 오류가 발생했습니다."
+        },
+        "success": {
+          "title": "세금 성공 계산",
+          "message": "거래에 대한 세금이 성공적으로 계산되었습니다."
         }
       }
     },
@@ -450,6 +482,12 @@
         "message": "이 작업은 취소할 수 없습니다.",
         "cancel": "취소",
         "confirm": "확인하다"
+      },
+      "blacklist_item": {
+        "title": "블랙리스트 항목?",
+        "message": "그러면 워프레임 마켓에서 귀하의 목록이 제거되고 해당 아이템이 블랙리스트에 추가됩니다. 이 작업은 취소할 수 없습니다.",
+        "cancel": "취소",
+        "confirm": "블랙리스트"
       },
       "delete_multiple_items": {
         "title": "확실합니까?",
@@ -606,6 +644,12 @@
         "initializing": "캐시 초기화 중...",
         "updating": "캐시 업데이트 중...",
         "item_price_updating": "품목 가격 업데이트 중..."
+      },
+      "wfm": {
+        "user": "사용자 데이터를 가져오는 중...",
+        "orders": "주문을 가져오는 중...",
+        "auctions": "경매를 가져오는 중...",
+        "chats": "채팅을 가져오는 중..."
       }
     }
   },
@@ -679,6 +723,7 @@
         "logout": "로그아웃"
       },
       "errors": {
+        "connection_websocket_error": "로드 중...",
         "logout": {
           "title": "로그아웃 오류",
           "message": "로그아웃을 시도하는 동안 오류가 발생했습니다."
@@ -1119,7 +1164,14 @@
           "item": {
             "label": "목",
             "placeholder": "항목 선택..."
-          },
+          }
+        },
+        "messages": {
+          "nothing_found": "항목을 찾을 수 없습니다"
+        }
+      },
+      "select_sub_type": {
+        "fields": {
           "variant": {
             "label": "변종",
             "placeholder": "변형 선택...",
@@ -1746,10 +1798,6 @@
         "export_log": "로그 내보내기"
       }
     },
-    "chat_item": {
-      "delete_tooltip": "대화 삭제",
-      "last_update": "마지막 업데이트"
-    },
     "chat_rome": {
       "fields": {
         "message": {
@@ -2071,6 +2119,7 @@
             "refresh_tooltip": "주문 목록 새로고침",
             "delete_all_tooltip": "모든 주문 삭제",
             "delete_tooltip": "이 주문 삭제",
+            "blacklist_tooltip": "블랙리스트 항목 및 목록 제거",
             "info_tooltip": "주문 세부정보 보기",
             "sell_manual": {
               "buy_tooltip": "수동으로 구매함",
@@ -2119,9 +2168,13 @@
           "confirm": "삭제"
         }
       },
+      "chat_item": {
+        "last_update": "마지막 업데이트"
+      },
       "buttons": {
         "refresh_tooltip": "채팅 목록 새로 고침",
-        "delete_all_tooltip": "모든 채팅 삭제"
+        "delete_all_tooltip": "모든 채팅 삭제",
+        "delete_tooltip": "대화 삭제"
       }
     },
     "trading_analytics": {
@@ -2190,6 +2243,26 @@
               "trading_tax": "거래세",
               "supply": "공급",
               "demand": "수요"
+            }
+          }
+        },
+        "syndicate": {
+          "title": "신디케이트",
+          "export_json_tooltip": "신디케이트를 JSON으로 내보내기(Patreon T1+)",
+          "volume_label": "용량",
+          "fields": {
+            "syndicate": {
+              "label": "신디케이트",
+              "placeholder": "신디케이트 선택"
+            }
+          },
+          "datatable": {
+            "columns": {
+              "volume": "용량",
+              "min_price": "최소 가격",
+              "max_price": "최대 가격",
+              "syndicate": "신디케이트",
+              "standing_cost": "상임 비용"
             }
           }
         },
@@ -2418,6 +2491,7 @@
       "datatable": {
         "columns": {
           "item_name": "이름",
+          "sub_type": "하위 유형",
           "quantity": "수량",
           "price": "가격",
           "total": "총",
