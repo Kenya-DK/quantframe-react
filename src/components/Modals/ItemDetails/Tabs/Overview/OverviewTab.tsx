@@ -1,14 +1,14 @@
-import { alpha, Box, Flex, Group, Table, Image } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { WFMThumbnail } from "@api/index";
+import { ItemName } from "@components/DataDisplay/ItemName";
+import { PriceHistoryPopover } from "@components/DataDisplay/PriceHistoryPopover";
+import { TextTranslate } from "@components/Shared/TextTranslate";
+import { TimerStamp } from "@components/Shared/TimerStamp";
+import { faCheckCircle, faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
-import { TextTranslate } from "@components/Shared/TextTranslate";
-import { faCheckCircle, faClose } from "@fortawesome/free-solid-svg-icons";
-import { PriceHistoryPopover } from "@components/DataDisplay/PriceHistoryPopover";
-import { TimerStamp } from "@components/Shared/TimerStamp";
+import { alpha, Box, Flex, Group, Image, Table } from "@mantine/core";
 import classes from "./OverviewTab.module.css";
-import { ItemName } from "@components/DataDisplay/ItemName";
 
 interface Properties {
   image: string;
@@ -72,7 +72,7 @@ export function OverviewTab({ value }: OverviewTabProps) {
         </Box>
         <Flex direction="column">
           <Group gap={3}>
-            <PriceHistoryPopover histories={value.price_history} status={value.status} size="2x" />
+            <PriceHistoryPopover histories={GetProperty("price_history")} status={value.status} size="2x" />
             <ItemName
               hideQuantity
               value={value}

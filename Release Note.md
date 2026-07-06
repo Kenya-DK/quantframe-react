@@ -14,6 +14,7 @@
 - 🛠️ Fix the error was showing when the websocket was down
 - 🛠️ Fix the parsing errors in the trade parsing.
 - 🛠️ Fix slow loading in the chat tab
+- 🛠️ Fix the Price History when hovering over the WFM log in the order info
 
 ## Dev Notes
 

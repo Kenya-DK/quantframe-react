@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 use entity::{
-    dto::{FinancialGraph, FinancialReport, PaginatedResult, SubType},
+    dto::{
+        FinancialGraph, FinancialReport, PaginatedResult, PriceHistory, PriceHistoryVec, SubType,
+    },
     enums::RivenGrade,
     stock_riven::RivenAttribute,
     transaction::TransactionPaginationQueryDto,
@@ -213,7 +215,17 @@ pub async fn populate_item_market_properties(
         let order_operations = order
             .properties
             .get_property_value("operations", OperationSet::new());
+
+        properties.update_property("price_history", |ph: &mut Vec<PriceHistory>| {
+            if ph.is_empty() {
+                ph.push(PriceHistory::new(
+                    order.updated_at.clone(),
+                    order.platinum as i64,
+                ));
+            }
+        });
         operations.merge(&order_operations);
+
         (order.platinum as i64, order.properties.clone())
     } else {
         (
@@ -221,7 +233,6 @@ pub async fn populate_item_market_properties(
             wf_market::types::Properties::default(),
         )
     };
-
     // ---------------- Profitability Info ----------------
     if operations.has("ProfitabilityInfo") {
         let potential_profit = platinum - bought;
