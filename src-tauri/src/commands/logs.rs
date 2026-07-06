@@ -4,8 +4,12 @@ use serde_json::{json, Value};
 use utils::{Error, Properties, ZipOptions};
 
 use crate::{
-    app::client::AppState, helper, live_scraper::LiveScraperState, log_parser::LogParserState,
-    utils::modules::states::get_app_error, APP,
+    app::{client::AppState, user},
+    helper,
+    live_scraper::LiveScraperState,
+    log_parser::LogParserState,
+    utils::modules::states::get_app_error,
+    APP,
 };
 
 #[tauri::command]
@@ -66,12 +70,29 @@ pub async fn log_export(
     );
     let mut wfm_info = Properties::default();
     wfm_info.set_property_value("tracking", app.wfm_client.get_tracking());
-
+    let wfm_user = app.wfm_client.get_user().ok();
+    if wfm_user.is_some() {
+        let user = wfm_user.unwrap();
+        wfm_info.set_property_value("wfmTier", format!("{:?}", user.tier));
+        wfm_info.set_property_value("wfmSubscription", user.subscription);
+    }
+    wfm_info.set_property_value(
+        "wfmTotalOrders",
+        app.wfm_client.order().cache_orders().total_orders(),
+    );
+    wfm_info.set_property_value(
+        "wfmTotalBuyOrders",
+        app.wfm_client.order().cache_orders().buy_orders.len(),
+    );
+    wfm_info.set_property_value(
+        "wfmTotalSellOrders",
+        app.wfm_client.order().cache_orders().sell_orders.len(),
+    );
     let per_rate_limit = app.wfm_client.get_per_route_limiter().clone();
     for (key, route) in per_rate_limit.lock()?.iter() {
         wfm_info.update_property("limiters", |data: &mut Vec<String>| {
             data.push(format!(
-                "{}: limit: {}, wait_time_sec: {}, quota_type: {}",
+                "{}: Limit: {} | Wait Time (sec): {}, Quota Type: {}",
                 key,
                 route.quota_type.current_limit(),
                 route.wait_time_sec,
