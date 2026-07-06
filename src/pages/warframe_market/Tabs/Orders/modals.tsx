@@ -1,8 +1,9 @@
-import { modals } from "@mantine/modals";
-import { Text } from "@mantine/core";
-import { WFMarketTypes } from "$types";
-import { useTranslateCommon, useTranslateEnums } from "@hooks/useTranslate.hook";
+import { TauriTypes, WFMarketTypes } from "$types";
+import { SendTauriEvent } from "@api/index";
 import { ItemDetailsModal, Operations } from "@components/Modals/ItemDetails";
+import { useTranslateCommon, useTranslateEnums } from "@hooks/useTranslate.hook";
+import { Text } from "@mantine/core";
+import { modals } from "@mantine/modals";
 
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
@@ -23,7 +24,13 @@ interface ModalHooks {
   };
 }
 
-export const useStockModals = ({ deleteStockMutation, deleteAllOrdersMutation, createStockMutation, sellStockMutation, blacklistOrderMutation }: ModalHooks) => {
+export const useStockModals = ({
+  deleteStockMutation,
+  deleteAllOrdersMutation,
+  createStockMutation,
+  sellStockMutation,
+  blacklistOrderMutation,
+}: ModalHooks) => {
   const OpenSellModal = (order: WFMarketTypes.Order) => {
     modals.openContextModal({
       modal: "prompt",
@@ -119,7 +126,10 @@ export const useStockModals = ({ deleteStockMutation, deleteAllOrdersMutation, c
       title: useTranslateCommon("prompts.blacklist_item.title"),
       children: <Text size="sm">{useTranslateCommon("prompts.blacklist_item.message")}</Text>,
       labels: { confirm: useTranslateCommon("prompts.blacklist_item.confirm"), cancel: useTranslateCommon("prompts.blacklist_item.cancel") },
-      onConfirm: () => blacklistOrderMutation.mutateAsync(order),
+      onConfirm: async () => {
+        await blacklistOrderMutation.mutateAsync(order);
+        SendTauriEvent(TauriTypes.Events.RefreshSettings);
+      },
     });
   };
   const OpenDeleteAllModal = () => {
