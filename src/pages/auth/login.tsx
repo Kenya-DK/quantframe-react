@@ -53,11 +53,12 @@ export default function LoginPage() {
     },
     onError: (err: ResponseError) => {
       console.error(err);
-      const { type } = err.context as any;
+      const { type } = err.properties as any;
       return notifications.show({
         title: useTranslateErrors("login.title"),
-        message: useTranslateErrors(`login.${type}`),
+        message: type ? useTranslateErrors(`login.${type}`) : err.cause,
         color: "red.7",
+        autoClose: false,
       });
     },
   });
