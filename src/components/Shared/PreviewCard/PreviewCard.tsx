@@ -24,6 +24,8 @@ interface PreviewCardProps<T = any> extends CardProps {
   footerShowOnHover?: boolean;
 
   renderBody?: (value: T) => React.ReactNode;
+
+  onClick?: () => void;
 }
 
 const slotConfig: Record<SlotKey, { justify: "flex-start" | "center" | "flex-end"; gridColumn: string }> = {
@@ -38,6 +40,7 @@ const slotConfig: Record<SlotKey, { justify: "flex-start" | "center" | "flex-end
 
 export const PreviewCard = memo(function PreviewCard<T>({
   value,
+  onClick,
   renderBody,
   headerLeft,
   headerCenter,
@@ -190,7 +193,7 @@ export const PreviewCard = memo(function PreviewCard<T>({
   };
 
   return (
-    <Card radius="md" ref={ref} pos="relative" style={{ display: "flex", flexDirection: "column", ...style }} {...cardProps}>
+    <Card radius="md" ref={ref} pos="relative" style={{ display: "flex", flexDirection: "column", ...style }} {...cardProps} onClick={onClick}>
       {/* Header */}
       {hasRenderableSlots("header") && !headerShowOnHover ? (
         <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3}>

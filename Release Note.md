@@ -12,6 +12,7 @@
 
 - 🛠️ Fix the error was showing when the websocket was down
 - 🛠️ Fix the parsing errors in the trade parsing.
+- 🛠️ Fix slow loading in the chat tab
 
 ## Dev Notes
 

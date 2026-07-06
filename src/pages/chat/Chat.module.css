@@ -6,7 +6,7 @@
 }
 
 .chats {
-  --offset: 150px;
+  --offset: 220px;
   height: calc(100vh - var(--offset));
 
   &[data-has-alert="true"] {
