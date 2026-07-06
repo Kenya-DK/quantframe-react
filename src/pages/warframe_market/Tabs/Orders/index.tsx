@@ -21,7 +21,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { ActionIcon, Badge, Box, Divider, Group, Image, Rating, ScrollArea, Select, SimpleGrid, Tooltip, useMantineTheme } from "@mantine/core";
+import { ActionIcon, Box, Divider, Group, Image, Rating, ScrollArea, Select, SimpleGrid, Tooltip, useMantineTheme } from "@mantine/core";
 import { upperFirst } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { useState } from "react";
@@ -188,6 +188,8 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
             <PreviewCard
               key={i}
               value={order}
+              data-order-type={order.type}
+              data-color-mode="border"
               headerLeft={{
                 fz: "lg",
                 fw: 700,
@@ -265,11 +267,6 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                   price: order.platinum,
                 },
               }}
-              footerCenter={
-                <Badge data-color-mode="bg" data-order-type={order.type}>
-                  {useTranslateOrderType(order.type)}
-                </Badge>
-              }
               footerRight={
                 <Group gap={3}>
                   <ActionWithTooltip

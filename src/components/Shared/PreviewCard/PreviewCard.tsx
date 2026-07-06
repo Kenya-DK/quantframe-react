@@ -1,7 +1,7 @@
-import { isValidElement, memo } from "react";
+import { TextTranslate, TextTranslateProps } from "@components/Shared/TextTranslate";
 import { alpha, Card, CardProps, Collapse } from "@mantine/core";
 import { useHover } from "@mantine/hooks";
-import { TextTranslate, TextTranslateProps } from "@components/Shared/TextTranslate";
+import { isValidElement, memo } from "react";
 type SlotKey = "headerLeft" | "headerCenter" | "headerRight" | "footerLeft" | "footerCenter" | "footerRight";
 
 interface TextTranslatePropsExtended extends TextTranslateProps {
