@@ -364,6 +364,16 @@
           "message": "The order has been successfully deleted."
         }
       },
+      "blacklist_order": {
+        "error": {
+          "title": "Blacklist Error",
+          "message": "An error occurred while trying to blacklist the item."
+        },
+        "success": {
+          "title": "Blacklist Success",
+          "message": "The item has been blacklisted and its listing removed."
+        }
+      },
       "delete_all_orders": {
         "error": {
           "title": "Delete All Orders Error",
@@ -472,6 +482,12 @@
         "message": "This action cannot be undone.",
         "cancel": "Cancel",
         "confirm": "Confirm"
+      },
+      "blacklist_item": {
+        "title": "Blacklist item?",
+        "message": "This will remove your listing from Warframe Market and add the item to your blacklist. This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Blacklist"
       },
       "delete_multiple_items": {
         "title": "Are you sure?",
@@ -2101,6 +2117,7 @@
             "refresh_tooltip": "Refresh the order list",
             "delete_all_tooltip": "Delete all orders",
             "delete_tooltip": "Delete this order",
+            "blacklist_tooltip": "Blacklist item and remove listing",
             "info_tooltip": "View order details",
             "sell_manual": {
               "buy_tooltip": "Bought manually",

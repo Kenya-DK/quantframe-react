@@ -6,7 +6,17 @@ import { Loading } from "@components/Shared/Loading";
 import { PaginationFooter } from "@components/Shared/PaginationFooter";
 import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowDown,
+  faArrowUp,
+  faBan,
+  faCartShopping,
+  faInfoCircle,
+  faPen,
+  faRefresh,
+  faSackDollar,
+  faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
@@ -51,18 +61,20 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
   const { refetchQueries, paginationQuery, statusCountsQuery } = useStockQueries({ queryData, isActive });
 
   // Mutations
-  const { refreshOrdersMutation, deleteAllOrdersMutation, deleteStockMutation, createStockMutation, sellStockMutation } = useStockMutations({
-    refetchQueries,
-    setLoadingRows,
-  });
+  const { refreshOrdersMutation, deleteAllOrdersMutation, deleteStockMutation, createStockMutation, sellStockMutation, blacklistOrderMutation } =
+    useStockMutations({
+      refetchQueries,
+      setLoadingRows,
+    });
 
   // Modals
-  const { OpenDeleteAllModal, OpenInfoModal, OpenDeleteModal, HandleModalOrder } = useStockModals({
+  const { OpenDeleteAllModal, OpenInfoModal, OpenDeleteModal, OpenBlacklistModal, HandleModalOrder } = useStockModals({
     createStockMutation,
     sellStockMutation,
     useTranslateBasePrompt,
     deleteStockMutation,
     deleteAllOrdersMutation,
+    blacklistOrderMutation,
   });
   const handleRefresh = (_data: any) => {
     refetchQueries(true);
@@ -302,6 +314,18 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
                     onClick={(e) => {
                       e.stopPropagation();
                       OpenInfoModal(order);
+                    }}
+                  />
+                  <ActionWithTooltip
+                    tooltip={useTranslateButtons("blacklist_tooltip")}
+                    icon={faBan}
+                    loading={loadingRows.includes(`${order.id}`)}
+                    color={"orange.7"}
+                    actionProps={{ size: "sm" }}
+                    iconProps={{ size: "xs" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      OpenBlacklistModal(order);
                     }}
                   />
                   <ActionWithTooltip

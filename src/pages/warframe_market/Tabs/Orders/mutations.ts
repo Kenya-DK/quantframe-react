@@ -1,9 +1,11 @@
-import { WFMarketTypes } from "$types";
+import { TauriTypes, WFMarketTypes } from "$types";
 import api from "@api/index";
+import { useAppContext } from "@contexts/app.context";
 import { createGenericMutation, MutationHooks } from "@utils/genericMutation.helper";
 
 export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHooks) => {
   const hooks = { refetchQueries, setLoadingRows };
+  const { settings } = useAppContext();
 
   const refreshOrdersMutation = createGenericMutation(
     {
@@ -73,11 +75,36 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
     hooks,
   );
 
+  const blacklistOrderMutation = createGenericMutation(
+    {
+      mutationFn: async (order: WFMarketTypes.Order) => {
+        if (!settings) throw new Error("Settings are not loaded");
+        const wfm_id = order.properties?.wfm_id || order.itemId;
+        const allModes = [TauriTypes.TradeMode.Buy, TauriTypes.TradeMode.Sell, TauriTypes.TradeMode.Wishlist];
+        const blacklist = settings.live_scraper.stock_item.blacklist || [];
+        const updatedBlacklist = [...blacklist.filter((b) => b.wfmId !== wfm_id), { wfmId: wfm_id, disabled_for: allModes }];
+        await api.app.updateSettings({
+          ...settings,
+          live_scraper: {
+            ...settings.live_scraper,
+            stock_item: { ...settings.live_scraper.stock_item, blacklist: updatedBlacklist },
+          },
+        });
+        return api.order.deleteById(order.id);
+      },
+      successKey: "blacklist_order",
+      errorKey: "blacklist_order",
+      getLoadingId: (order: WFMarketTypes.Order) => `${order.id}`,
+    },
+    hooks,
+  );
+
   return {
     refreshOrdersMutation,
     deleteAllOrdersMutation,
     createStockMutation,
     sellStockMutation,
     deleteStockMutation,
+    blacklistOrderMutation,
   };
 };
