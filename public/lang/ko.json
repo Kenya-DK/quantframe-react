@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "거래 처리 시작",
+        "delete": "거래 삭제",
         "confirm_trade": "거래 확인",
         "back_to_list": "목록으로 돌아가기"
       },

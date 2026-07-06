@@ -3821,6 +3821,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "es": {
@@ -7645,6 +7648,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "fr": {
@@ -11469,6 +11475,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "it": {
@@ -15293,6 +15302,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "ja": {
@@ -19117,6 +19129,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "ko": {
@@ -22941,6 +22956,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "pl": {
@@ -26765,6 +26783,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "pt": {
@@ -30589,6 +30610,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "ru": {
@@ -34413,6 +34437,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "tc": {
@@ -38237,6 +38264,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "th": {
@@ -42061,6 +42091,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "tr": {
@@ -45885,6 +45918,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "uk": {
@@ -49709,6 +49745,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   },
   "zh": {
@@ -53533,6 +53572,9 @@
     },
     "pages.process_trade.datatable.columns.sub_type": {
       "hash": "14773817bcf0cbbfef7e4d691c1da17e46cbc7e64de47d30e0f10f38c9df5e33"
+    },
+    "pages.process_trade.buttons.delete": {
+      "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
     }
   }
 }

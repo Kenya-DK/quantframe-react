@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { QuantframeApiTypes, ResponseError } from "$types";
 import api from "@api/index";
 import { notifications } from "@mantine/notifications";
+import { useQuery } from "@tanstack/react-query";
 
 interface QueriesHooks {
   queryData: QuantframeApiTypes.RivenPriceControllerGetListParams;
@@ -32,7 +32,7 @@ export const useQueries = ({ queryData, isActive }: QueriesHooks) => {
     queryFn: () => api.riven.getAll(queryData),
     retry: false,
     throwOnError(error: ResponseError, query) {
-      if (error.context?.error.status_code === 429) {
+      if (error.properties?.error.status_code === 429) {
         notifications.show({
           title: "Error 429",
           color: "red.7",

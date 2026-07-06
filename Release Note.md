@@ -6,6 +6,7 @@
 - ✨ Add login feedback to the user during startup.
 - ✨ Export logs will now have the state of the app
 - ✨ Add raw lines of logs to the trade for debugging purposes.
+- ✨ Add a delete button to the trade processing popup to allow users to delete trades from the queue.
 - ✨ Add Lookup for syndicate items in the trading analytics tab. (Patreon T2+)
 
 ## Fixes

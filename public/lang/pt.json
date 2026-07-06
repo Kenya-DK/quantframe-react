@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "Comece a processar negociações",
+        "delete": "Excluir negociação",
         "confirm_trade": "Confirmar negociação",
         "back_to_list": "Voltar à lista"
       },

@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "Start processing trades",
+        "delete": "Delete Trade",
         "confirm_trade": "Confirm Trade",
         "back_to_list": "Back to List"
       },

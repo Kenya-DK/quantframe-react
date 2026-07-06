@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "Начать обработку сделок",
+        "delete": "Удалить сделку",
         "confirm_trade": "Подтвердить сделку",
         "back_to_list": "Вернуться к списку"
       },

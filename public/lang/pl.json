@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "Rozpocznij przetwarzanie transakcji",
+        "delete": "Usuń transakcję",
         "confirm_trade": "Potwierdź wymianę",
         "back_to_list": "Powrót do listy"
       },

@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "开始加工贸易",
+        "delete": "删除交易",
         "confirm_trade": "确认交易",
         "back_to_list": "返回列表"
       },

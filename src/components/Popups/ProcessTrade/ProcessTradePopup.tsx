@@ -2,7 +2,7 @@ import { TauriTypes } from "$types";
 import { ItemName } from "@components/DataDisplay/ItemName";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
-import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import { faPlay, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { Box, Button, Divider, Group, NumberInput, Table, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -135,14 +135,24 @@ export function ProcessTradePopup() {
               title: useTranslateCommon("datatable_columns.actions.title"),
               width: "120px",
               render: (row) => (
-                <ActionWithTooltip
-                  tooltip={useTranslateButton("process_trade_tooltip")}
-                  onClick={() => {
-                    setCurrentStep(TradeProcessingStep.Validate);
-                    currentTradeForm.setValues(row);
-                  }}
-                  icon={faPlay}
-                />
+                <Group>
+                  <ActionWithTooltip
+                    tooltip={useTranslateButton("process_trade_tooltip")}
+                    onClick={() => {
+                      setCurrentStep(TradeProcessingStep.Validate);
+                      currentTradeForm.setValues(row);
+                    }}
+                    icon={faPlay}
+                  />
+                  <ActionWithTooltip
+                    tooltip={useTranslateButton("delete")}
+                    color="red.7"
+                    onClick={() => {
+                      setTrades((prevTrades) => prevTrades.filter((trade) => trade.tradeTime !== row.tradeTime));
+                    }}
+                    icon={faTrash}
+                  />
+                </Group>
               ),
             },
           ]}

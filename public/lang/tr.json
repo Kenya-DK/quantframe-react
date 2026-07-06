@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "İşlemleri işlemeye başlayın",
+        "delete": "Ticareti Sil",
         "confirm_trade": "Ticareti Onayla",
         "back_to_list": "Listeye Geri Dön"
       },

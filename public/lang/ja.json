@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "取引の処理を開始する",
+        "delete": "取引の削除",
         "confirm_trade": "取引の確認",
         "back_to_list": "リストに戻る"
       },

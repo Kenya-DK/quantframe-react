@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "Почати обробку угод",
+        "delete": "Видалити торгівлю",
         "confirm_trade": "Підтвердити торгівлю",
         "back_to_list": "Назад до списку"
       },

@@ -2485,6 +2485,7 @@
       },
       "buttons": {
         "process_trade_tooltip": "Beginnen Sie mit der Abwicklung von Trades",
+        "delete": "Handel löschen",
         "confirm_trade": "Bestätigen Sie den Handel",
         "back_to_list": "Zurück zur Liste"
       },
