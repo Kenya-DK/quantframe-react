@@ -6,7 +6,17 @@ import { Loading } from "@components/Shared/Loading";
 import { PaginationFooter } from "@components/Shared/PaginationFooter";
 import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
 import { TextTranslate } from "@components/Shared/TextTranslate";
-import { faArrowDown, faArrowUp, faCartShopping, faInfoCircle, faPen, faRefresh, faSackDollar, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowDown,
+  faArrowUp,
+  faBan,
+  faCartShopping,
+  faInfoCircle,
+  faPen,
+  faRefresh,
+  faSackDollar,
+  faTrashCan,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
