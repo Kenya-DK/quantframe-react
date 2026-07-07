@@ -61,7 +61,7 @@ impl AuctionExt for Auction {
         }
 
         let item = CreateStockRiven::new(
-            format!("Wfm:{}", self.item.weapon_url_name),
+            self.item.weapon_url_name.clone(),
             self.item.mod_name.clone().unwrap_or(String::new()),
             self.item.mastery_level.unwrap_or(0).into(),
             self.item.re_rolls.unwrap_or(0).into(),

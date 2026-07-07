@@ -15,6 +15,7 @@
 - 🛠️ Fix the parsing errors in the trade parsing.
 - 🛠️ Fix slow loading in the chat tab
 - 🛠️ Fix the Price History when hovering over the WFM log in the order info
+- 🛠️ Fix a error when y try to import a auction
 
 ## Dev Notes
 
