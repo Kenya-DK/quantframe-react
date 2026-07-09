@@ -13,7 +13,7 @@ import { Avatar, Container, Divider, Grid, Group, Indicator, ScrollArea, SimpleG
 import { useLocalStorage } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import { PaginationFooter } from "../../components/Shared/PaginationFooter";
-import { PreviewCard } from "../../components/Shared/PreviewCard/PreviewCard";
+import { PreviewCard } from "../../components/Shared/PreviewCard";
 import { TimerStamp } from "../../components/Shared/TimerStamp";
 import classes from "./Chat.module.css";
 import { useModals } from "./modals";

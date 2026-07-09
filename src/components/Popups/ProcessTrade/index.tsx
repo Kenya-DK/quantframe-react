@@ -1,0 +1,266 @@
+import { TauriTypes } from "$types";
+import { ItemName } from "@components/DataDisplay/ItemName";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
+import { faPlay, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { Box, Button, Divider, Group, NumberInput, Table, Text } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { emit, listen } from "@tauri-apps/api/event";
+import dayjs from "dayjs";
+import { DataTable } from "mantine-datatable";
+import { useEffect, useState } from "react";
+import { SelectSubType } from "../../Forms/SelectSubType";
+import { useMutations } from "./mutations";
+
+enum TradeProcessingStep {
+  View = "view",
+  Validate = "validate",
+}
+
+export interface PlayerTrade<T = any> {
+  credits: number;
+  items: TradeItem<T>[];
+  platinum: number;
+  playerName: string;
+  tradeTime: string;
+  type: string;
+}
+
+export interface TradeItem<T = any> {
+  quantity: number;
+  wfm_url: string;
+  sub_type?: TauriTypes.SubType;
+  properties?: T;
+}
+
+export interface TradeItemProperties {
+  price: number;
+  wfm_url: string;
+  requireSubType?: boolean;
+  subTypes?: TauriTypes.CacheTradableItemSubType;
+}
+
+export function ProcessTradePopup() {
+  // Stats
+  const currentTradeForm = useForm({
+    initialValues: undefined as PlayerTrade<TradeItemProperties> | undefined,
+    onValuesChange: (values) => {
+      if (!values) return;
+      const itemsTotal = values.items.reduce((acc, item) => acc + (item.properties?.price || 0) * item.quantity, 0);
+      setCalculatedPrice(itemsTotal);
+    },
+  });
+  const [trades, setTrades] = useState<PlayerTrade<TradeItemProperties>[]>([]);
+  const [currentStep, setCurrentStep] = useState<TradeProcessingStep>(TradeProcessingStep.View);
+  const [calculated_price, setCalculatedPrice] = useState<number>(0);
+
+  // Translate general
+  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslatePages(`process_trade.${key}`, { ...context }, i18Key);
+  const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslate(`datatable.columns.${key}`, { ...context }, i18Key);
+  const useTranslateButton = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslate(`buttons.${key}`, { ...context }, i18Key);
+  const useTranslateStats = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`stats.${key}`, { ...context }, i18Key);
+
+  // Mutations
+  const { createMutation } = useMutations({ refetchQueries: () => {}, setLoadingRows: () => {} });
+
+  // Handle New Trade
+  useEffect(() => {
+    listen("add_trade", ({ payload }: { payload: PlayerTrade<TradeItemProperties> }) => {
+      console.log("Received new trade:", payload);
+      setTrades((prevTrades) => [...prevTrades, payload]);
+    });
+    emit("initialize");
+  }, []);
+
+  // Helper Methods
+  const GetDifferenceColor = (difference: number) => {
+    if (difference > 0) return "var(--qf-positive-color)";
+    else if (difference < 0) return "var(--qf-negative-color)";
+    else return "var(--mantine-color-blue-filled)";
+  };
+
+  const CreateItems = async () => {
+    let items = currentTradeForm.values?.items.map((item) => ({
+      ...item,
+      user_name: currentTradeForm.values?.playerName,
+      wfm_url: item.properties?.wfm_url,
+      price: item.properties?.price,
+      order_type: currentTradeForm.values?.type === "purchase" ? "buy" : "sell",
+      flags: [`SetDate:${currentTradeForm.values?.tradeTime}`],
+    }));
+    await createMutation.mutateAsync((items as any) || []);
+    setCurrentStep(TradeProcessingStep.View);
+    setTrades((prevTrades) => prevTrades.filter((trade) => trade.tradeTime !== currentTradeForm.values?.tradeTime));
+  };
+
+  const ShowSubTypes = currentTradeForm.values?.items?.some((item) => item.properties?.requireSubType);
+
+  return (
+    <Box>
+      {currentStep === TradeProcessingStep.View && (
+        <DataTable
+          height={"100vh"}
+          records={trades}
+          withColumnBorders
+          striped
+          idAccessor="tradeTime"
+          customRowAttributes={(record: any) => {
+            return {
+              "data-color-mode": "box-shadow",
+              "data-transaction-type": record.type,
+            };
+          }}
+          highlightOnHover
+          columns={[
+            {
+              accessor: "playerName",
+              title: useTranslateDataGridColumns("user_name"),
+            },
+            {
+              accessor: "platinum",
+              title: useTranslateDataGridColumns("platinum"),
+              render: ({ platinum }) => <Text fw={600}>{platinum}</Text>,
+            },
+            {
+              accessor: "tradeTime",
+              title: useTranslateDataGridColumns("date"),
+              render: ({ tradeTime }) => <Text>{dayjs(tradeTime).format("DD.MM.YYYY HH:mm")}</Text>,
+            },
+            {
+              accessor: "action",
+              title: useTranslateCommon("datatable_columns.actions.title"),
+              width: "120px",
+              render: (row) => (
+                <Group>
+                  <ActionWithTooltip
+                    tooltip={useTranslateButton("process_trade_tooltip")}
+                    onClick={() => {
+                      setCurrentStep(TradeProcessingStep.Validate);
+                      currentTradeForm.setValues(row);
+                    }}
+                    icon={faPlay}
+                  />
+                  <ActionWithTooltip
+                    tooltip={useTranslateButton("delete")}
+                    color="red.7"
+                    onClick={() => {
+                      setTrades((prevTrades) => prevTrades.filter((trade) => trade.tradeTime !== row.tradeTime));
+                    }}
+                    icon={faTrash}
+                  />
+                </Group>
+              ),
+            },
+          ]}
+        />
+      )}
+      {currentStep === TradeProcessingStep.Validate && currentTradeForm.values !== undefined && (
+        <Box p={"md"}>
+          <StatsWithSegments
+            p={0}
+            hidePercentBar
+            showPercent
+            orientation="vertical"
+            segments={[
+              {
+                label: useTranslateStats("user_name"),
+                count: currentTradeForm.values.playerName,
+                color: "orange",
+                part: dayjs(currentTradeForm.values.tradeTime).format("DD.MM.YYYY HH:mm"),
+              },
+              {
+                label: useTranslateStats("trade_type"),
+                count: useTranslateEnums(`transaction_type.${currentTradeForm.values.type}`),
+                color: `var(--qf-transaction-type-${currentTradeForm.values.type})`,
+              },
+            ]}
+            footer={
+              <StatsWithSegments
+                p={0}
+                hidePercentBar
+                showPercent
+                segments={[
+                  {
+                    label: useTranslateStats("trade_price"),
+                    count: currentTradeForm.values.platinum,
+                    color: "var(--mantine-color-blue-filled)",
+                  },
+                  {
+                    label: useTranslateStats("price"),
+                    count: calculated_price,
+                    color: "var(--mantine-color-blue-filled)",
+                  },
+                  {
+                    label: useTranslateStats("difference"),
+                    count: calculated_price - currentTradeForm.values.platinum,
+                    color: GetDifferenceColor(calculated_price - currentTradeForm.values.platinum),
+                  },
+                ]}
+              />
+            }
+          />
+          <Divider my="md" />
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>{useTranslateDataGridColumns("item_name")}</Table.Th>
+                <Table.Th display={ShowSubTypes ? "table-cell" : "none"}>{useTranslateDataGridColumns("sub_type")}</Table.Th>
+                <Table.Th>{useTranslateDataGridColumns("quantity")}</Table.Th>
+                <Table.Th>{useTranslateDataGridColumns("price")}</Table.Th>
+                <Table.Th>{useTranslateDataGridColumns("total")}</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {currentTradeForm.values.items.map((item, index: number) => (
+                <Table.Tr key={`${item.wfm_url}-${index}`}>
+                  <Table.Td>
+                    <ItemName value={item as any} />
+                  </Table.Td>
+                  <Table.Td display={ShowSubTypes ? "table-cell" : "none"}>
+                    <div style={{ display: item.properties?.subTypes && item.properties.requireSubType ? "table-cell" : "none" }}>
+                      <SelectSubType
+                        showLabel={false}
+                        value={item.sub_type}
+                        availableSubTypes={item.properties?.subTypes}
+                        onChange={(subType) => {
+                          currentTradeForm.setFieldValue(`items.${index}.sub_type`, subType);
+                        }}
+                      />
+                    </div>
+                  </Table.Td>
+                  <Table.Td>{item.quantity}</Table.Td>
+                  <Table.Td>
+                    <NumberInput
+                      size="xs"
+                      value={item.properties?.price || 0}
+                      onChange={(value) => {
+                        currentTradeForm.setFieldValue(`items.${index}.properties.price`, Number(value) || 0);
+                      }}
+                      min={0}
+                      w={100}
+                    />
+                  </Table.Td>
+                  <Table.Td>
+                    <Text fw={600}>{(item.properties?.price || 0) * item.quantity}</Text>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Box>
+      )}
+      {currentStep === TradeProcessingStep.Validate && (
+        <Group justify="space-between" p={"md"}>
+          <Button onClick={() => setCurrentStep(TradeProcessingStep.View)}>{useTranslateButton("back_to_list")}</Button>
+
+          <Button onClick={() => CreateItems()}>{useTranslateButton("confirm_trade")}</Button>
+        </Group>
+      )}
+    </Box>
+  );
+}
+

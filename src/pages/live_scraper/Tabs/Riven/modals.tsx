@@ -5,7 +5,7 @@ import { CreateRiven } from "@components/Forms/CreateRiven";
 import { RivenFilter } from "@components/Forms/RivenFilter";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
 import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
-import { Operations, RivenDetailsModal } from "@components/Modals/RivenDetails/RivenDetailsModal";
+import { Operations, RivenDetailsModal } from "@components/Modals/RivenDetails";
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
   updateMutation: {

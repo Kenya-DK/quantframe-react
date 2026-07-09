@@ -2,7 +2,7 @@ import { Box, Grid, Group } from "@mantine/core";
 import { SearchField } from "@components/Forms/SearchField";
 import { useLocalStorage } from "@mantine/hooks";
 import { TauriTypes } from "$types";
-import { CreateItemForm } from "@components/Forms/CreateItem/CreateItemForm";
+import { CreateItemForm } from "@components/Forms/CreateItem";
 import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
@@ -22,7 +22,7 @@ import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
-import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
+import { ItemName } from "@components/DataDisplay/ItemName";
 
 interface WishListPanelProps {
   isActive?: boolean;

@@ -1,0 +1,220 @@
+import { TextTranslate, TextTranslateProps } from "@components/Shared/TextTranslate";
+import { alpha, Card, CardProps, Collapse } from "@mantine/core";
+import { useHover } from "@mantine/hooks";
+import { isValidElement, memo } from "react";
+type SlotKey = "headerLeft" | "headerCenter" | "headerRight" | "footerLeft" | "footerCenter" | "footerRight";
+
+interface TextTranslatePropsExtended extends TextTranslateProps {
+  hide?: boolean;
+  onClick?: () => void;
+}
+
+interface PreviewCardProps<T = any> extends CardProps {
+  value: T;
+
+  headerLeft?: TextTranslatePropsExtended | React.ReactNode;
+  headerCenter?: TextTranslatePropsExtended | React.ReactNode;
+  headerRight?: TextTranslatePropsExtended | React.ReactNode;
+
+  footerLeft?: TextTranslatePropsExtended | React.ReactNode;
+  footerCenter?: TextTranslatePropsExtended | React.ReactNode;
+  footerRight?: TextTranslatePropsExtended | React.ReactNode;
+
+  headerShowOnHover?: boolean;
+  footerShowOnHover?: boolean;
+
+  renderBody?: (value: T) => React.ReactNode;
+
+  onClick?: () => void;
+}
+
+const slotConfig: Record<SlotKey, { justify: "flex-start" | "center" | "flex-end"; gridColumn: string }> = {
+  headerLeft: { justify: "flex-start", gridColumn: "1" },
+  headerCenter: { justify: "center", gridColumn: "2" },
+  headerRight: { justify: "flex-end", gridColumn: "3" },
+
+  footerLeft: { justify: "flex-start", gridColumn: "1" },
+  footerCenter: { justify: "center", gridColumn: "2" },
+  footerRight: { justify: "flex-end", gridColumn: "3" },
+};
+
+export const PreviewCard = memo(function PreviewCard<T>({
+  value,
+  onClick,
+  renderBody,
+  headerLeft,
+  headerCenter,
+  headerRight,
+  footerLeft,
+  footerCenter,
+  footerRight,
+  headerShowOnHover = false,
+  footerShowOnHover = false,
+
+  style,
+  ...cardProps
+}: PreviewCardProps<T>) {
+  const { hovered, ref } = useHover();
+  // const hoverTransition = "opacity 180ms ease, transform 180ms ease";
+
+  if (!value) return <>...</>;
+
+  const slots = {
+    headerLeft,
+    headerCenter,
+    headerRight,
+    footerLeft,
+    footerCenter,
+    footerRight,
+  };
+
+  const renderSlot = (slot: SlotKey) => {
+    const slotValue = slots[slot as keyof typeof slots] as TextTranslatePropsExtended | React.ReactNode | undefined;
+
+    if (slotValue == null || slotValue === false) {
+      return null;
+    }
+
+    if (isValidElement(slotValue) || typeof slotValue !== "object" || Array.isArray(slotValue)) {
+      return slotValue as React.ReactNode;
+    }
+
+    if (!("i18nKey" in slotValue)) {
+      return null;
+    }
+
+    const translateProps = slotValue as TextTranslatePropsExtended;
+    const { hide, onClick, ...textTranslateProps } = translateProps;
+
+    if (hide) {
+      return null;
+    }
+
+    return <TextTranslate {...textTranslateProps} onClick={onClick} />;
+  };
+
+  const renderSection = (section: "header" | "footer") => {
+    const keys = (["Left", "Center", "Right"] as const).map((pos) => `${section}${pos}` as SlotKey);
+    const renderedSlots = keys.map((slot) => ({
+      slot,
+      content: renderSlot(slot),
+    }));
+
+    const leftSlot = renderedSlots.find(({ slot }) => slot === `${section}Left`)!;
+    const centerSlot = renderedSlots.find(({ slot }) => slot === `${section}Center`)!;
+    const rightSlot = renderedSlots.find(({ slot }) => slot === `${section}Right`)!;
+
+    const hasLeft = leftSlot.content !== null && leftSlot.content !== false && leftSlot.content !== "";
+    const hasRight = rightSlot.content !== null && rightSlot.content !== false && rightSlot.content !== "";
+    const hasCenter = centerSlot.content !== null && centerSlot.content !== false && centerSlot.content !== "";
+    const isCenterOnly = hasCenter && !hasLeft && !hasRight;
+    const isSideOnly = !hasCenter && hasLeft && hasRight;
+    const isLeftOnly = !hasCenter && hasLeft && !hasRight;
+    const isRightOnly = !hasCenter && !hasLeft && hasRight;
+
+    const display = isCenterOnly || isLeftOnly || isRightOnly ? "flex" : "grid";
+    const gridTemplateColumns = isSideOnly ? "minmax(0, 1fr) auto" : hasCenter ? "minmax(0, 1fr) auto minmax(0, 1fr)" : undefined;
+
+    return (
+      <div
+        style={{
+          display,
+          gridTemplateColumns,
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        {renderedSlots.map(({ slot, content }) => {
+          if (isCenterOnly && slot !== `${section}Center`) {
+            return null;
+          }
+
+          if (isLeftOnly && slot !== `${section}Left`) {
+            return null;
+          }
+
+          if (isRightOnly && slot !== `${section}Right`) {
+            return null;
+          }
+
+          if (isSideOnly && slot === `${section}Center`) {
+            return null;
+          }
+
+          const config = slotConfig[slot];
+          const gridColumn = isSideOnly ? (slot === `${section}Left` ? "1" : "2") : config.gridColumn;
+          const justifyContent = isLeftOnly ? "flex-start" : isRightOnly ? "flex-end" : config.justify;
+
+          return (
+            <div
+              key={slot}
+              style={{
+                gridColumn: display === "grid" ? gridColumn : undefined,
+                display: "flex",
+                justifyContent,
+                minWidth: 0,
+                overflow: "hidden",
+                width: display === "flex" ? "100%" : undefined,
+              }}
+            >
+              {content}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderHoverSection = (section: "header" | "footer") => {
+    return (
+      <Collapse
+        pos={"absolute"}
+        expanded={hovered}
+        transitionDuration={180}
+        top={section === "header" ? 0 : undefined}
+        bottom={section === "footer" ? 0 : undefined}
+        left={0}
+        right={0}
+        p={3}
+        bg={alpha("var(--mantine-color-dark-7)", 0.5)}
+      >
+        {renderSection(section)}
+      </Collapse>
+    );
+  };
+
+  const hasRenderableSlots = (section: "header" | "footer") => {
+    const keys = (["Left", "Center", "Right"] as const).map((pos) => `${section}${pos}` as SlotKey);
+
+    return keys.some((slot) => {
+      const content = renderSlot(slot);
+      return content !== null && content !== false && content !== "";
+    });
+  };
+
+  return (
+    <Card radius="md" ref={ref} pos="relative" style={{ display: "flex", flexDirection: "column", ...style }} {...cardProps} onClick={onClick}>
+      {/* Header */}
+      {hasRenderableSlots("header") && !headerShowOnHover ? (
+        <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3}>
+          {renderSection("header")}
+        </Card.Section>
+      ) : null}
+
+      {/* Body */}
+      <Card.Section p="sm" style={{ flexGrow: 1 }}>
+        {headerShowOnHover && renderHoverSection("header")}
+        {renderBody ? renderBody(value) : null}
+        {footerShowOnHover && renderHoverSection("footer")}
+      </Card.Section>
+
+      {/* Footer */}
+      {hasRenderableSlots("footer") && !footerShowOnHover ? (
+        <Card.Section bg={alpha("var(--mantine-color-dark-7)", 0.7)} p={3}>
+          {renderSection("footer")}
+        </Card.Section>
+      ) : null}
+    </Card>
+  );
+});
+

@@ -18,7 +18,7 @@ import { check } from "@tauri-apps/plugin-updater";
 import { PlaySound } from "@utils/helper";
 import i18n from "i18next";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { AppError } from "../model/appError";
+import { AppError } from "../model";
 import { AuthContextProvider } from "./auth.context";
 import { CacheContextProvider } from "./cache.context";
 import { LiveScraperContextProvider } from "./liveScraper.context";

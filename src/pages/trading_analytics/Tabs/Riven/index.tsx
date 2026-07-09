@@ -16,7 +16,7 @@ import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { useMutations } from "./mutations";
 import { Loading } from "@components/Shared/Loading";
-import { PatreonOverlay } from "@components/Shared/PatreonOverlay/PatreonOverlay";
+import { PatreonOverlay } from "@components/Shared/PatreonOverlay";
 import { MinMax } from "@components/Forms/MinMax";
 interface RivenPanelProps {
   isActive?: boolean;

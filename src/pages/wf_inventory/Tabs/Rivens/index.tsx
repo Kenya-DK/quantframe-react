@@ -13,7 +13,7 @@ import { SearchField } from "@components/Forms/SearchField";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CompactSortSelect } from "@components/Shared/CompactSortSelect";
 import { ExpandableButton } from "@components/Shared/ExpandableButton";
-import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
+import { PreviewCard } from "@components/Shared/PreviewCard";
 import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { RivenGrade } from "@components/DataDisplay/RivenGrade";

@@ -21,7 +21,7 @@ import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload, faEdit, faInfo, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { notifications } from "@mantine/notifications";
-import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
+import { ItemName } from "@components/DataDisplay/ItemName";
 import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export type RivenPanelProps = {

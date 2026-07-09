@@ -1,5 +1,5 @@
 import { QuantframeApiTypes, TauriTypes } from "$types";
-import { PatreonOverlay } from "@components/Shared/PatreonOverlay/PatreonOverlay";
+import { PatreonOverlay } from "@components/Shared/PatreonOverlay";
 import { useTranslatePages } from "@hooks/useTranslate.hook";
 import { Box, Grid, Group, Paper, Select, useMantineTheme } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";

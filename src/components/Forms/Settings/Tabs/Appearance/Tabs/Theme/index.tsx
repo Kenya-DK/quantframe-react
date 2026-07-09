@@ -1,7 +1,7 @@
 import { TauriTypes } from "$types";
 import api from "@api/index";
 import { ThemePreview } from "@components/DataDisplay/ThemePreview";
-import { LiveThemeEditor } from "@components/ThemeEditor/LiveThemeEditor";
+import { LiveThemeEditor } from "@components/ThemeEditor";
 import { defaultTheme } from "@contexts/static";
 import { useTheme } from "@contexts/theme.context";
 import { useTranslateForms } from "@hooks/useTranslate.hook";

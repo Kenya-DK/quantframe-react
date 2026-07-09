@@ -21,7 +21,7 @@ import { ColumnActions } from "../../Columns/ColumnActions";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
-import { ItemName } from "@components/DataDisplay/ItemName/ItemName";
+import { ItemName } from "@components/DataDisplay/ItemName";
 import { useMutations } from "./mutations";
 
 interface ItemPanelProps {

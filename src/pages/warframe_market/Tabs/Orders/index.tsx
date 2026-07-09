@@ -4,7 +4,7 @@ import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { Loading } from "@components/Shared/Loading";
 import { PaginationFooter } from "@components/Shared/PaginationFooter";
-import { PreviewCard } from "@components/Shared/PreviewCard/PreviewCard";
+import { PreviewCard } from "@components/Shared/PreviewCard";
 import { TextTranslate } from "@components/Shared/TextTranslate";
 import {
   faArrowDown,

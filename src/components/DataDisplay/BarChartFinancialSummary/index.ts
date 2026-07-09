@@ -1,1 +1,0 @@
-export { BarChartFinancialSummary } from "./BarChartFinancialSummary";
