@@ -36,7 +36,7 @@ impl ErrorFromExt for Error {
             cause: error.to_string(),
             message: message.into(),
             log_level: LogLevel::Critical,
-            properties: Properties::from(json!(error.to_string())),
+            properties: Properties::from(error.to_json()),
             location: Some(location.into()),
         }
     }

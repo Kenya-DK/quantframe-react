@@ -300,7 +300,8 @@ fn handle_missing_items(trade: &PlayerTrade, logger: &ZipLogger) {
         "on_trade_event",
         "yellow",
         "no_valid_items",
-        json!({ "player_name": trade.player_name })
+        json!({ "player_name": trade.player_name }),
+        json!({})
     );
 }
 
@@ -499,7 +500,8 @@ fn process_operations(trade: &PlayerTrade, operations: OperationSet) {
                 "quantity": quantity,
                 "item_name": name,
                 "operations": json!(operations.operations)
-            })
+            }),
+            json!({})
         );
     }
 

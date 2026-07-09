@@ -34,7 +34,15 @@ export async function loadLanguage(lang: string) {
     console.error("Failed to load language:", err);
   }
 }
-
+interface NotificationData {
+  i18n_key: string;
+  color: string;
+  type: string;
+  settings: {
+    autoClose?: number | false;
+  };
+  values?: Record<string, any>;
+}
 export type AppContextProps = {
   app_info: TauriTypes.AppInfo | undefined;
   app_error: AppError | undefined;
@@ -86,13 +94,14 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     });
   };
 
-  const handleOnNotify = (data: { i18n_key: string; color: string; type: string; values: Record<string, any> }) => {
+  const handleOnNotify = ({ i18n_key, color, type, settings, values }: NotificationData) => {
+    const key = `notifications.${i18n_key}.${type}`;
+
     notifications.show({
-      title: useTranslateCommon(`notifications.${data.i18n_key}.${data.type}.title`, data.values),
-      color: data.color,
-      message: (
-        <TextTranslate i18nKey={useTranslateCommon(`notifications.${data.i18n_key}.${data.type}.message`, undefined, true)} values={data.values} />
-      ),
+      title: useTranslateCommon(`${key}.title`, values),
+      color,
+      autoClose: settings.autoClose ?? 3000,
+      message: <TextTranslate i18nKey={`common.${key}.message`} values={values} />,
     });
   };
 

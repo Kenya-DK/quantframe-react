@@ -49,6 +49,16 @@ impl LogLevel {
             _ => LogLevel::Critical,
         }
     }
+    pub fn to_color(&self) -> &str {
+        match self {
+            LogLevel::Info => "blue",
+            LogLevel::Warning => "yellow",
+            LogLevel::Error => "red",
+            LogLevel::Debug => "gray",
+            LogLevel::Trace => "cyan",
+            LogLevel::Critical => "grape",
+        }
+    }
 }
 
 fn cache_log_entry(level: LogLevel, message: String) {

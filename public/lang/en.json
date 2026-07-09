@@ -27,6 +27,12 @@
       }
     },
     "notifications": {
+      "app_error": {
+        "error": {
+          "title": "Application Error",
+          "message": "{{message}}."
+        }
+      },
       "copy_to_clipboard": {
         "title": "Copied to Clipboard",
         "message": "{{message}} has been copied to clipboard."
@@ -1553,7 +1559,8 @@
                 }
               },
               "buttons": {
-                "export_logs": "Log Export"
+                "export_logs": "Log Export",
+                "clean_notifications": "Clean Notifications"
               }
             }
           }

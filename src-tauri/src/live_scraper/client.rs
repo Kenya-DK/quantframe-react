@@ -2,10 +2,11 @@ use crate::{
     emit_error,
     enums::*,
     live_scraper::modules::*,
-    play_sound, send_event,
+    notify_gui, play_sound, send_event,
     types::UIEvent,
     utils::{modules::states, OrderListExt},
 };
+use serde_json::json;
 use std::{
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -116,24 +117,37 @@ impl LiveScraperState {
                     ) {
                         match this.item().check().await {
                             Ok(_) => {}
-                            Err(e) => {
+                            Err(mut e) => {
+                                let err_type =
+                                    e.properties.get_property_value("type", String::new());
+
+                                e.log_level = match err_type.as_str() {
+                                    "RequestError"
+                                    | "ParsingError"
+                                    | "BadRequest"
+                                    | "Unknown"
+                                    | "InternalServerError"
+                                    | "InvalidType"
+                                    | "EndOfFile" => LogLevel::Critical,
+                                    _ => LogLevel::Warning,
+                                };
+
+                                notify_gui!(
+                                    "app_error",
+                                    e.log_level.to_color(),
+                                    "error",
+                                    json!(e),
+                                    json!({ "autoClose": false })
+                                );
+
                                 e.clone()
                                     .with_location(get_location!())
                                     .log("live_scraper_item.log");
-                                match e.log_level {
-                                    LogLevel::Critical => {
-                                        // Stop the live scraper
-                                        is_running.store(false, Ordering::SeqCst);
-                                        play_sound!("windows_xp_error.mp3", 1.0);
-                                        emit_error!(e);
-                                    }
-                                    LogLevel::Error => {
-                                        if !just_started.load(Ordering::SeqCst) {
-                                            play_sound!("windows_xp_error.mp3", 1.0);
-                                            emit_error!(e);
-                                        }
-                                    }
-                                    _ => {}
+
+                                if matches!(e.log_level, LogLevel::Critical | LogLevel::Error) {
+                                    is_running.store(false, Ordering::SeqCst);
+                                    play_sound!("windows_xp_error.mp3", 1.0);
+                                    emit_error!(e);
                                 }
                             }
                         }

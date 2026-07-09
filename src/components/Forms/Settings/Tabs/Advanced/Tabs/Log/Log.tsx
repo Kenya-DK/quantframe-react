@@ -4,6 +4,7 @@ import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { Box, Button, Grid, Group, TextInput } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 export type LogPanelProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
 };
@@ -32,9 +33,14 @@ export const LogPanel = ({ form }: LogPanelProps) => {
               {...form.getInputProps(getFieldPath("ee_log_path"))}
             />
           </Group>
-          <Button mt="md" onClick={() => exportLogsMutation.mutate()} color="blue" loading={exportLogsMutation.isPending}>
-            {useTranslateFormButtons("export_logs")}
-          </Button>
+          <Group>
+            <Button mt="md" onClick={() => exportLogsMutation.mutate()} color="blue" loading={exportLogsMutation.isPending}>
+              {useTranslateFormButtons("export_logs")}
+            </Button>
+            <Button mt="md" onClick={() => notifications.cleanQueue()} color="blue">
+              {useTranslateFormButtons("clean_notifications")}
+            </Button>
+          </Group>
         </Grid.Col>
       </Grid>
     </Box>

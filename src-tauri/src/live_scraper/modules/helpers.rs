@@ -562,17 +562,12 @@ pub async fn fetch_and_cache_orders(
         .get_orders_by_item(item_url)
         .await
         .map_err(|e| {
-            let log_level = match e {
-                wf_market::errors::ApiError::RequestError(_) => LogLevel::Error,
-                _ => LogLevel::Critical,
-            };
             Error::from_wfm(
                 format!("{}:FetchAndCacheOrders", component),
                 &format!("Failed to get live orders for item {}", item_url),
                 e,
                 get_location!(),
             )
-            .set_log_level(log_level)
         })?;
 
     if let Some(path) = cache_path {

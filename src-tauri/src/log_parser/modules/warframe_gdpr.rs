@@ -573,7 +573,8 @@ impl WarframeGDPRModule {
                 "logins": total_logins,
                 "purchases": total_purchases,
                 "transactions": total_transactions,
-            })
+            }),
+            json!({})
         );
         enable_logging(true);
         Ok(())

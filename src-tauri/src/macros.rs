@@ -96,12 +96,12 @@ macro_rules! emit_update_user {
 
 #[macro_export]
 macro_rules! notify_gui {
-    ($i18n_key:expr, $color:expr, $notify_type:expr, $values:expr) => {{
+    ($i18n_key:expr, $color:expr, $notify_type:expr, $values:expr, $settings:expr) => {{
         use crate::send_event;
         use crate::types::*;
         send_event!(
             UIEvent::OnNotify,
-            Some(json!({"i18n_key": $i18n_key, "color": $color, "type": $notify_type, "values": $values}))
+            Some(json!({"i18n_key": $i18n_key, "color": $color, "type": $notify_type, "values": $values, "settings": $settings}))
         );
     }};
 }
