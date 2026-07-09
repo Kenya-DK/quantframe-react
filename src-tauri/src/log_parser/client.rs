@@ -1,4 +1,8 @@
-use crate::{app::AdvancedSettings, helper, log_parser::*};
+use crate::{
+    app::{AdvancedSettings, LogSettings},
+    helper,
+    log_parser::*,
+};
 use std::{
     path::PathBuf,
     sync::{Arc, OnceLock},
@@ -14,10 +18,10 @@ pub struct LogParserState {
 }
 
 impl LogParserState {
-    pub fn new(settings: &AdvancedSettings) -> Arc<Self> {
+    pub fn new(settings: &LogSettings) -> Arc<Self> {
         let mut path = LogParserState::get_default_path();
-        if !settings.wf_log_path.is_empty() {
-            path = PathBuf::from(settings.wf_log_path.clone());
+        if !settings.ee_log_path.is_empty() {
+            path = PathBuf::from(settings.ee_log_path.clone());
         }
         let this = Arc::new(Self {
             watcher: FileWatcher::new(path.to_str().unwrap()),

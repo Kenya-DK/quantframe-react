@@ -1,8 +1,8 @@
-import { Box, Group, NumberInput } from "@mantine/core";
 import { TauriTypes } from "$types";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { UseFormReturnType } from "@mantine/form";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Box, Group, NumberInput } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 
 export type WTSItemAccordionProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
@@ -15,7 +15,7 @@ export const WTSItemAccordion = ({ form }: WTSItemAccordionProps) => {
   const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
 
-  const getFieldPath = (field: string) => `live_scraper.stock_item.${field}`;
+  const getFieldPath = (field: string) => `live_scraper.items.wts.${field}`;
   return (
     <Box h="100%">
       <Group gap={"md"}>

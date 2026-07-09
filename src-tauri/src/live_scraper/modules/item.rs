@@ -56,7 +56,9 @@ impl ItemModule {
         my_orders: &OrderList<Order>,
     ) -> Result<(), Error> {
         let client = self.client.upgrade().expect("Failed to upgrade client");
-        if !settings.live_scraper.should_delete_other_types && !settings.live_scraper.auto_delete {
+        if !settings.live_scraper.general.delete_conflicting_orders
+            && !settings.live_scraper.general.auto_delete
+        {
             return Ok(()); // Nothing to delete
         }
 
@@ -297,11 +299,14 @@ impl ItemModule {
                 .set_width(180)
                 .set_enable(true),
         );
-        let settings = states::get_settings()?.live_scraper.stock_item;
+        let settings = states::get_settings()?.live_scraper.items;
         let wfm_client = states::app_state()?.wfm_client;
 
         // Check if item is blacklisted for buying
-        if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::Buy) {
+        if settings
+            .general
+            .is_item_blacklisted(&item_info.wfm_id, &TradeMode::Buy)
+        {
             info(
                 &comp("Blacklisted"),
                 &format!(
@@ -320,15 +325,15 @@ impl ItemModule {
             populate_order_properties(&mut properties, &item_info, &entry);
 
         // Check if we already have enough stock of this item
-        if !is_disabled(settings.max_stock_quantity) {
+        if !is_disabled(settings.wtb.max_stock_quantity) {
             let conn = DATABASE.get().unwrap();
             if let Ok(existing_item) = entry.get_stock_item(conn).await {
-                if existing_item.owned >= settings.max_stock_quantity {
+                if existing_item.owned >= settings.wtb.max_stock_quantity {
                     info(
                         &comp("MaxStockReached"),
                         &format!(
                             "Item {} already has {} units in stock (max: {}). Skipping WTB order creation.",
-                            item_info.name, existing_item.owned, settings.max_stock_quantity
+                            item_info.name, existing_item.owned, settings.wtb.max_stock_quantity
                         ),
                         &log_options,
                     );
@@ -364,9 +369,9 @@ impl ItemModule {
             return Ok(());
         }
 
-        let avg_price_cap = settings.avg_price_cap;
-        let max_total_price_cap = settings.max_total_price_cap; // currently unused
-        let profit_threshold = settings.profit_threshold;
+        let avg_price_cap = settings.wtb.avg_price_cap;
+        let max_total_price_cap = settings.wtb.max_total_price_cap; // currently unused
+        let profit_threshold = settings.wtb.profit_threshold;
         let closed_avg = price.moving_avg.unwrap_or(0.0);
         let per_trade = if item_info.bulk_tradable {
             // Some(settings.quantity_per_trade)
@@ -390,7 +395,7 @@ impl ItemModule {
         let potential_profit = closed_avg_metric - 1;
 
         // Check Max Buy Price for Item
-        let item_max_price = settings.get_item_max_price(&item_info.wfm_id);
+        let item_max_price = settings.general.get_item_max_price(&item_info.wfm_id);
         if post_price as i64 > item_max_price && item_max_price > 0 {
             operations.add("AboveMaxBuyPrice");
             post_price = item_max_price;
@@ -594,10 +599,13 @@ impl ItemModule {
                 .set_enable(false),
         );
         // Get Settings.
-        let settings = states::get_settings()?.live_scraper.stock_item;
+        let settings = states::get_settings()?.live_scraper.items;
 
         // Check if item is blacklisted for selling
-        if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::Sell) {
+        if settings
+            .general
+            .is_item_blacklisted(&item_info.wfm_id, &TradeMode::Sell)
+        {
             info(
                 &comp("Blacklisted"),
                 &format!(
@@ -678,7 +686,7 @@ impl ItemModule {
         let minimum_sma = if stock_item.minimum_sma.is_some() {
             stock_item.minimum_sma.unwrap()
         } else {
-            settings.min_sma
+            settings.wts.min_sma
         };
 
         // Handle SMA Limit
@@ -700,7 +708,7 @@ impl ItemModule {
         let minimum_profit = if stock_item.minimum_profit.is_some() {
             stock_item.minimum_profit.unwrap()
         } else {
-            settings.min_profit
+            settings.wts.min_profit
         };
         // Handle Low Profit
         if !is_disabled(minimum_profit) && profit < minimum_profit {
@@ -813,9 +821,12 @@ impl ItemModule {
                 .set_width(180)
                 .set_enable(false),
         );
-        let settings = states::get_settings()?.live_scraper.stock_item;
+        let settings = states::get_settings()?.live_scraper.items;
         // Check if item is blacklisted for wishlist
-        if settings.is_item_blacklisted(&item_info.wfm_id, &TradeMode::WishList) {
+        if settings
+            .general
+            .is_item_blacklisted(&item_info.wfm_id, &TradeMode::WishList)
+        {
             info(
                 &comp("Blacklisted"),
                 &format!(

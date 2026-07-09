@@ -1,11 +1,11 @@
-import { useLiveScraperContext } from "@contexts/liveScraper.context";
-import { Button, Center, Group, Stack, Text } from "@mantine/core";
-import { useMutation } from "@tanstack/react-query";
-import { notifications } from "@mantine/notifications";
 import api from "@api/index";
-import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { useAppContext } from "@contexts/app.context";
+import { useLiveScraperContext } from "@contexts/liveScraper.context";
+import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { Button, Center, Group, Stack, Text } from "@mantine/core";
 import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { TextTranslate } from "../../Shared/TextTranslate";
 
@@ -40,7 +40,7 @@ export function LiveScraperControl() {
 
   const ToggleLiveTrading = (start: boolean) => {
     if (start) {
-      if (settings?.live_scraper.auto_delete)
+      if (settings?.live_scraper.general.auto_delete)
         modals.openConfirmModal({
           title: useTranslatePrompt("start.title"),
           children: <Text size="sm">{useTranslatePrompt("start.message")}</Text>,

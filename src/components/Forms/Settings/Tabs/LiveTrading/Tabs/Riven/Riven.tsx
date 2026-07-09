@@ -16,7 +16,7 @@ export const RivenPanel = ({ form }: RivenPanelProps) => {
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
 
   // Form
-  const getFieldPath = (field: string) => `live_scraper.stock_riven.${field}`;
+  const getFieldPath = (field: string) => `live_scraper.rivens.${field}`;
   return (
     <Box h="100%" p={"md"}>
       <Group gap={"md"}>
@@ -26,7 +26,7 @@ export const RivenPanel = ({ form }: RivenPanelProps) => {
           placeholder={useTranslateFormFields("min_profit.placeholder")}
           rightSection={<TooltipIcon label={useTranslateFormFields("min_profit.tooltip")} link={useTranslateFormFields("min_profit.link")} />}
           radius="md"
-          {...form.getInputProps(getFieldPath("min_profit"))}
+          {...form.getInputProps(getFieldPath("wts.min_profit"))}
         />
         <NumberInput
           label={useTranslateFormFields("threshold_percentage.label")}
@@ -36,7 +36,7 @@ export const RivenPanel = ({ form }: RivenPanelProps) => {
             <TooltipIcon label={useTranslateFormFields("threshold_percentage.tooltip")} link={useTranslateFormFields("threshold_percentage.link")} />
           }
           radius="md"
-          {...form.getInputProps(getFieldPath("threshold_percentage"))}
+          {...form.getInputProps(getFieldPath("wts.threshold_percentage"))}
         />
         <NumberInput
           label={useTranslateFormFields("limit_to.label")}
@@ -44,7 +44,7 @@ export const RivenPanel = ({ form }: RivenPanelProps) => {
           placeholder={useTranslateFormFields("limit_to.placeholder")}
           rightSection={<TooltipIcon label={useTranslateFormFields("limit_to.tooltip")} link={useTranslateFormFields("limit_to.link")} />}
           radius="md"
-          {...form.getInputProps(getFieldPath("limit_to"))}
+          {...form.getInputProps(getFieldPath("wts.max_results"))}
         />
         <NumberInput
           label={useTranslateFormFields("update_interval.label")}
@@ -54,7 +54,7 @@ export const RivenPanel = ({ form }: RivenPanelProps) => {
             <TooltipIcon label={useTranslateFormFields("update_interval.tooltip")} link={useTranslateFormFields("update_interval.link")} />
           }
           radius="md"
-          {...form.getInputProps(getFieldPath("update_interval"))}
+          {...form.getInputProps(getFieldPath("general.update_interval"))}
         />
       </Group>
     </Box>

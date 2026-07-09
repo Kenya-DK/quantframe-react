@@ -71,7 +71,7 @@ export function CreateItemForm({ hide_quantity, hide_sub_type, idField, hide_bou
             rightSection={
               <ActionWithTooltip
                 tooltip={useTranslateButtons(
-                  `add.tooltip.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`,
+                  `add.tooltip.${settings?.live_scraper.general.report_to_wfm ? "description_with_report" : "description_without_report"}`,
                 )}
                 icon={faShoppingCart}
                 color="green.7"
@@ -98,7 +98,7 @@ export function CreateItemForm({ hide_quantity, hide_sub_type, idField, hide_bou
             rightSection={
               <ActionWithTooltip
                 tooltip={useTranslateButtons(
-                  `add.tooltip.${settings?.live_scraper.stock_item.report_to_wfm ? "description_with_report" : "description_without_report"}`,
+                  `add.tooltip.${settings?.live_scraper.general.report_to_wfm ? "description_with_report" : "description_without_report"}`,
                 )}
                 icon={faShoppingCart}
                 color="green.7"

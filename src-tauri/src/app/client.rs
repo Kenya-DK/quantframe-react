@@ -348,7 +348,7 @@ impl AppState {
         let is_development = if cfg!(dev) { true } else { false };
 
         let settings = Settings::load().expect("Failed to load settings from settings.json");
-        let http_settings = settings.http_server.clone();
+        let http_settings = settings.advanced_settings.http_server.clone();
         let mut state = AppState {
             wfm_client: WFClient::new_default(&user.wfm_token, "N/A")
                 .await

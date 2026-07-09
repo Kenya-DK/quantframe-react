@@ -9,7 +9,7 @@ import { useMemo, useState } from "react";
 import { ItemName } from "@components/DataDisplay/ItemName";
 
 export type SummaryAccordionProps = {
-  value: TauriTypes.SettingsStockItem;
+  value: TauriTypes.ItemSettings;
 };
 
 export const SummaryAccordion = ({ value }: SummaryAccordionProps) => {

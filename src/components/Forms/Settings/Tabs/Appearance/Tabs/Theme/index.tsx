@@ -1,22 +1,20 @@
 import { TauriTypes } from "$types";
-import { defaultTheme } from "@contexts/static";
-import { useTheme } from "@contexts/theme.context";
-import { Box, Flex, Group, Title, Text } from "@mantine/core";
+import api from "@api/index";
 import { ThemePreview } from "@components/DataDisplay/ThemePreview";
 import { LiveThemeEditor } from "@components/ThemeEditor/LiveThemeEditor";
-import api from "@api/index";
+import { defaultTheme } from "@contexts/static";
+import { useTheme } from "@contexts/theme.context";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
-
-export type ThemesPanelProps = {
+import { Box, Flex, Group, Text, Title } from "@mantine/core";
+export type ThemePanelProps = {
   value: TauriTypes.Settings;
   onSubmit: (value: TauriTypes.Settings) => void;
 };
-
-export const ThemesPanel = ({}: ThemesPanelProps) => {
+export const ThemePanel = ({}: ThemePanelProps) => {
   const { switchTheme } = useTheme();
 
   const useTranslateEditor = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForms(`settings.tabs.themes.${key}`, { ...context }, i18Key);
+    useTranslateForms(`settings.tabs.appearance.theme.${key}`, { ...context }, i18Key);
 
   const { data, refetch } = api.cache.getThemePresets();
   return (

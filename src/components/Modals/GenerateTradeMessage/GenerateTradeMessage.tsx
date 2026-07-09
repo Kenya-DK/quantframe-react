@@ -1,19 +1,19 @@
-import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
-import { Box, TextInput, Text, Grid, Group, Stack, Divider, Title, Select, Image, Autocomplete, Tabs } from "@mantine/core";
-import { useForm } from "@mantine/form";
-import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
-import { faBook, faCopy, faPlus, faSave, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { notifications } from "@mantine/notifications";
-import { DisplaySettings, GetChatLinkNameMultiple, ApplyTemplate, GroupByKey } from "@utils/helper";
-import { useEffect, useState } from "react";
 import { ItemWithMeta, TauriTypes } from "$types";
-import { DataTable } from "mantine-datatable";
-import { useQuery } from "@tanstack/react-query";
 import api from "@api/index";
-import { RenderMessageWithIcons, renderSelectOption } from "./helpeer";
+import { faBook, faCopy, faPlus, faSave, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
+import { Autocomplete, Box, Divider, Grid, Group, Image, Select, Stack, Tabs, Text, TextInput, Title } from "@mantine/core";
+import { useForm } from "@mantine/form";
 import { upperFirst } from "@mantine/hooks";
-import { useMutations } from "./mutations";
+import { notifications } from "@mantine/notifications";
+import { useQuery } from "@tanstack/react-query";
+import { ApplyTemplate, DisplaySettings, GetChatLinkNameMultiple, GroupByKey } from "@utils/helper";
+import { DataTable } from "mantine-datatable";
+import { useEffect, useState } from "react";
+import { ActionWithTooltip } from "../../Shared/ActionWithTooltip";
+import { RenderMessageWithIcons, renderSelectOption } from "./helpeer";
 import { useModals } from "./modals";
+import { useMutations } from "./mutations";
 const MAX_LENGTH = 180;
 
 export interface GenerateTradeMessageModalProps {
@@ -22,7 +22,7 @@ export interface GenerateTradeMessageModalProps {
   template: string;
   displaySettings?: Record<string, DisplaySettings>;
   items: ItemWithMeta[];
-  settings?: TauriTypes.GenerateTradeMessageSettings;
+  settings?: TauriTypes.GenerateTradeMessageSetting;
   onSave?: (data: GenerateTradeMessageModalProps) => void;
 }
 

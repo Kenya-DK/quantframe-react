@@ -19,20 +19,11 @@
       "save": {
         "label": "บันทึก"
       },
-      "reset_defaults": {
-        "label": "รีเซ็ตเป็นค่าเริ่มต้น"
-      },
       "delete": {
         "label": "ลบ"
       },
       "cancel": {
         "label": "ยกเลิก"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "รีเซ็ตการตั้งค่า",
-        "message": "รีเซ็ตการตั้งค่าทั้งหมดเป็นค่าเริ่มต้นหรือไม่"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "เลือกภาษา",
                 "error": "ภาษาไม่ถูกต้อง"
               }
-            }
-          },
-          "themes": {
-            "title": "ธีมส์",
-            "community_themes": "ธีมชุมชน",
-            "get_more_out_of_themes": "รับธีมเพิ่มเติมโดยใช้ตัวแก้ไขธีม คลิกที่นี่",
-            "theme_configuration": "การกำหนดค่าธีม"
-          },
-          "notifications": {
-            "title": "การแจ้งเตือน",
-            "on_new_conversation_title": "ในการสนทนาใหม่",
-            "on_new_trade_title": "เกี่ยวกับการค้าใหม่",
-            "on_wfm_chat_message_title": "ในข้อความแชท WFM"
-          },
-          "advanced": {
-            "title": "ขั้นสูง",
-            "fields": {
-              "wf_log_path": {
-                "label": "เส้นทางบันทึก Warframe",
-                "placeholder": "เส้นทางบันทึก Warframe เริ่มต้น",
-                "errors": {
-                  "not_exists": "ไม่มีเส้นทางที่ระบุ"
-                },
-                "tooltip": "เส้นทางไปยังไฟล์บันทึกของ Warframe เว้นว่างไว้สำหรับเส้นทางเริ่มต้น"
-              }
             },
-            "button_export_logs": "บันทึกการส่งออก"
-          },
-          "summary": {
-            "title": "สรุป",
-            "fields": {
-              "recent_days": {
-                "label": "วันที่ผ่านมา",
-                "tooltip": "ข้อมูลจะแสดงกี่วัน"
-              },
-              "recent_transactions": {
-                "label": "การทำธุรกรรมล่าสุด",
-                "tooltip": "จำนวนธุรกรรมที่จะแสดง"
-              }
+            "buttons": {
+              "reset_settings_label": "รีเซ็ตเป็นการตั้งค่าเริ่มต้น",
+              "prompt_reset_label": "รีเซ็ต"
             },
-            "datatable": {
-              "columns": {
-                "name": "ชื่อ",
-                "tags": "แท็ก",
-                "types": "ประเภท",
-                "actions": {
-                  "title": "การดำเนินการ",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "แก้ไขรายการ"
-                    },
-                    "delete": {
-                      "tooltip": "ลบรายการ"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "รีเซ็ตการตั้งค่า",
+                "message": "รีเซ็ตการตั้งค่าทั้งหมดเป็นค่าเริ่มต้นหรือไม่"
               }
             }
           },
@@ -1330,10 +1274,10 @@
                   "error": "ลบอัตโนมัติไม่ถูกต้อง",
                   "tooltip": "ลบรายการสต็อกโดยอัตโนมัติ"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "ควรลบการค้าประเภทอื่น ๆ",
                   "error": "ไม่ถูกต้องควรลบการค้าประเภทอื่น ๆ",
-                  "tooltip": "จะลบประเภทการค้าอื่น ๆ หากตัวอย่างจริง: หากเปิดใช้งานการซื้อจะลบรายการขาย/สิ่งที่อยากได้หากไม่อยู่ในบัญชีดำ"
+                  "tooltip": "จะลบประเภทการค้าอื่น ๆ หากเป็นจริง: หากเปิดใช้งานการซื้อจะลบรายการขาย/สิ่งที่ปรารถนาหากไม่ได้อยู่ในบัญชีดำ"
                 },
                 "report_to_wfm": {
                   "label": "รายงานไปยังตลาด Warframe",
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "เซิร์ฟเวอร์ HTTP",
-            "general": {
-              "title": "ทั่วไป",
+          "appearance": {
+            "title": "รูปร่าง",
+            "dashboard": {
+              "title": "แดชบอร์ด",
+              "fields": {
+                "recent_days": {
+                  "label": "วันที่ผ่านมา",
+                  "tooltip": "ข้อมูลจะแสดงกี่วัน"
+                },
+                "recent_transactions": {
+                  "label": "การทำธุรกรรมล่าสุด",
+                  "tooltip": "จำนวนธุรกรรมที่จะแสดง"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "ชื่อ",
+                  "tags": "แท็ก",
+                  "types": "ประเภท",
+                  "actions": {
+                    "title": "การดำเนินการ",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "แก้ไขรายการ"
+                      },
+                      "delete": {
+                        "tooltip": "ลบรายการ"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "กลับไป",
+                "edit_categories": "แก้ไขหมวดหมู่"
+              }
+            },
+            "theme": {
+              "title": "ธีม",
+              "community_themes": "ธีมชุมชน",
+              "get_more_out_of_themes": "รับธีมเพิ่มเติมโดยใช้ตัวแก้ไขธีม คลิกที่นี่",
+              "theme_configuration": "การกำหนดค่าธีม"
+            }
+          },
+          "notifications": {
+            "title": "การแจ้งเตือน",
+            "on_new_conversation_title": "ในการสนทนาใหม่",
+            "on_new_trade_title": "เกี่ยวกับการค้าใหม่",
+            "on_wfm_chat_message_title": "ในข้อความแชท WFM"
+          },
+          "advanced": {
+            "title": "ขั้นสูง",
+            "http_server": {
+              "title": "เซิร์ฟเวอร์ HTTP",
               "fields": {
                 "enabled": {
                   "label": "เปิดใช้งานแล้ว",
@@ -1543,6 +1537,23 @@
                   "error": "โฮสต์ไม่ถูกต้อง",
                   "tooltip": "โฮสต์ที่เซิร์ฟเวอร์ HTTP จะทำงาน"
                 }
+              }
+            },
+            "log": {
+              "title": "บันทึก",
+              "button_export_logs": "บันทึกการส่งออก",
+              "fields": {
+                "ee_log_path": {
+                  "label": "เส้นทางบันทึก Warframe",
+                  "placeholder": "เส้นทางบันทึก Warframe เริ่มต้น",
+                  "errors": {
+                    "not_exists": "ไม่มีเส้นทางที่ระบุ"
+                  },
+                  "tooltip": "เส้นทางไปยังไฟล์บันทึกของ Warframe เว้นว่างไว้สำหรับเส้นทางเริ่มต้น"
+                }
+              },
+              "buttons": {
+                "export_logs": "บันทึกการส่งออก"
               }
             }
           }

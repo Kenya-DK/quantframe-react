@@ -19,20 +19,11 @@
       "save": {
         "label": "节省"
       },
-      "reset_defaults": {
-        "label": "重置为默认值"
-      },
       "delete": {
         "label": "删除"
       },
       "cancel": {
         "label": "取消"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "重置设置",
-        "message": "将所有设置重置为默认值？"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "选择语言",
                 "error": "无效语言"
               }
-            }
-          },
-          "themes": {
-            "title": "主题",
-            "community_themes": "社区主题",
-            "get_more_out_of_themes": "使用主题编辑器从主题中获得更多信息 单击此处",
-            "theme_configuration": "主题配置"
-          },
-          "notifications": {
-            "title": "通知",
-            "on_new_conversation_title": "关于新的对话",
-            "on_new_trade_title": "论新贸易",
-            "on_wfm_chat_message_title": "关于 WFM 聊天消息"
-          },
-          "advanced": {
-            "title": "先进的",
-            "fields": {
-              "wf_log_path": {
-                "label": "Warframe 日志路径",
-                "placeholder": "默认 Warframe 日志路径",
-                "errors": {
-                  "not_exists": "指定的路径不存在。"
-                },
-                "tooltip": "Warframe 日志文件的路径。默认路径留空。"
-              }
             },
-            "button_export_logs": "日志导出"
-          },
-          "summary": {
-            "title": "概括",
-            "fields": {
-              "recent_days": {
-                "label": "最近几天",
-                "tooltip": "显示多少天的数据"
-              },
-              "recent_transactions": {
-                "label": "最近交易",
-                "tooltip": "显示多少笔交易"
-              }
+            "buttons": {
+              "reset_settings_label": "重置为默认设置",
+              "prompt_reset_label": "重置"
             },
-            "datatable": {
-              "columns": {
-                "name": "姓名",
-                "tags": "标签",
-                "types": "类型",
-                "actions": {
-                  "title": "行动",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "编辑项目"
-                    },
-                    "delete": {
-                      "tooltip": "删除项目"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "重置设置",
+                "message": "将所有设置重置为默认值？"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "自动删除无效",
                   "tooltip": "自动删除库存商品"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "应删除其他交易类型",
                   "error": "无效应删除其他交易类型",
                   "tooltip": "如果属实，将删除其他交易类型示例：如果启用购买，则将删除未列入黑名单的出售/愿望清单项目"
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "HTTP服务器",
-            "general": {
-              "title": "一般的",
+          "appearance": {
+            "title": "外貌",
+            "dashboard": {
+              "title": "仪表板",
+              "fields": {
+                "recent_days": {
+                  "label": "最近几天",
+                  "tooltip": "显示多少天的数据"
+                },
+                "recent_transactions": {
+                  "label": "最近交易",
+                  "tooltip": "显示多少笔交易"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "姓名",
+                  "tags": "标签",
+                  "types": "类型",
+                  "actions": {
+                    "title": "行动",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "编辑项目"
+                      },
+                      "delete": {
+                        "tooltip": "删除项目"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "回去",
+                "edit_categories": "编辑类别"
+              }
+            },
+            "theme": {
+              "title": "主题",
+              "community_themes": "社区主题",
+              "get_more_out_of_themes": "使用主题编辑器从主题中获得更多信息 单击此处",
+              "theme_configuration": "主题配置"
+            }
+          },
+          "notifications": {
+            "title": "通知",
+            "on_new_conversation_title": "关于新的对话",
+            "on_new_trade_title": "论新贸易",
+            "on_wfm_chat_message_title": "关于 WFM 聊天消息"
+          },
+          "advanced": {
+            "title": "先进的",
+            "http_server": {
+              "title": "HTTP服务器",
               "fields": {
                 "enabled": {
                   "label": "启用",
@@ -1543,6 +1537,23 @@
                   "error": "无效主机",
                   "tooltip": "HTTP 服务器将运行的主机"
                 }
+              }
+            },
+            "log": {
+              "title": "日志",
+              "button_export_logs": "日志导出",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Warframe 日志路径",
+                  "placeholder": "默认 Warframe 日志路径",
+                  "errors": {
+                    "not_exists": "指定的路径不存在。"
+                  },
+                  "tooltip": "Warframe 日志文件的路径。默认路径留空。"
+                }
+              },
+              "buttons": {
+                "export_logs": "日志导出"
               }
             }
           }

@@ -29,8 +29,8 @@ pub struct WFInventoryState {
 impl WFInventoryState {
     pub fn new(settings: &Settings) -> Arc<Self> {
         let mut path = WFInventoryState::get_default_path();
-        if !settings.wf_inventory_data_path.is_empty() {
-            path = PathBuf::from(settings.wf_inventory_data_path.clone());
+        if !settings.wf_inventory.inv_path.is_empty() {
+            path = PathBuf::from(settings.wf_inventory.inv_path.clone());
         }
         let state = Arc::new(Self {
             root: Mutex::new(WarframeRootObject::default()),

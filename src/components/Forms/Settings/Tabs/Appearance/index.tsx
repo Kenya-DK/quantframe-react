@@ -1,28 +1,32 @@
-import { Tabs } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { useState } from "react";
-import { GeneralPanel } from "./Tabs/General";
+import { Tabs } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
+import { useState } from "react";
+import { DashboardPanel } from "./Tabs/Dashboard";
+import { ThemePanel } from "./Tabs/Theme";
 
-export type HttpServerPanelProps = {
+export type AppearancePanelProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
+  onHideButtons?: (value: boolean) => void;
 };
 
-export const HttpServerPanel = ({ form }: HttpServerPanelProps) => {
+export const AppearancePanel = ({ form, onHideButtons }: AppearancePanelProps) => {
   const [hideTab, setHideTab] = useState<boolean>(false);
-
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForms(`settings.${key}`, { ...context }, i18Key);
-  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`tabs.${key}`, { ...context }, i18Key);
+    useTranslateForms(`settings.tabs.appearance.${key}`, { ...context }, i18Key);
 
   const tabs = [
     {
-      label: useTranslateTabs("http_server.general.title"),
-      component: <GeneralPanel form={form} setHideTab={(v) => setHideTab(v)} />,
-      id: "general",
+      label: useTranslateForm("dashboard.title"),
+      component: <DashboardPanel form={form} setHideTab={(v) => setHideTab(v)} setHideButtons={(v) => onHideButtons?.(v)} />,
+      id: "dashboard",
+    },
+    {
+      label: useTranslateForm("theme.title"),
+      component: <ThemePanel value={form.values} onSubmit={(values) => form.setValues(values)} />,
+      id: "theme",
     },
   ];
 

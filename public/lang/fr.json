@@ -19,20 +19,11 @@
       "save": {
         "label": "Sauvegarder"
       },
-      "reset_defaults": {
-        "label": "Réinitialiser aux valeurs par défaut"
-      },
       "delete": {
         "label": "Supprimer"
       },
       "cancel": {
         "label": "Annuler"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "Réinitialiser les paramètres",
-        "message": "Réinitialiser tous les paramètres aux valeurs par défaut ?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "Sélectionnez la langue",
                 "error": "Langue invalide"
               }
-            }
-          },
-          "themes": {
-            "title": "Thèmes",
-            "community_themes": "Thèmes communautaires",
-            "get_more_out_of_themes": "Tirez le meilleur parti des thèmes en utilisant l'éditeur de thèmes Cliquez ici",
-            "theme_configuration": "Configuration du thème"
-          },
-          "notifications": {
-            "title": "Notifications",
-            "on_new_conversation_title": "Sur une nouvelle conversation",
-            "on_new_trade_title": "Sur le nouveau commerce",
-            "on_wfm_chat_message_title": "Sur le message de discussion WFM"
-          },
-          "advanced": {
-            "title": "Avancé",
-            "fields": {
-              "wf_log_path": {
-                "label": "Chemin du journal Warframe",
-                "placeholder": "Chemin du journal Warframe par défaut",
-                "errors": {
-                  "not_exists": "Le chemin spécifié n'existe pas."
-                },
-                "tooltip": "Le chemin d'accès au fichier journal Warframe. laissez vide pour le chemin par défaut."
-              }
             },
-            "button_export_logs": "Exportation de journaux"
-          },
-          "summary": {
-            "title": "Résumé",
-            "fields": {
-              "recent_days": {
-                "label": "Jours récents",
-                "tooltip": "Combien de jours de données afficher"
-              },
-              "recent_transactions": {
-                "label": "Transactions récentes",
-                "tooltip": "Combien de transactions afficher"
-              }
+            "buttons": {
+              "reset_settings_label": "Réinitialiser aux paramètres par défaut",
+              "prompt_reset_label": "Réinitialiser"
             },
-            "datatable": {
-              "columns": {
-                "name": "Nom",
-                "tags": "Balises",
-                "types": "Espèces",
-                "actions": {
-                  "title": "Actes",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "Modifier l'élément"
-                    },
-                    "delete": {
-                      "tooltip": "Supprimer l'élément"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "Réinitialiser les paramètres",
+                "message": "Réinitialiser tous les paramètres aux valeurs par défaut ?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "Suppression automatique invalide",
                   "tooltip": "Supprimer automatiquement les articles en stock"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "Devrait supprimer d'autres types de transactions",
                   "error": "Invalide devrait supprimer les autres types de transactions",
                   "tooltip": "Supprimera les autres types d'échanges si c'est vrai. Exemple : si l'achat est activé, les articles de vente/liste de souhaits seront supprimés s'ils ne sont pas sur la liste noire."
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "Serveur HTTP",
-            "general": {
-              "title": "Général",
+          "appearance": {
+            "title": "Apparence",
+            "dashboard": {
+              "title": "Tableau de bord",
+              "fields": {
+                "recent_days": {
+                  "label": "Jours récents",
+                  "tooltip": "Combien de jours de données afficher"
+                },
+                "recent_transactions": {
+                  "label": "Transactions récentes",
+                  "tooltip": "Combien de transactions afficher"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "Nom",
+                  "tags": "Balises",
+                  "types": "Espèces",
+                  "actions": {
+                    "title": "Actes",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "Modifier l'élément"
+                      },
+                      "delete": {
+                        "tooltip": "Supprimer l'élément"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "Retourner",
+                "edit_categories": "Modifier les catégories"
+              }
+            },
+            "theme": {
+              "title": "Thème",
+              "community_themes": "Thèmes communautaires",
+              "get_more_out_of_themes": "Tirez le meilleur parti des thèmes en utilisant l'éditeur de thèmes Cliquez ici",
+              "theme_configuration": "Configuration du thème"
+            }
+          },
+          "notifications": {
+            "title": "Notifications",
+            "on_new_conversation_title": "Sur une nouvelle conversation",
+            "on_new_trade_title": "Sur le nouveau commerce",
+            "on_wfm_chat_message_title": "Sur le message de discussion WFM"
+          },
+          "advanced": {
+            "title": "Avancé",
+            "http_server": {
+              "title": "Serveur HTTP",
               "fields": {
                 "enabled": {
                   "label": "Activé",
@@ -1543,6 +1537,23 @@
                   "error": "Hôte invalide",
                   "tooltip": "L'hôte sur lequel le serveur HTTP s'exécutera"
                 }
+              }
+            },
+            "log": {
+              "title": "Journaux",
+              "button_export_logs": "Exportation de journaux",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Chemin du journal Warframe",
+                  "placeholder": "Chemin du journal Warframe par défaut",
+                  "errors": {
+                    "not_exists": "Le chemin spécifié n'existe pas."
+                  },
+                  "tooltip": "Le chemin d'accès au fichier journal Warframe. laissez vide pour le chemin par défaut."
+                }
+              },
+              "buttons": {
+                "export_logs": "Exportation de journaux"
               }
             }
           }

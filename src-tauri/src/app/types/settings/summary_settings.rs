@@ -1,11 +1,10 @@
+use super::*;
 use serde::{Deserialize, Serialize};
-
-use crate::app::SummaryCategorySetting;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SummarySettings {
-    pub recent_days: i64,         // How many days to keep the summary
-    pub recent_transactions: i64, // How many transactions to keep in the summary
+    pub recent_days: i64,
+    pub recent_transactions: i64,
     pub categories: Vec<SummaryCategorySetting>,
 }
 

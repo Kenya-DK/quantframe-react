@@ -3,7 +3,7 @@ import { GroupByKey } from "@utils/helper";
 
 export const GenerateCategoryReport = (
   trades: TauriTypes.PlayerTrade[],
-  settings: TauriTypes.SettingsSummary | undefined,
+  settings: TauriTypes.SummarySettings | undefined,
 ): TauriTypes.FinancialReport[] => {
   if (!settings) return [GenerateFinancialReport(trades)];
 
@@ -85,7 +85,7 @@ export const GenerateFinancialReport = (items: TauriTypes.PlayerTrade[]): TauriT
   };
 };
 
-export const GenerateReport = (items: TauriTypes.PlayerTrade[], settings: TauriTypes.SettingsSummary | undefined): TauriTypes.FinancialReport => {
+export const GenerateReport = (items: TauriTypes.PlayerTrade[], settings: TauriTypes.SummarySettings | undefined): TauriTypes.FinancialReport => {
   let report = GenerateFinancialReport(items);
   let category_report = GenerateCategoryReport(items, settings);
   if (report.properties) report.properties["categories"] = category_report;

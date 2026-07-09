@@ -129,7 +129,7 @@ async fn setup_manages(app: tauri::AppHandle, use_temp_db: bool) -> Result<(), E
     let live_scraper_state = LiveScraperState::new();
     app.manage(live_scraper_state);
 
-    app.manage(Mutex::new(LogParserState::new(&settings.advanced_settings)));
+    app.manage(Mutex::new(LogParserState::new(&settings.log_settings)));
     app.manage(Mutex::new(WFInventoryState::new(&settings)));
     Ok(())
 }

@@ -19,20 +19,11 @@
       "save": {
         "label": "保存"
       },
-      "reset_defaults": {
-        "label": "デフォルトにリセット"
-      },
       "delete": {
         "label": "消去"
       },
       "cancel": {
         "label": "キャンセル"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "設定をリセットする",
-        "message": "すべての設定をデフォルト値にリセットしますか?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "言語の選択",
                 "error": "無効な言語"
               }
-            }
-          },
-          "themes": {
-            "title": "テーマ",
-            "community_themes": "コミュニティのテーマ",
-            "get_more_out_of_themes": "テーマエディターを使用してテーマをさらに活用するにはここをクリックしてください",
-            "theme_configuration": "テーマの構成"
-          },
-          "notifications": {
-            "title": "通知",
-            "on_new_conversation_title": "新しい会話について",
-            "on_new_trade_title": "新しい貿易について",
-            "on_wfm_chat_message_title": "WFM チャット メッセージについて"
-          },
-          "advanced": {
-            "title": "高度な",
-            "fields": {
-              "wf_log_path": {
-                "label": "Warframe ログ パス",
-                "placeholder": "デフォルトの Warframe ログ パス",
-                "errors": {
-                  "not_exists": "指定されたパスは存在しません。"
-                },
-                "tooltip": "Warframe ログ ファイルへのパス。デフォルトのパスの場合は空のままにします。"
-              }
             },
-            "button_export_logs": "ログのエクスポート"
-          },
-          "summary": {
-            "title": "まとめ",
-            "fields": {
-              "recent_days": {
-                "label": "最近の日々",
-                "tooltip": "何日分のデータを表示するか"
-              },
-              "recent_transactions": {
-                "label": "最近の取引",
-                "tooltip": "表示するトランザクションの数"
-              }
+            "buttons": {
+              "reset_settings_label": "デフォルト設定にリセット",
+              "prompt_reset_label": "リセット"
             },
-            "datatable": {
-              "columns": {
-                "name": "名前",
-                "tags": "タグ",
-                "types": "種類",
-                "actions": {
-                  "title": "アクション",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "項目の編集"
-                    },
-                    "delete": {
-                      "tooltip": "項目の削除"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "設定をリセットする",
+                "message": "すべての設定をデフォルト値にリセットしますか?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "無効な自動削除",
                   "tooltip": "在庫アイテムを自動的に削除する"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "他の取引タイプを削除する必要があります",
                   "error": "無効な場合は他の取引タイプを削除する必要があります",
                   "tooltip": "true の場合、他の取引タイプを削除します。例: 購入が有効な場合、ブラックリストに登録されていない場合、販売/ウィッシュリストのアイテムを削除します。"
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "HTTPサーバー",
-            "general": {
-              "title": "一般的な",
+          "appearance": {
+            "title": "外観",
+            "dashboard": {
+              "title": "ダッシュボード",
+              "fields": {
+                "recent_days": {
+                  "label": "最近の日々",
+                  "tooltip": "何日分のデータを表示するか"
+                },
+                "recent_transactions": {
+                  "label": "最近の取引",
+                  "tooltip": "表示するトランザクションの数"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "名前",
+                  "tags": "タグ",
+                  "types": "種類",
+                  "actions": {
+                    "title": "アクション",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "項目の編集"
+                      },
+                      "delete": {
+                        "tooltip": "項目の削除"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "戻る",
+                "edit_categories": "カテゴリの編集"
+              }
+            },
+            "theme": {
+              "title": "テーマ",
+              "community_themes": "コミュニティのテーマ",
+              "get_more_out_of_themes": "テーマエディターを使用してテーマをさらに活用するにはここをクリックしてください",
+              "theme_configuration": "テーマの構成"
+            }
+          },
+          "notifications": {
+            "title": "通知",
+            "on_new_conversation_title": "新しい会話について",
+            "on_new_trade_title": "新しい貿易について",
+            "on_wfm_chat_message_title": "WFM チャット メッセージについて"
+          },
+          "advanced": {
+            "title": "高度な",
+            "http_server": {
+              "title": "HTTPサーバー",
               "fields": {
                 "enabled": {
                   "label": "有効",
@@ -1543,6 +1537,23 @@
                   "error": "無効なホスト",
                   "tooltip": "HTTPサーバーが実行されるホスト"
                 }
+              }
+            },
+            "log": {
+              "title": "ログ",
+              "button_export_logs": "ログのエクスポート",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Warframe ログ パス",
+                  "placeholder": "デフォルトの Warframe ログ パス",
+                  "errors": {
+                    "not_exists": "指定されたパスは存在しません。"
+                  },
+                  "tooltip": "Warframe ログ ファイルへのパス。デフォルトのパスの場合は空のままにします。"
+                }
+              },
+              "buttons": {
+                "export_logs": "ログのエクスポート"
               }
             }
           }

@@ -1,17 +1,18 @@
-import { Tabs } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { RivenPanel } from "./Tabs/Riven";
-import { ItemPanel } from "./Tabs/Item";
+import { Tabs } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 import { useState } from "react";
 import { GeneralPanel } from "./Tabs/General";
-import { UseFormReturnType } from "@mantine/form";
+import { ItemPanel } from "./Tabs/Item";
+import { RivenPanel } from "./Tabs/Riven";
 
 export type LiveTradingPanelProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
+  onHideButtons?: (value: boolean) => void;
 };
 
-export const LiveTradingPanel = ({ form }: LiveTradingPanelProps) => {
+export const LiveTradingPanel = ({ form, onHideButtons }: LiveTradingPanelProps) => {
   const [hideTab, setHideTab] = useState<boolean>(false);
 
   // Translate general
@@ -23,7 +24,7 @@ export const LiveTradingPanel = ({ form }: LiveTradingPanelProps) => {
   const tabs = [
     {
       label: useTranslateTabs("live_scraper.general.title"),
-      component: <GeneralPanel form={form} setHideTab={(v) => setHideTab(v)} />,
+      component: <GeneralPanel form={form} setHideTab={(v) => setHideTab(v)} setHideButtons={(v) => onHideButtons?.(v)} />,
       id: "general",
     },
     {

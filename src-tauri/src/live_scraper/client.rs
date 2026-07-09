@@ -53,8 +53,8 @@ impl LiveScraperState {
             return;
         }
         self.just_started.store(true, Ordering::SeqCst);
-        if settings.live_scraper.stock_mode == StockMode::All
-            || settings.live_scraper.stock_mode == StockMode::Item
+        if settings.live_scraper.general.stock_mode == StockMode::All
+            || settings.live_scraper.general.stock_mode == StockMode::Item
         {
             match app.wfm_client.order().cache_orders_mut().apply_trade_info() {
                 Ok(_) => {}
@@ -70,7 +70,7 @@ impl LiveScraperState {
         tauri::async_runtime::spawn({
             async move {
                 // Start Riven last update timer
-                let riven_interval = settings.live_scraper.stock_riven.update_interval as u64;
+                let riven_interval = settings.live_scraper.rivens.general.update_interval as u64;
                 let mut last_riven_update = Instant::now()
                     .checked_sub(Duration::from_secs(riven_interval * 2))
                     .unwrap_or(Instant::now());
@@ -78,7 +78,7 @@ impl LiveScraperState {
                 while is_running.load(Ordering::SeqCst) {
                     let app = states::app_state().expect("App state not initialized");
                     if matches!(
-                        app.settings.live_scraper.stock_mode,
+                        app.settings.live_scraper.general.stock_mode,
                         StockMode::Riven | StockMode::All
                     ) {
                         // Check Time
@@ -111,7 +111,7 @@ impl LiveScraperState {
                     }
 
                     if matches!(
-                        app.settings.live_scraper.stock_mode,
+                        app.settings.live_scraper.general.stock_mode,
                         StockMode::Item | StockMode::All
                     ) {
                         match this.item().check().await {

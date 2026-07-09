@@ -19,20 +19,11 @@
       "save": {
         "label": "Ratować"
       },
-      "reset_defaults": {
-        "label": "Przywróć ustawienia domyślne"
-      },
       "delete": {
         "label": "Usuwać"
       },
       "cancel": {
         "label": "Anulować"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "Zresetuj ustawienia",
-        "message": "Zresetować wszystkie ustawienia do wartości domyślnych?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "Wybierz Język",
                 "error": "Nieprawidłowy język"
               }
-            }
-          },
-          "themes": {
-            "title": "Motywy",
-            "community_themes": "Tematy społeczności",
-            "get_more_out_of_themes": "Wykorzystaj w pełni motywy, korzystając z Edytora motywów. Kliknij tutaj",
-            "theme_configuration": "Konfiguracja motywu"
-          },
-          "notifications": {
-            "title": "Powiadomienia",
-            "on_new_conversation_title": "O nowej rozmowie",
-            "on_new_trade_title": "O Nowym Handlu",
-            "on_wfm_chat_message_title": "W wiadomości na czacie WFM"
-          },
-          "advanced": {
-            "title": "Zaawansowany",
-            "fields": {
-              "wf_log_path": {
-                "label": "Ścieżka dziennika Warframe",
-                "placeholder": "Domyślna ścieżka dziennika Warframe",
-                "errors": {
-                  "not_exists": "Podana ścieżka nie istnieje."
-                },
-                "tooltip": "Ścieżka do pliku dziennika Warframe. pozostaw puste dla ścieżki domyślnej."
-              }
             },
-            "button_export_logs": "Eksport dziennika"
-          },
-          "summary": {
-            "title": "Streszczenie",
-            "fields": {
-              "recent_days": {
-                "label": "Ostatnie dni",
-                "tooltip": "Liczba dni, które mają być wyświetlane"
-              },
-              "recent_transactions": {
-                "label": "Ostatnie transakcje",
-                "tooltip": "Ile transakcji wyświetlić"
-              }
+            "buttons": {
+              "reset_settings_label": "Resetuj do ustawień domyślnych",
+              "prompt_reset_label": "Nastawić"
             },
-            "datatable": {
-              "columns": {
-                "name": "Nazwa",
-                "tags": "Tagi",
-                "types": "Typy",
-                "actions": {
-                  "title": "Działania",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "Edytuj element"
-                    },
-                    "delete": {
-                      "tooltip": "Usuń element"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "Zresetuj ustawienia",
+                "message": "Zresetować wszystkie ustawienia do wartości domyślnych?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "Nieprawidłowe automatyczne usuwanie",
                   "tooltip": "Automatycznie usuwaj pozycje magazynowe"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "Należy usunąć inne typy transakcji",
                   "error": "Nieprawidłowy powinien usunąć inne typy transakcji",
                   "tooltip": "Usunie inne typy transakcji, jeśli to prawda. Przykład: jeśli opcja kupna jest włączona, usunie pozycje sprzedaży/listy życzeń, jeśli nie znajdują się na czarnej liście"
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "Serwer HTTP",
-            "general": {
-              "title": "Ogólny",
+          "appearance": {
+            "title": "Wygląd",
+            "dashboard": {
+              "title": "Panel",
+              "fields": {
+                "recent_days": {
+                  "label": "Ostatnie dni",
+                  "tooltip": "Liczba dni, które mają być wyświetlane"
+                },
+                "recent_transactions": {
+                  "label": "Ostatnie transakcje",
+                  "tooltip": "Ile transakcji wyświetlić"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "Nazwa",
+                  "tags": "Tagi",
+                  "types": "Typy",
+                  "actions": {
+                    "title": "Działania",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "Edytuj element"
+                      },
+                      "delete": {
+                        "tooltip": "Usuń element"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "Wracać",
+                "edit_categories": "Edytuj kategorie"
+              }
+            },
+            "theme": {
+              "title": "Temat",
+              "community_themes": "Tematy społeczności",
+              "get_more_out_of_themes": "Wykorzystaj w pełni motywy, korzystając z Edytora motywów. Kliknij tutaj",
+              "theme_configuration": "Konfiguracja motywu"
+            }
+          },
+          "notifications": {
+            "title": "Powiadomienia",
+            "on_new_conversation_title": "O nowej rozmowie",
+            "on_new_trade_title": "O Nowym Handlu",
+            "on_wfm_chat_message_title": "W wiadomości na czacie WFM"
+          },
+          "advanced": {
+            "title": "Zaawansowany",
+            "http_server": {
+              "title": "Serwer HTTP",
               "fields": {
                 "enabled": {
                   "label": "Włączony",
@@ -1543,6 +1537,23 @@
                   "error": "Nieprawidłowy host",
                   "tooltip": "Host, na którym będzie działał serwer HTTP"
                 }
+              }
+            },
+            "log": {
+              "title": "Dzienniki",
+              "button_export_logs": "Eksport dziennika",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Ścieżka dziennika Warframe",
+                  "placeholder": "Domyślna ścieżka dziennika Warframe",
+                  "errors": {
+                    "not_exists": "Podana ścieżka nie istnieje."
+                  },
+                  "tooltip": "Ścieżka do pliku dziennika Warframe. pozostaw puste dla ścieżki domyślnej."
+                }
+              },
+              "buttons": {
+                "export_logs": "Eksport dziennika"
               }
             }
           }

@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 export type GeneralPanelProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
   setHideTab?: (value: boolean) => void;
+  setHideButtons?: (value: boolean) => void;
 };
 enum ViewMode {
   General = "general",
@@ -38,7 +39,7 @@ interface FilterProps {
   disable_for?: TauriTypes.TradeMode[];
 }
 const getFieldPath = (field: string) => `live_scraper.${field}`;
-export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
+export const GeneralPanel = ({ form, setHideTab, setHideButtons }: GeneralPanelProps) => {
   // States
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.General);
   const [opened, { open, close }] = useDisclosure(false);
@@ -72,7 +73,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
           trade_tax: item.tradeTax,
           mr_requirement: item.masteryReq,
           tags: item.tags,
-          disabled_for: form.values.live_scraper.stock_item.blacklist?.find((bl) => bl.wfmId === item.wfmId)?.disabled_for || [],
+          disabled_for: form.values.live_scraper.items.general.blacklist?.find((bl) => bl.wfmId === item.wfmId)?.disabled_for || [],
         } as BlackList;
       }),
     );
@@ -157,22 +158,23 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
         />
       </Modal>
       {viewMode == ViewMode.General && (
-        <>
+        <Box>
           <Group gap="md">
             <Select
               allowDeselect={false}
               label={useTranslateFormFields("stock_mode.label")}
-              description={useTranslateFormFields(`stock_mode.description.${form.values.live_scraper.stock_mode}`)}
+              description={useTranslateFormFields(`stock_mode.description.${form.values.live_scraper.general.stock_mode}`)}
               placeholder={useTranslateFormFields("stock_mode.placeholder")}
               data={Object.values(TauriTypes.StockMode).map((status) => {
                 return { value: status, label: useTranslateStockMode(status) };
               })}
-              {...form.getInputProps(getFieldPath("stock_mode"))}
+              {...form.getInputProps(getFieldPath("general.stock_mode"))}
               radius="md"
             />
             <MultiSelect
               disabled={
-                form.values.live_scraper.stock_mode != TauriTypes.StockMode.Item && form.values.live_scraper.stock_mode != TauriTypes.StockMode.All
+                form.values.live_scraper.general.stock_mode != TauriTypes.StockMode.Item &&
+                form.values.live_scraper.general.stock_mode != TauriTypes.StockMode.All
               }
               label={useTranslateFormFields("trade_modes.label")}
               w={250}
@@ -180,7 +182,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
               data={Object.values(TauriTypes.TradeMode).map((status) => {
                 return { value: status, label: useTranslateTradeMode(status) };
               })}
-              {...form.getInputProps(getFieldPath("trade_modes"))}
+              {...form.getInputProps(getFieldPath("general.trade_modes"))}
               radius="md"
             />
           </Group>
@@ -188,33 +190,33 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             <Tooltip label={useTranslateFormFields("report_to_wfm.tooltip")}>
               <Checkbox
                 label={useTranslateFormFields("report_to_wfm.label")}
-                checked={form.values.live_scraper.report_to_wfm}
-                onChange={(event) => form.setFieldValue(getFieldPath("report_to_wfm"), event.currentTarget.checked)}
+                checked={form.values.live_scraper.general.report_to_wfm}
+                onChange={(event) => form.setFieldValue(getFieldPath("general.report_to_wfm"), event.currentTarget.checked)}
                 error={form.errors.report_to_wfm}
               />
             </Tooltip>
             <Tooltip label={useTranslateFormFields("auto_delete.tooltip")}>
               <Checkbox
                 label={useTranslateFormFields("auto_delete.label")}
-                checked={form.values.live_scraper.auto_delete}
-                onChange={(event) => form.setFieldValue(getFieldPath("auto_delete"), event.currentTarget.checked)}
+                checked={form.values.live_scraper.general.auto_delete}
+                onChange={(event) => form.setFieldValue(getFieldPath("general.auto_delete"), event.currentTarget.checked)}
                 error={form.errors.auto_delete}
               />
             </Tooltip>
             <Tooltip label={useTranslateFormFields("auto_trade.tooltip")}>
               <Checkbox
                 label={useTranslateFormFields("auto_trade.label")}
-                checked={form.values.live_scraper.auto_trade}
-                onChange={(event) => form.setFieldValue(getFieldPath("auto_trade"), event.currentTarget.checked)}
+                checked={form.values.live_scraper.general.auto_trade}
+                onChange={(event) => form.setFieldValue(getFieldPath("general.auto_trade"), event.currentTarget.checked)}
                 error={form.errors.auto_trade}
               />
             </Tooltip>
-            <Tooltip label={useTranslateFormFields("should_delete_other_types.tooltip")}>
+            <Tooltip label={useTranslateFormFields("delete_conflicting_orders.tooltip")}>
               <Checkbox
-                label={useTranslateFormFields("should_delete_other_types.label")}
-                checked={form.values.live_scraper.should_delete_other_types}
-                onChange={(event) => form.setFieldValue(getFieldPath("should_delete_other_types"), event.currentTarget.checked)}
-                error={form.errors.should_delete_other_types}
+                label={useTranslateFormFields("delete_conflicting_orders.label")}
+                checked={form.values.live_scraper.general.delete_conflicting_orders}
+                onChange={(event) => form.setFieldValue(getFieldPath("general.delete_conflicting_orders"), event.currentTarget.checked)}
+                error={form.errors.delete_conflicting_orders}
               />
             </Tooltip>
           </Group>
@@ -222,30 +224,32 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
           <Group gap="md">
             <Button
               onClick={() => {
-                if (setHideTab) setHideTab(true);
+                setHideTab && setHideTab(true);
+                setHideButtons && setHideButtons(true);
                 setViewMode(ViewMode.Blacklist);
               }}
             >
-              {useTranslateForm("buttons.edit_blacklist_label", { count: form.values.live_scraper.stock_item.blacklist?.length || 0 })}
+              {useTranslateForm("buttons.edit_blacklist_label", { count: form.values.live_scraper.items.general.blacklist?.length || 0 })}
             </Button>
             <Button
               onClick={() => {
-                if (setHideTab) setHideTab(true);
+                setHideTab && setHideTab(true);
+                setHideButtons && setHideButtons(true);
                 setViewMode(ViewMode.BuyList);
               }}
             >
-              {useTranslateForm("buttons.edit_buy_list_label", { count: form.values.live_scraper.stock_item.buy_list?.length || 0 })}
+              {useTranslateForm("buttons.edit_buy_list_label", { count: form.values.live_scraper.items.general.buy_list?.length || 0 })}
             </Button>
           </Group>
-        </>
+        </Box>
       )}
       {viewMode == ViewMode.Blacklist && (
         <Stack>
           <SelectMultipleItems<BlackList>
             leftTitle={useTranslateBlacklist("available_items_label")}
             rightTitle={useTranslateBlacklist("selected_items_label")}
-            selectedItems={form.values.live_scraper.stock_item.blacklist || []}
-            onChange={(items) => form.setFieldValue(getFieldPath("stock_item"), { ...form.values.live_scraper.stock_item, blacklist: items })}
+            selectedItems={form.values.live_scraper.items.general.blacklist || []}
+            onChange={(items) => form.setFieldValue(getFieldPath("items.general"), { ...form.values.live_scraper.items.general, blacklist: items })}
             getId={(item) => item.wfmId}
             onBeforeAdd={(item) => {
               if (!formLeft.values.disable_for || formLeft.values.disable_for.length === 0) {
@@ -348,6 +352,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             variant="light"
             onClick={() => {
               setHideTab && setHideTab(false);
+              setHideButtons && setHideButtons(false);
               setViewMode(ViewMode.General);
             }}
           >
@@ -362,10 +367,10 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             hide_sub_type
             hide_quantity
             onSubmit={(values) => {
-              if (form.values.live_scraper.stock_item.buy_list.find((buyItem) => buyItem.wfmId === values.raw) || values.bought <= 0) return;
-              form.setFieldValue(getFieldPath("stock_item"), {
-                ...form.values.live_scraper.stock_item,
-                buy_list: form.values.live_scraper.stock_item.buy_list.concat([{ wfmId: values.raw, max_price: values.bought }]),
+              if (form.values.live_scraper.items.general.buy_list.find((buyItem) => buyItem.wfmId === values.raw) || values.bought <= 0) return;
+              form.setFieldValue(getFieldPath("items.general"), {
+                ...form.values.live_scraper.items.general,
+                buy_list: form.values.live_scraper.items.general.buy_list.concat([{ wfmId: values.raw, max_price: values.bought }]),
               });
             }}
           />
@@ -374,7 +379,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             withColumnBorders
             withTableBorder
             striped
-            records={form.values.live_scraper.stock_item.buy_list || []}
+            records={form.values.live_scraper.items.general.buy_list || []}
             columns={[
               {
                 accessor: "wfmId",
@@ -396,9 +401,9 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
                     actionProps={{ size: "sm" }}
                     iconProps={{ size: "xs" }}
                     onClick={() => {
-                      form.setFieldValue(getFieldPath("stock_item"), {
-                        ...form.values.live_scraper.stock_item,
-                        buy_list: form.values.live_scraper.stock_item.buy_list.filter((buyItem) => buyItem.wfmId !== item.wfmId),
+                      form.setFieldValue(getFieldPath("items.general"), {
+                        ...form.values.live_scraper.items.general,
+                        buy_list: form.values.live_scraper.items.general.buy_list.filter((buyItem) => buyItem.wfmId !== item.wfmId),
                       });
                     }}
                   />
@@ -411,6 +416,7 @@ export const GeneralPanel = ({ form, setHideTab }: GeneralPanelProps) => {
             variant="light"
             onClick={() => {
               setHideTab && setHideTab(false);
+              setHideButtons && setHideButtons(false);
               setViewMode(ViewMode.General);
             }}
           >

@@ -18,7 +18,7 @@ use wf_market::{
 };
 
 use crate::{
-    app::{Settings, StockItemSettings},
+    app::{ItemSettings, ItemWtbSettings, Settings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
     live_scraper::*,
@@ -34,7 +34,7 @@ pub fn is_disabled(value: i64) -> bool {
     value <= -1
 }
 
-pub fn get_interesting_items(settings: &StockItemSettings) -> Vec<ItemPriceInfo> {
+pub fn get_interesting_items(settings: &ItemSettings) -> Vec<ItemPriceInfo> {
     if let Some(items) = INTERESTING_ITEMS.get() {
         if let Some(interesting_items) = items.get(&settings.get_query_id()) {
             return interesting_items.clone();
@@ -42,12 +42,12 @@ pub fn get_interesting_items(settings: &StockItemSettings) -> Vec<ItemPriceInfo>
     }
     let cache = states::cache_client().expect("Failed to get cache client");
 
-    let volume_threshold = settings.volume_threshold;
-    let avg_price_cap = settings.avg_price_cap;
-    let trading_tax_cap = settings.trading_tax_cap;
-    let profit = settings.profit_threshold;
-    let profit_margin = settings.min_wtb_profit_margin;
-    let price_shift_threshold = settings.price_shift_threshold;
+    let volume_threshold = settings.wtb.volume_threshold;
+    let avg_price_cap = settings.wtb.avg_price_cap;
+    let trading_tax_cap = settings.wtb.trading_tax_cap;
+    let profit = settings.wtb.profit_threshold;
+    let profit_margin = settings.wtb.min_wtb_profit_margin;
+    let price_shift_threshold = settings.wtb.price_shift_threshold;
 
     // Dynamic filter using closures
 
@@ -165,7 +165,7 @@ pub async fn collect_interesting_items(
     let component = component.into();
     let conn = DATABASE.get().unwrap();
     // Variables.
-    let stock_item_settings = &settings.live_scraper.stock_item;
+    let stock_item_settings = &settings.live_scraper.items;
     let mut interesting_items: HashMap<String, ItemEntry> = HashMap::new();
 
     // -- Debugging Mode --
@@ -180,13 +180,14 @@ pub async fn collect_interesting_items(
 
     // --- Buy Mode ---
     if settings.live_scraper.has_trade_mode(TradeMode::Buy) {
-        let buy_list = get_interesting_items(&settings.live_scraper.stock_item);
+        let buy_list = get_interesting_items(&settings.live_scraper.items);
         for item in buy_list {
-            let item_entry = ItemEntry::from(&item).set_quantity(
-                OrderType::Buy,
-                settings.live_scraper.stock_item.buy_quantity,
-            );
-            if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::Buy) {
+            let item_entry = ItemEntry::from(&item)
+                .set_quantity(OrderType::Buy, settings.live_scraper.items.wtb.buy_quantity);
+            if !stock_item_settings
+                .general
+                .is_item_blacklisted(&item.wfm_id, &TradeMode::Buy)
+            {
                 interesting_items.insert(item_entry.uuid().clone(), item_entry);
             }
         }
@@ -198,7 +199,10 @@ pub async fn collect_interesting_items(
             .await
             .map_err(|e| e.with_location(get_location!()))?;
         for item in stock_items.results {
-            if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::Sell) {
+            if !stock_item_settings
+                .general
+                .is_item_blacklisted(&item.wfm_id, &TradeMode::Sell)
+            {
                 interesting_items
                     .entry(item.uuid())
                     .and_modify(|entry| {
@@ -220,7 +224,10 @@ pub async fn collect_interesting_items(
             .await
             .map_err(|e| e.with_location(get_location!()))?;
         for item in wish_items.results {
-            if !stock_item_settings.is_item_blacklisted(&item.wfm_id, &TradeMode::WishList) {
+            if !stock_item_settings
+                .general
+                .is_item_blacklisted(&item.wfm_id, &TradeMode::WishList)
+            {
                 interesting_items
                     .entry(item.uuid())
                     .and_modify(|entry| {
@@ -330,7 +337,7 @@ pub fn orders_to_delete(
     client: &LiveScraperState,
     my_orders: &OrderList<Order>,
 ) -> Vec<String> {
-    if settings.live_scraper.auto_delete && client.just_started.load(Ordering::SeqCst) {
+    if settings.live_scraper.general.auto_delete && client.just_started.load(Ordering::SeqCst) {
         return my_orders
             .order_ids(OrderType::Buy)
             .into_iter()

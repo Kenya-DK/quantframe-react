@@ -6,8 +6,8 @@ import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import { SelectItemTags } from "../SelectItemTags";
 
 export type CreateCategorySummaryProps = {
-  value?: TauriTypes.SettingsCategorySummary;
-  onSubmit: (values: TauriTypes.SettingsCategorySummary) => void;
+  value?: TauriTypes.SummaryCategorySetting;
+  onSubmit: (values: TauriTypes.SummaryCategorySetting) => void;
 };
 
 export function CreateCategorySummary({ value, onSubmit }: CreateCategorySummaryProps) {
@@ -32,7 +32,7 @@ export function CreateCategorySummary({ value, onSubmit }: CreateCategorySummary
     <Box w={"100%"}>
       <form
         onSubmit={form.onSubmit((data) => {
-          onSubmit(data as TauriTypes.SettingsCategorySummary);
+          onSubmit(data as TauriTypes.SummaryCategorySetting);
         })}
       >
         <Group mt="xs">

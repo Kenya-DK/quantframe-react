@@ -19,20 +19,11 @@
       "save": {
         "label": "Speichern"
       },
-      "reset_defaults": {
-        "label": "Auf Standard zurücksetzen"
-      },
       "delete": {
         "label": "Löschen"
       },
       "cancel": {
         "label": "Stornieren"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "Einstellungen zurücksetzen",
-        "message": "Alle Einstellungen auf Standardwerte zurücksetzen?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "Wählen Sie Sprache aus",
                 "error": "Ungültige Sprache"
               }
-            }
-          },
-          "themes": {
-            "title": "Themen",
-            "community_themes": "Community-Themen",
-            "get_more_out_of_themes": "Holen Sie mehr aus Themes heraus, indem Sie den Theme-Editor verwenden. Klicken Sie hier",
-            "theme_configuration": "Theme-Konfiguration"
-          },
-          "notifications": {
-            "title": "Benachrichtigungen",
-            "on_new_conversation_title": "Über ein neues Gespräch",
-            "on_new_trade_title": "Über neuen Handel",
-            "on_wfm_chat_message_title": "Auf WFM-Chat-Nachricht"
-          },
-          "advanced": {
-            "title": "Fortschrittlich",
-            "fields": {
-              "wf_log_path": {
-                "label": "Warframe-Protokollpfad",
-                "placeholder": "Standard-Warframe-Protokollpfad",
-                "errors": {
-                  "not_exists": "Der angegebene Pfad existiert nicht."
-                },
-                "tooltip": "Der Pfad zur Warframe-Protokolldatei. Für den Standardpfad leer lassen."
-              }
             },
-            "button_export_logs": "Protokollexport"
-          },
-          "summary": {
-            "title": "Zusammenfassung",
-            "fields": {
-              "recent_days": {
-                "label": "Letzte Tage",
-                "tooltip": "Wie viele Tage an Daten werden angezeigt?"
-              },
-              "recent_transactions": {
-                "label": "Letzte Transaktionen",
-                "tooltip": "Wie viele Transaktionen werden angezeigt?"
-              }
+            "buttons": {
+              "reset_settings_label": "Auf Standardeinstellungen zurücksetzen",
+              "prompt_reset_label": "Zurücksetzen"
             },
-            "datatable": {
-              "columns": {
-                "name": "Name",
-                "tags": "Schlagworte",
-                "types": "Typen",
-                "actions": {
-                  "title": "Aktionen",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "Element bearbeiten"
-                    },
-                    "delete": {
-                      "tooltip": "Artikel löschen"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "Einstellungen zurücksetzen",
+                "message": "Alle Einstellungen auf Standardwerte zurücksetzen?"
               }
             }
           },
@@ -1330,9 +1274,9 @@
                   "error": "Ungültige automatische Löschung",
                   "tooltip": "Lagerartikel automatisch löschen"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "Andere Handelsarten sollten gelöscht werden",
-                  "error": "Ungültig sollte andere Handelstypen löschen",
+                  "error": "Ungültig sollte andere Handelsarten löschen",
                   "tooltip": "Löscht andere Handelstypen, wenn dies zutrifft. Beispiel: Wenn „Kauf“ aktiviert ist, werden Verkaufs-/Wunschlistenartikel gelöscht, wenn sie nicht auf der schwarzen Liste stehen"
                 },
                 "report_to_wfm": {
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "HTTP-Server",
-            "general": {
-              "title": "Allgemein",
+          "appearance": {
+            "title": "Aussehen",
+            "dashboard": {
+              "title": "Armaturenbrett",
+              "fields": {
+                "recent_days": {
+                  "label": "Letzte Tage",
+                  "tooltip": "Wie viele Tage an Daten werden angezeigt?"
+                },
+                "recent_transactions": {
+                  "label": "Letzte Transaktionen",
+                  "tooltip": "Wie viele Transaktionen werden angezeigt?"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "Name",
+                  "tags": "Schlagworte",
+                  "types": "Typen",
+                  "actions": {
+                    "title": "Aktionen",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "Element bearbeiten"
+                      },
+                      "delete": {
+                        "tooltip": "Artikel löschen"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "Geh zurück",
+                "edit_categories": "Kategorien bearbeiten"
+              }
+            },
+            "theme": {
+              "title": "Thema",
+              "community_themes": "Community-Themen",
+              "get_more_out_of_themes": "Holen Sie mehr aus Themes heraus, indem Sie den Theme-Editor verwenden. Klicken Sie hier",
+              "theme_configuration": "Theme-Konfiguration"
+            }
+          },
+          "notifications": {
+            "title": "Benachrichtigungen",
+            "on_new_conversation_title": "Über ein neues Gespräch",
+            "on_new_trade_title": "Über neuen Handel",
+            "on_wfm_chat_message_title": "Auf WFM-Chat-Nachricht"
+          },
+          "advanced": {
+            "title": "Fortschrittlich",
+            "http_server": {
+              "title": "HTTP-Server",
               "fields": {
                 "enabled": {
                   "label": "Ermöglicht",
@@ -1543,6 +1537,23 @@
                   "error": "Ungültiger Host",
                   "tooltip": "Der Host, auf dem der HTTP-Server ausgeführt wird"
                 }
+              }
+            },
+            "log": {
+              "title": "Protokolle",
+              "button_export_logs": "Protokollexport",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Warframe-Protokollpfad",
+                  "placeholder": "Standard-Warframe-Protokollpfad",
+                  "errors": {
+                    "not_exists": "Der angegebene Pfad existiert nicht."
+                  },
+                  "tooltip": "Der Pfad zur Warframe-Protokolldatei. Für den Standardpfad leer lassen."
+                }
+              },
+              "buttons": {
+                "export_logs": "Protokollexport"
               }
             }
           }

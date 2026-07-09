@@ -19,20 +19,11 @@
       "save": {
         "label": "節省"
       },
-      "reset_defaults": {
-        "label": "重設為預設值"
-      },
       "delete": {
         "label": "刪除"
       },
       "cancel": {
         "label": "取消"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "重置設定",
-        "message": "將所有設定重設為預設值？"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "選擇語言",
                 "error": "無效語言"
               }
-            }
-          },
-          "themes": {
-            "title": "主題",
-            "community_themes": "社區主題",
-            "get_more_out_of_themes": "使用主題編輯器從主題中獲得更多資訊 點擊此處",
-            "theme_configuration": "主題配置"
-          },
-          "notifications": {
-            "title": "通知",
-            "on_new_conversation_title": "關於新的對話",
-            "on_new_trade_title": "論新貿易",
-            "on_wfm_chat_message_title": "關於 WFM 聊天訊息"
-          },
-          "advanced": {
-            "title": "先進的",
-            "fields": {
-              "wf_log_path": {
-                "label": "Warframe 日誌路徑",
-                "placeholder": "預設 Warframe 日誌路徑",
-                "errors": {
-                  "not_exists": "指定的路徑不存在。"
-                },
-                "tooltip": "Warframe 日誌檔案的路徑。預設路徑留空。"
-              }
             },
-            "button_export_logs": "日誌匯出"
-          },
-          "summary": {
-            "title": "概括",
-            "fields": {
-              "recent_days": {
-                "label": "最近幾天",
-                "tooltip": "顯示多少天的數據"
-              },
-              "recent_transactions": {
-                "label": "最近交易",
-                "tooltip": "顯示多少筆交易"
-              }
+            "buttons": {
+              "reset_settings_label": "重設為預設設定",
+              "prompt_reset_label": "重置"
             },
-            "datatable": {
-              "columns": {
-                "name": "姓名",
-                "tags": "標籤",
-                "types": "類型",
-                "actions": {
-                  "title": "行動",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "編輯項目"
-                    },
-                    "delete": {
-                      "tooltip": "刪除項目"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "重置設定",
+                "message": "將所有設定重設為預設值？"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "自動刪除無效",
                   "tooltip": "自動刪除庫存商品"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "應刪除其他交易類型",
                   "error": "無效應刪除其他交易類型",
                   "tooltip": "如果屬實，將刪除其他交易類型範例：如果啟用購買，則將刪除未列入黑名單的出售/願望清單項目"
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "HTTP伺服器",
-            "general": {
-              "title": "一般的",
+          "appearance": {
+            "title": "外貌",
+            "dashboard": {
+              "title": "儀表板",
+              "fields": {
+                "recent_days": {
+                  "label": "最近幾天",
+                  "tooltip": "顯示多少天的數據"
+                },
+                "recent_transactions": {
+                  "label": "最近交易",
+                  "tooltip": "顯示多少筆交易"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "姓名",
+                  "tags": "標籤",
+                  "types": "類型",
+                  "actions": {
+                    "title": "行動",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "編輯項目"
+                      },
+                      "delete": {
+                        "tooltip": "刪除項目"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "回去",
+                "edit_categories": "編輯類別"
+              }
+            },
+            "theme": {
+              "title": "主題",
+              "community_themes": "社區主題",
+              "get_more_out_of_themes": "使用主題編輯器從主題中獲得更多資訊 點擊此處",
+              "theme_configuration": "主題配置"
+            }
+          },
+          "notifications": {
+            "title": "通知",
+            "on_new_conversation_title": "關於新的對話",
+            "on_new_trade_title": "論新貿易",
+            "on_wfm_chat_message_title": "關於 WFM 聊天訊息"
+          },
+          "advanced": {
+            "title": "先進的",
+            "http_server": {
+              "title": "HTTP伺服器",
               "fields": {
                 "enabled": {
                   "label": "啟用",
@@ -1543,6 +1537,23 @@
                   "error": "無效主機",
                   "tooltip": "HTTP 伺服器將執行的主機"
                 }
+              }
+            },
+            "log": {
+              "title": "紀錄",
+              "button_export_logs": "日誌匯出",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Warframe 日誌路徑",
+                  "placeholder": "預設 Warframe 日誌路徑",
+                  "errors": {
+                    "not_exists": "指定的路徑不存在。"
+                  },
+                  "tooltip": "Warframe 日誌檔案的路徑。預設路徑留空。"
+                }
+              },
+              "buttons": {
+                "export_logs": "日誌匯出"
               }
             }
           }

@@ -49,14 +49,18 @@ pub async fn app_update_settings(
     log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
 ) -> Result<Settings, Error> {
     let mut app = app.lock()?;
-    settings.custom_sounds = app.settings.custom_sounds.clone();
+    settings.notifications.custom_sounds = app.settings.notifications.custom_sounds.clone();
     let log_parser = log_parser.lock()?;
-    log_parser.set_path(&settings.advanced_settings.wf_log_path)?;
-    if settings.http_server.uuid() != app.settings.http_server.uuid() {
+    log_parser.set_path(&settings.log_settings.ee_log_path)?;
+
+    let current_http_server = &app.settings.advanced_settings.http_server;
+    let new_http_server = &settings.advanced_settings.http_server;
+
+    if new_http_server.uuid() != current_http_server.uuid() {
         let operation = app
             .http_server
-            .set_host(&settings.http_server.host, settings.http_server.port);
-        match (settings.http_server.enable, operation.as_str()) {
+            .set_host(&new_http_server.host, new_http_server.port);
+        match (new_http_server.enable, operation.as_str()) {
             (true, "NO_CHANGE") => app.http_server.start(),
             (false, "NO_CHANGE") => app.http_server.stop(),
             (true, "CHANGED") => app.http_server.restart(),

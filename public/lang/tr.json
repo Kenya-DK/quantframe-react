@@ -19,20 +19,11 @@
       "save": {
         "label": "Kaydetmek"
       },
-      "reset_defaults": {
-        "label": "Varsayılana Sıfırla"
-      },
       "delete": {
         "label": "Silmek"
       },
       "cancel": {
         "label": "İptal etmek"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "Ayarları sıfırla",
-        "message": "Tüm ayarlar varsayılan değerlere sıfırlansın mı?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "Dil Seçiniz",
                 "error": "Geçersiz dil"
               }
-            }
-          },
-          "themes": {
-            "title": "Temalar",
-            "community_themes": "Topluluk Temaları",
-            "get_more_out_of_themes": "Tema Düzenleyiciyi kullanarak temalardan daha fazla yararlanın Buraya Tıklayın",
-            "theme_configuration": "Tema Yapılandırması"
-          },
-          "notifications": {
-            "title": "Bildirimler",
-            "on_new_conversation_title": "Yeni Konuşmada",
-            "on_new_trade_title": "Yeni Ticaret Üzerine",
-            "on_wfm_chat_message_title": "WFM Sohbet Mesajında"
-          },
-          "advanced": {
-            "title": "Gelişmiş",
-            "fields": {
-              "wf_log_path": {
-                "label": "Warframe Günlük Yolu",
-                "placeholder": "Varsayılan Warframe günlük yolu",
-                "errors": {
-                  "not_exists": "Belirtilen yol mevcut değil."
-                },
-                "tooltip": "Warframe günlük dosyasının yolu. varsayılan yol için boş bırakın."
-              }
             },
-            "button_export_logs": "Günlük Dışa Aktarma"
-          },
-          "summary": {
-            "title": "Özet",
-            "fields": {
-              "recent_days": {
-                "label": "Son Günler",
-                "tooltip": "Kaç günlük veri gösterilecek"
-              },
-              "recent_transactions": {
-                "label": "Son İşlemler",
-                "tooltip": "Kaç işlem gösterilecek"
-              }
+            "buttons": {
+              "reset_settings_label": "Varsayılan ayarlara sıfırla",
+              "prompt_reset_label": "Sıfırla"
             },
-            "datatable": {
-              "columns": {
-                "name": "İsim",
-                "tags": "Etiketler",
-                "types": "Türler",
-                "actions": {
-                  "title": "Eylemler",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "Öğeyi Düzenle"
-                    },
-                    "delete": {
-                      "tooltip": "Öğeyi Sil"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "Ayarları sıfırla",
+                "message": "Tüm ayarlar varsayılan değerlere sıfırlansın mı?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "Geçersiz otomatik silme",
                   "tooltip": "Stok öğelerini otomatik olarak sil"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "Diğer Ticaret Türlerini Silmeli",
                   "error": "Geçersiz, diğer ticaret türlerini silmeli",
                   "tooltip": "Doğruysa diğer ticaret türlerini silecektir örnek: satın alma etkinse, kara listede değilse satış/istek listesi öğeleri silinir"
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "HTTP Sunucusu",
-            "general": {
-              "title": "Genel",
+          "appearance": {
+            "title": "Dış görünüş",
+            "dashboard": {
+              "title": "Kontrol Paneli",
+              "fields": {
+                "recent_days": {
+                  "label": "Son Günler",
+                  "tooltip": "Kaç günlük veri gösterilecek"
+                },
+                "recent_transactions": {
+                  "label": "Son İşlemler",
+                  "tooltip": "Kaç işlem gösterilecek"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "İsim",
+                  "tags": "Etiketler",
+                  "types": "Türler",
+                  "actions": {
+                    "title": "Eylemler",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "Öğeyi Düzenle"
+                      },
+                      "delete": {
+                        "tooltip": "Öğeyi Sil"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "Geri gitmek",
+                "edit_categories": "Kategorileri Düzenle"
+              }
+            },
+            "theme": {
+              "title": "Tema",
+              "community_themes": "Topluluk Temaları",
+              "get_more_out_of_themes": "Tema Düzenleyiciyi kullanarak temalardan daha fazla yararlanın Buraya Tıklayın",
+              "theme_configuration": "Tema Yapılandırması"
+            }
+          },
+          "notifications": {
+            "title": "Bildirimler",
+            "on_new_conversation_title": "Yeni Konuşmada",
+            "on_new_trade_title": "Yeni Ticaret Üzerine",
+            "on_wfm_chat_message_title": "WFM Sohbet Mesajında"
+          },
+          "advanced": {
+            "title": "Gelişmiş",
+            "http_server": {
+              "title": "HTTP Sunucusu",
               "fields": {
                 "enabled": {
                   "label": "Etkinleştirilmiş",
@@ -1543,6 +1537,23 @@
                   "error": "Geçersiz ana makine",
                   "tooltip": "HTTP sunucusunun çalışacağı ana bilgisayar"
                 }
+              }
+            },
+            "log": {
+              "title": "Günlükler",
+              "button_export_logs": "Günlük Dışa Aktarma",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Warframe Günlük Yolu",
+                  "placeholder": "Varsayılan Warframe günlük yolu",
+                  "errors": {
+                    "not_exists": "Belirtilen yol mevcut değil."
+                  },
+                  "tooltip": "Warframe günlük dosyasının yolu. varsayılan yol için boş bırakın."
+                }
+              },
+              "buttons": {
+                "export_logs": "Günlük Dışa Aktarma"
               }
             }
           }

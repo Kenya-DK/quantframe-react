@@ -19,20 +19,11 @@
       "save": {
         "label": "구하다"
       },
-      "reset_defaults": {
-        "label": "기본값으로 재설정"
-      },
       "delete": {
         "label": "삭제"
       },
       "cancel": {
         "label": "취소"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "설정 재설정",
-        "message": "모든 설정을 기본값으로 재설정하시겠습니까?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "언어 선택",
                 "error": "잘못된 언어"
               }
-            }
-          },
-          "themes": {
-            "title": "테마",
-            "community_themes": "커뮤니티 테마",
-            "get_more_out_of_themes": "테마 편집기를 사용하여 테마를 더 다양하게 활용하세요 여기를 클릭하세요",
-            "theme_configuration": "테마 구성"
-          },
-          "notifications": {
-            "title": "알림",
-            "on_new_conversation_title": "새로운 대화에서",
-            "on_new_trade_title": "새로운 거래에",
-            "on_wfm_chat_message_title": "WFM 채팅 메시지에서"
-          },
-          "advanced": {
-            "title": "고급의",
-            "fields": {
-              "wf_log_path": {
-                "label": "워프레임 로그 경로",
-                "placeholder": "기본 워프레임 로그 경로",
-                "errors": {
-                  "not_exists": "지정된 경로가 존재하지 않습니다."
-                },
-                "tooltip": "워프레임 로그 파일 경로입니다. 기본 경로는 비워 두세요."
-              }
             },
-            "button_export_logs": "로그 내보내기"
-          },
-          "summary": {
-            "title": "요약",
-            "fields": {
-              "recent_days": {
-                "label": "최근 일",
-                "tooltip": "표시할 데이터의 일수"
-              },
-              "recent_transactions": {
-                "label": "최근 거래",
-                "tooltip": "표시할 거래 수"
-              }
+            "buttons": {
+              "reset_settings_label": "기본 설정으로 재설정",
+              "prompt_reset_label": "다시 놓기"
             },
-            "datatable": {
-              "columns": {
-                "name": "이름",
-                "tags": "태그",
-                "types": "유형",
-                "actions": {
-                  "title": "행위",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "항목 편집"
-                    },
-                    "delete": {
-                      "tooltip": "항목 삭제"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "설정 재설정",
+                "message": "모든 설정을 기본값으로 재설정하시겠습니까?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "잘못된 자동 삭제",
                   "tooltip": "재고 품목 자동 삭제"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "다른 거래 유형을 삭제해야 합니다",
                   "error": "유효하지 않으면 다른 거래 유형을 삭제해야 합니다.",
                   "tooltip": "true인 경우 다른 거래 유형을 삭제합니다. 예: 구매가 활성화된 경우 블랙리스트에 등록되지 않은 경우 판매/위시리스트 항목이 삭제됩니다."
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "HTTP 서버",
-            "general": {
-              "title": "일반적인",
+          "appearance": {
+            "title": "모습",
+            "dashboard": {
+              "title": "계기반",
+              "fields": {
+                "recent_days": {
+                  "label": "최근 일",
+                  "tooltip": "표시할 데이터 일수"
+                },
+                "recent_transactions": {
+                  "label": "최근 거래",
+                  "tooltip": "표시할 거래 수"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "이름",
+                  "tags": "태그",
+                  "types": "유형",
+                  "actions": {
+                    "title": "행위",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "항목 편집"
+                      },
+                      "delete": {
+                        "tooltip": "항목 삭제"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "돌아가기",
+                "edit_categories": "카테고리 편집"
+              }
+            },
+            "theme": {
+              "title": "주제",
+              "community_themes": "커뮤니티 테마",
+              "get_more_out_of_themes": "테마 편집기를 사용하여 테마를 더 다양하게 활용하세요 여기를 클릭하세요",
+              "theme_configuration": "테마 구성"
+            }
+          },
+          "notifications": {
+            "title": "알림",
+            "on_new_conversation_title": "새로운 대화에서",
+            "on_new_trade_title": "새로운 거래에",
+            "on_wfm_chat_message_title": "WFM 채팅 메시지에서"
+          },
+          "advanced": {
+            "title": "고급의",
+            "http_server": {
+              "title": "HTTP 서버",
               "fields": {
                 "enabled": {
                   "label": "활성화됨",
@@ -1543,6 +1537,23 @@
                   "error": "잘못된 호스트",
                   "tooltip": "HTTP 서버가 실행될 호스트"
                 }
+              }
+            },
+            "log": {
+              "title": "로그",
+              "button_export_logs": "로그 내보내기",
+              "fields": {
+                "ee_log_path": {
+                  "label": "워프레임 로그 경로",
+                  "placeholder": "기본 워프레임 로그 경로",
+                  "errors": {
+                    "not_exists": "지정된 경로가 존재하지 않습니다."
+                  },
+                  "tooltip": "워프레임 로그 파일 경로입니다. 기본 경로는 비워 두세요."
+                }
+              },
+              "buttons": {
+                "export_logs": "로그 내보내기"
               }
             }
           }

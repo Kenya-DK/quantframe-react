@@ -27,7 +27,7 @@ pub async fn handle_wfm_item(
 
     // Skip buy if reporting disabled
     if order_type == OrderType::Buy
-        && !app.settings.live_scraper.report_to_wfm
+        && !app.settings.live_scraper.general.report_to_wfm
         && !operations.has("ForceOrderSync")
     {
         return Ok("SkippedBuyWfmReportDisabled".to_string());
@@ -53,7 +53,7 @@ pub async fn handle_wfm_item(
     // ---- Compute new quantity ----
     order.quantity = (order.quantity as i64 - quantity).max(0) as u32;
 
-    let reporting_enabled = app.settings.live_scraper.report_to_wfm;
+    let reporting_enabled = app.settings.live_scraper.general.report_to_wfm;
     let should_close = reporting_enabled && !delete;
     let should_delete = delete || order.quantity == 0;
 

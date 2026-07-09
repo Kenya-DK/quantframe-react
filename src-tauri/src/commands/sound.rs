@@ -3,8 +3,7 @@ use crate::{
     helper,
 };
 use std::{
-    fs,
-    io,
+    fs, io,
     path::{Component, Path},
     sync::Mutex,
 };
@@ -104,7 +103,7 @@ pub async fn sound_get_custom_sounds(
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<Vec<CustomSound>, Error> {
     let app = app.lock()?;
-    Ok(app.settings.custom_sounds.clone())
+    Ok(app.settings.notifications.custom_sounds.clone())
 }
 
 #[tauri::command]
@@ -119,6 +118,7 @@ pub async fn sound_add_custom_sound(
     let normalized_name_key = normalized_name.to_lowercase();
     if app
         .settings
+        .notifications
         .custom_sounds
         .iter()
         .any(|sound| sound.name_key == normalized_name_key)
@@ -144,13 +144,13 @@ pub async fn sound_add_custom_sound(
             utils::get_location!(),
         )
     })?;
-    
+
     // Add to settings
     let new_sound = CustomSound::new(normalized_name, file_name);
-    app.settings.custom_sounds.push(new_sound);
+    app.settings.notifications.custom_sounds.push(new_sound);
     app.settings.save()?;
-    
-    Ok(app.settings.custom_sounds.clone())
+
+    Ok(app.settings.notifications.custom_sounds.clone())
 }
 
 #[tauri::command]
@@ -175,12 +175,15 @@ pub async fn sound_delete_custom_sound(
             ));
         }
     }
-    
-    // Rem from settings
-    app.settings.custom_sounds.retain(|s| s.file_name != file_name);
+
+    // Remove from settings
+    app.settings
+        .notifications
+        .custom_sounds
+        .retain(|s| s.file_name != file_name);
     app.settings.save()?;
-    
-    Ok(app.settings.custom_sounds.clone())
+
+    Ok(app.settings.notifications.custom_sounds.clone())
 }
 
 #[tauri::command]

@@ -19,20 +19,11 @@
       "save": {
         "label": "Save"
       },
-      "reset_defaults": {
-        "label": "Reset to Default"
-      },
       "delete": {
         "label": "Delete"
       },
       "cancel": {
         "label": "Cancel"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "Reset settings",
-        "message": "Reset all settings to default values?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "Select Language",
                 "error": "Invalid language"
               }
-            }
-          },
-          "themes": {
-            "title": "Themes",
-            "community_themes": "Community Themes",
-            "get_more_out_of_themes": "Get more out of themes by using the Theme Editor Click Here",
-            "theme_configuration": "Theme Configuration"
-          },
-          "notifications": {
-            "title": "Notifications",
-            "on_new_conversation_title": "On New Conversation",
-            "on_new_trade_title": "On New Trade",
-            "on_wfm_chat_message_title": "On WFM Chat Message"
-          },
-          "advanced": {
-            "title": "Advanced",
-            "fields": {
-              "wf_log_path": {
-                "label": "Warframe Log Path",
-                "placeholder": "Default Warframe log path",
-                "errors": {
-                  "not_exists": "The specified path does not exist."
-                },
-                "tooltip": "The path to the Warframe log file. leave empty for default path."
-              }
             },
-            "button_export_logs": "Log Export"
-          },
-          "summary": {
-            "title": "Summary",
-            "fields": {
-              "recent_days": {
-                "label": "Recent Days",
-                "tooltip": "How many days of data to show"
-              },
-              "recent_transactions": {
-                "label": "Recent Transactions",
-                "tooltip": "How many transactions to show"
-              }
+            "buttons": {
+              "reset_settings_label": "Reset To default settings",
+              "prompt_reset_label": "Reset"
             },
-            "datatable": {
-              "columns": {
-                "name": "Name",
-                "tags": "Tags",
-                "types": "Types",
-                "actions": {
-                  "title": "Actions",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "Edit Item"
-                    },
-                    "delete": {
-                      "tooltip": "Delete Item"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "Reset settings",
+                "message": "Reset all settings to default values?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "Invalid auto delete",
                   "tooltip": "Automatically delete stock items"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "Should Delete Other Trade Types",
                   "error": "Invalid should delete other trade types",
                   "tooltip": "Will delete other trade types if true example: if buy is enabled will delete sell/wishlist items if they are not blacklisted"
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "HTTP Server",
-            "general": {
-              "title": "General",
+          "appearance": {
+            "title": "Appearance",
+            "dashboard": {
+              "title": "Dashboard",
+              "fields": {
+                "recent_days": {
+                  "label": "Recent Days",
+                  "tooltip": "How many days of data to show"
+                },
+                "recent_transactions": {
+                  "label": "Recent Transactions",
+                  "tooltip": "How many transactions to show"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "Name",
+                  "tags": "Tags",
+                  "types": "Types",
+                  "actions": {
+                    "title": "Actions",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "Edit Item"
+                      },
+                      "delete": {
+                        "tooltip": "Delete Item"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "Go Back",
+                "edit_categories": "Edit Categories"
+              }
+            },
+            "theme": {
+              "title": "Theme",
+              "community_themes": "Community Themes",
+              "get_more_out_of_themes": "Get more out of themes by using the Theme Editor Click Here",
+              "theme_configuration": "Theme Configuration"
+            }
+          },
+          "notifications": {
+            "title": "Notifications",
+            "on_new_conversation_title": "On New Conversation",
+            "on_new_trade_title": "On New Trade",
+            "on_wfm_chat_message_title": "On WFM Chat Message"
+          },
+          "advanced": {
+            "title": "Advanced",
+            "http_server": {
+              "title": "HTTP Server",
               "fields": {
                 "enabled": {
                   "label": "Enabled",
@@ -1543,6 +1537,23 @@
                   "error": "Invalid host",
                   "tooltip": "The host the HTTP server will run on"
                 }
+              }
+            },
+            "log": {
+              "title": "Logs",
+              "button_export_logs": "Log Export",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Warframe Log Path",
+                  "placeholder": "Default Warframe log path",
+                  "errors": {
+                    "not_exists": "The specified path does not exist."
+                  },
+                  "tooltip": "The path to the Warframe log file. leave empty for default path."
+                }
+              },
+              "buttons": {
+                "export_logs": "Log Export"
               }
             }
           }

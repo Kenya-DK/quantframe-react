@@ -19,20 +19,11 @@
       "save": {
         "label": "зберегти"
       },
-      "reset_defaults": {
-        "label": "Скинути до замовчування"
-      },
       "delete": {
         "label": "Видалити"
       },
       "cancel": {
         "label": "Скасувати"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "Скидання налаштувань",
-        "message": "Скинути всі налаштування до значень за замовчуванням?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "Виберіть мову",
                 "error": "Недійсна мова"
               }
-            }
-          },
-          "themes": {
-            "title": "Теми",
-            "community_themes": "Теми спільноти",
-            "get_more_out_of_themes": "Отримайте більше від тем за допомогою редактора тем Натисніть тут",
-            "theme_configuration": "Конфігурація теми"
-          },
-          "notifications": {
-            "title": "Сповіщення",
-            "on_new_conversation_title": "Про нову розмову",
-            "on_new_trade_title": "На Новий Трейд",
-            "on_wfm_chat_message_title": "Повідомлення чату WFM"
-          },
-          "advanced": {
-            "title": "Просунутий",
-            "fields": {
-              "wf_log_path": {
-                "label": "Шлях журналу Warframe",
-                "placeholder": "Шлях журналу Warframe за замовчуванням",
-                "errors": {
-                  "not_exists": "Зазначений шлях не існує."
-                },
-                "tooltip": "Шлях до файлу журналу Warframe. залиште пустим для шляху за замовчуванням."
-              }
             },
-            "button_export_logs": "Експорт журналу"
-          },
-          "summary": {
-            "title": "Резюме",
-            "fields": {
-              "recent_days": {
-                "label": "Останні дні",
-                "tooltip": "Скільки днів показувати дані"
-              },
-              "recent_transactions": {
-                "label": "Останні транзакції",
-                "tooltip": "Скільки транзакцій показати"
-              }
+            "buttons": {
+              "reset_settings_label": "Скинути налаштування за замовчуванням",
+              "prompt_reset_label": "Скинути"
             },
-            "datatable": {
-              "columns": {
-                "name": "Ім'я",
-                "tags": "Теги",
-                "types": "Типи",
-                "actions": {
-                  "title": "Дії",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "Редагувати елемент"
-                    },
-                    "delete": {
-                      "tooltip": "Видалити елемент"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "Скидання налаштувань",
+                "message": "Скинути всі налаштування до значень за замовчуванням?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "Недійсне автоматичне видалення",
                   "tooltip": "Автоматично видаляти складські товари"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "Слід видалити інші типи торгівлі",
                   "error": "Недійсний має видалити інші типи торгівлі",
                   "tooltip": "Буде видалено інші типи торгівлі, якщо це правда. Приклад: якщо ввімкнено покупку, буде видалено елементи продажу/списку бажань, якщо вони не в чорному списку"
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "Сервер HTTP",
-            "general": {
-              "title": "Загальний",
+          "appearance": {
+            "title": "Зовнішній вигляд",
+            "dashboard": {
+              "title": "Приладова панель",
+              "fields": {
+                "recent_days": {
+                  "label": "Останні дні",
+                  "tooltip": "Скільки днів показувати дані"
+                },
+                "recent_transactions": {
+                  "label": "Останні транзакції",
+                  "tooltip": "Скільки трансакцій показати"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "Ім'я",
+                  "tags": "Теги",
+                  "types": "Типи",
+                  "actions": {
+                    "title": "Дії",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "Редагувати елемент"
+                      },
+                      "delete": {
+                        "tooltip": "Видалити елемент"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "Повернутися назад",
+                "edit_categories": "Редагувати категорії"
+              }
+            },
+            "theme": {
+              "title": "Тема",
+              "community_themes": "Теми спільноти",
+              "get_more_out_of_themes": "Отримайте більше від тем за допомогою редактора тем Натисніть тут",
+              "theme_configuration": "Конфігурація теми"
+            }
+          },
+          "notifications": {
+            "title": "Сповіщення",
+            "on_new_conversation_title": "Про нову розмову",
+            "on_new_trade_title": "На Новий Трейд",
+            "on_wfm_chat_message_title": "Повідомлення чату WFM"
+          },
+          "advanced": {
+            "title": "Просунутий",
+            "http_server": {
+              "title": "Сервер HTTP",
               "fields": {
                 "enabled": {
                   "label": "Увімкнено",
@@ -1543,6 +1537,23 @@
                   "error": "Недійсний хост",
                   "tooltip": "Хост, на якому працюватиме сервер HTTP"
                 }
+              }
+            },
+            "log": {
+              "title": "Журнали",
+              "button_export_logs": "Експорт журналу",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Шлях журналу Warframe",
+                  "placeholder": "Шлях журналу Warframe за замовчуванням",
+                  "errors": {
+                    "not_exists": "Зазначений шлях не існує."
+                  },
+                  "tooltip": "Шлях до файлу журналу Warframe. залиште пустим для шляху за замовчуванням."
+                }
+              },
+              "buttons": {
+                "export_logs": "Експорт журналу"
               }
             }
           }

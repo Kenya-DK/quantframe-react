@@ -542,26 +542,164 @@ impl InsertAt for String {
     }
 }
 
-/// Merges two serde_json::Value objects recursively
-///# Arguments
+/// Merges two serde_json::Value objects — source fully overrides target on conflict.
+///
+/// Unlike a recursive merge, if both target and source have the same key with an
+/// object value, the source object completely replaces the target object rather than
+/// merging their fields.
+///
+/// # Arguments
 /// * `target` - The target JSON Value to merge into
 /// * `source` - The source JSON Value to merge from
+///
+/// # Example
+/// ```
+/// use serde_json::json;
+/// use utils::merge_json;
+///
+/// let mut target = json!({
+///     "name": "old",
+///     "nested": {
+///         "a": 1,
+///         "b": 2
+///     }
+/// });
+/// let source = json!({
+///     "name": "new",
+///     "nested": {
+///         "b": 99
+///     },
+///     "extra": true
+/// });
+///
+/// merge_json(&mut target, &source);
+///
+/// assert_eq!(target["name"], "new");
+/// // nested is fully replaced by source — "a" is lost
+/// assert_eq!(target["nested"], json!({"b": 99}));
+/// assert_eq!(target["extra"], true);
 pub fn merge_json(target: &mut Value, source: &Value) {
     match (target, source) {
         (Value::Object(target_map), Value::Object(source_map)) => {
             for (key, source_value) in source_map {
-                match target_map.get_mut(key) {
-                    Some(target_value) => merge_json(target_value, source_value),
-                    None => {
-                        target_map.insert(key.clone(), source_value.clone());
-                    }
-                }
+                target_map.insert(key.clone(), source_value.clone());
             }
         }
         (target_value, source_value) => {
             *target_value = source_value.clone();
         }
     }
+}
+
+/// Navigates into a nested JSON value by a dot-separated path.
+///
+/// # Arguments
+/// * `object` - The root JSON value
+/// * `path` - Dot-separated path (e.g. `"live_scraper.stock_riven.min_profit"`)
+///
+/// # Returns
+/// `Some(&Value)` at the leaf, or `None` if the path doesn't exist.
+///
+/// # Example
+/// ```
+/// use serde_json::json;
+/// use utils::get_json_value;
+///
+/// let data = json!({"a": {"b": {"c": 42}}});
+/// assert_eq!(get_json_value(&data, "a.b.c"), Some(&json!(42)));
+/// assert_eq!(get_json_value(&data, "a.x"), None);
+/// ```
+pub fn get_json_value<'a>(object: &'a Value, path: &str) -> Option<&'a Value> {
+    let mut current = object;
+    for segment in path.split('.') {
+        match current {
+            Value::Object(map) => current = map.get(segment)?,
+            _ => return None,
+        }
+    }
+    Some(current)
+}
+
+/// Sets a value at a dot-separated path inside a JSON object, creating
+/// intermediate objects as needed.
+///
+/// # Arguments
+/// * `root` - The root JSON value (must be an Object)
+/// * `path` - Dot-separated path (e.g. `"items.wtb.volume_threshold"`)
+/// * `value` - The value to set at the leaf
+///
+/// # Example
+/// ```
+/// use serde_json::{json, Value};
+/// use utils::set_json_value;
+///
+/// let mut target = json!({});
+/// set_json_value(&mut target, "a.b.c", json!(42));
+/// assert_eq!(target, json!({"a": {"b": {"c": 42}}}));
+/// ```
+pub fn set_json_value(root: &mut Value, path: &str, value: Value) {
+    let segments: Vec<&str> = path.split('.').collect();
+    if segments.is_empty() {
+        return;
+    }
+
+    let mut current = root;
+    for &segment in &segments[..segments.len() - 1] {
+        current = current
+            .as_object_mut()
+            .and_then(|map| {
+                if !map.contains_key(segment) {
+                    map.insert(segment.to_string(), Value::Object(serde_json::Map::new()));
+                }
+                map.get_mut(segment)
+            })
+            .expect("set_json_value: path segment is not an object");
+    }
+
+    if let Some(map) = current.as_object_mut() {
+        map.insert(segments.last().unwrap().to_string(), value);
+    }
+}
+
+/// Extracts values from a nested JSON by dot-path mapping and returns a
+/// new nested JSON preserving original types.
+///
+/// For each entry in `mapping`, the key is a dot-separated path into `object`,
+/// and the value is the target dot-path in the returned `Value`. Values are
+/// read with their original types preserved.
+///
+/// # Arguments
+/// * `object` - The source JSON value
+/// * `mapping` - A map of `"source.dot.path"` → `"target.dot.path"`
+///
+/// # Returns
+/// A `Value` with the target structure, types preserved from the source.
+///
+/// # Example
+/// ```
+/// use std::collections::HashMap;
+/// use serde_json::json;
+/// use utils::extract_json_values;
+///
+/// let data = json!({"a": {"b": 42}});
+/// let mut mapping = HashMap::new();
+/// mapping.insert("a.b", "x.y");
+/// let result = extract_json_values(&data, &mapping);
+/// assert_eq!(result["x"]["y"], 42);
+/// ```
+pub fn extract_json_values<'a>(
+    object: &Value,
+    mapping: &'a std::collections::HashMap<&'a str, &'a str>,
+) -> Value {
+    let mut result = Value::Object(serde_json::Map::new());
+
+    for (source_path, target_path) in mapping.iter() {
+        if let Some(value) = get_json_value(object, source_path) {
+            set_json_value(&mut result, target_path, value.clone());
+        }
+    }
+
+    result
 }
 
 /// Cleans a directory by removing all files and subdirectories except those specified to keep

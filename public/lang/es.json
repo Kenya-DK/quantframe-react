@@ -19,20 +19,11 @@
       "save": {
         "label": "Ahorrar"
       },
-      "reset_defaults": {
-        "label": "Restablecer los valores predeterminados"
-      },
       "delete": {
         "label": "Borrar"
       },
       "cancel": {
         "label": "Cancelar"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "Restablecer configuración",
-        "message": "¿Restablecer todas las configuraciones a los valores predeterminados?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "Seleccionar idioma",
                 "error": "Idioma no válido"
               }
-            }
-          },
-          "themes": {
-            "title": "Temas",
-            "community_themes": "Temas de la comunidad",
-            "get_more_out_of_themes": "Aproveche al máximo los temas utilizando el Editor de temas Haga clic aquí",
-            "theme_configuration": "Configuración del tema"
-          },
-          "notifications": {
-            "title": "Notificaciones",
-            "on_new_conversation_title": "En nueva conversación",
-            "on_new_trade_title": "Sobre el nuevo comercio",
-            "on_wfm_chat_message_title": "En el mensaje de chat de WFM"
-          },
-          "advanced": {
-            "title": "Avanzado",
-            "fields": {
-              "wf_log_path": {
-                "label": "Ruta de registro de Warframe",
-                "placeholder": "Ruta de registro predeterminada de Warframe",
-                "errors": {
-                  "not_exists": "La ruta especificada no existe."
-                },
-                "tooltip": "La ruta al archivo de registro de Warframe. déjelo vacío para la ruta predeterminada."
-              }
             },
-            "button_export_logs": "Exportación de registros"
-          },
-          "summary": {
-            "title": "Resumen",
-            "fields": {
-              "recent_days": {
-                "label": "Días recientes",
-                "tooltip": "¿Cuántos días de datos mostrar?"
-              },
-              "recent_transactions": {
-                "label": "Transacciones recientes",
-                "tooltip": "¿Cuántas transacciones mostrar?"
-              }
+            "buttons": {
+              "reset_settings_label": "Restablecer la configuración predeterminada",
+              "prompt_reset_label": "Reiniciar"
             },
-            "datatable": {
-              "columns": {
-                "name": "Nombre",
-                "tags": "Etiquetas",
-                "types": "Tipos",
-                "actions": {
-                  "title": "Comportamiento",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "Editar artículo"
-                    },
-                    "delete": {
-                      "tooltip": "Eliminar artículo"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "Restablecer configuración",
+                "message": "¿Restablecer todas las configuraciones a los valores predeterminados?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "Eliminación automática no válida",
                   "tooltip": "Eliminar automáticamente artículos en stock"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "Debería eliminar otros tipos comerciales",
                   "error": "Inválido debería eliminar otros tipos de comercio",
                   "tooltip": "Eliminará otros tipos de comercio si es cierto. Ejemplo: si la compra está habilitada, eliminará los artículos de venta/lista de deseos si no están en la lista negra."
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "Servidor HTTP",
-            "general": {
-              "title": "General",
+          "appearance": {
+            "title": "Apariencia",
+            "dashboard": {
+              "title": "Panel",
+              "fields": {
+                "recent_days": {
+                  "label": "Días recientes",
+                  "tooltip": "¿Cuántos días de datos mostrar?"
+                },
+                "recent_transactions": {
+                  "label": "Transacciones recientes",
+                  "tooltip": "¿Cuántas transacciones mostrar?"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "Nombre",
+                  "tags": "Etiquetas",
+                  "types": "Tipos",
+                  "actions": {
+                    "title": "Comportamiento",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "Editar artículo"
+                      },
+                      "delete": {
+                        "tooltip": "Eliminar artículo"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "Volver",
+                "edit_categories": "Editar categorías"
+              }
+            },
+            "theme": {
+              "title": "Tema",
+              "community_themes": "Temas de la comunidad",
+              "get_more_out_of_themes": "Aproveche al máximo los temas utilizando el Editor de temas Haga clic aquí",
+              "theme_configuration": "Configuración del tema"
+            }
+          },
+          "notifications": {
+            "title": "Notificaciones",
+            "on_new_conversation_title": "En nueva conversación",
+            "on_new_trade_title": "Sobre el nuevo comercio",
+            "on_wfm_chat_message_title": "En el mensaje de chat de WFM"
+          },
+          "advanced": {
+            "title": "Avanzado",
+            "http_server": {
+              "title": "Servidor HTTP",
               "fields": {
                 "enabled": {
                   "label": "Activado",
@@ -1543,6 +1537,23 @@
                   "error": "Host no válido",
                   "tooltip": "El host en el que se ejecutará el servidor HTTP"
                 }
+              }
+            },
+            "log": {
+              "title": "Registros",
+              "button_export_logs": "Exportación de registros",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Ruta de registro de Warframe",
+                  "placeholder": "Ruta de registro predeterminada de Warframe",
+                  "errors": {
+                    "not_exists": "La ruta especificada no existe."
+                  },
+                  "tooltip": "La ruta al archivo de registro de Warframe. déjelo vacío para la ruta predeterminada."
+                }
+              },
+              "buttons": {
+                "export_logs": "Exportación de registros"
               }
             }
           }

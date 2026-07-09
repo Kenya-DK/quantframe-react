@@ -1,16 +1,19 @@
 import { TauriTypes } from "$types";
-import { Tabs, Text } from "@mantine/core";
 import { EditNotificationSetting } from "@components/Forms/EditNotificationSetting";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Tabs, Text } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
+import { useState } from "react";
 export type NotificationsPanelProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
+  onHideButtons?: (value: boolean) => void;
 };
 
-export const NotificationsPanel = ({ form }: NotificationsPanelProps) => {
+export const NotificationsPanel = ({ form, onHideButtons }: NotificationsPanelProps) => {
+  const [hideTab, setHideTab] = useState<boolean>(false);
   const t = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`settings.tabs.notifications.${key}`, { ...context }, i18Key);
-  type NotificationKey = keyof TauriTypes.SettingsNotifications;
+  type NotificationKey = keyof TauriTypes.NotificationsSetting;
   const notificationValues = form.values.notifications;
 
   const isEnabled = (setting: TauriTypes.NotificationSetting) =>
@@ -37,14 +40,16 @@ export const NotificationsPanel = ({ form }: NotificationsPanelProps) => {
           title={label}
           value={notificationValues[id]}
           onChange={(newValue) => updateNotification(id, newValue)}
+          setHideTab={(v) => setHideTab(v)}
+          setHideButtons={(v) => onHideButtons?.(v)}
         />
       ),
     };
   });
 
   return (
-    <Tabs orientation="vertical" defaultValue={panels[0].id}>
-      <Tabs.List>
+    <Tabs h={"82vh"} orientation="vertical" defaultValue={panels[0].id}>
+      <Tabs.List display={hideTab ? "none" : ""}>
         {panels.map((panel) => (
           <Tabs.Tab value={panel.id} key={panel.id}>
             <Text size="sm" c={isEnabled(notificationValues[panel.id]) ? "green.7" : "red.7"}>

@@ -19,6 +19,10 @@
 
 ## Dev Notes
 
+- Clean up the settings in the UI and the backend
+
+## Dev Notes
+
 - Logging updates are the primary focus of this revision.
 - 🛠️ Look into this: https://github.com/knoellle/wfinfo-ng
 

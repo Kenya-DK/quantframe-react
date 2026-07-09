@@ -1,12 +1,15 @@
-import { Group, Select, Box } from "@mantine/core";
 import { TauriTypes } from "$types";
+import api, { SendTauriEvent } from "@api/index";
+import { useTranslateCommon, useTranslateForms } from "@hooks/useTranslate.hook";
+import { Box, Button, Group, Select, Stack, Text } from "@mantine/core";
 import { UseFormReturnType } from "@mantine/form";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { modals } from "@mantine/modals";
+import { useEffect, useState } from "react";
 export type GeneralPanelProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
 };
 
-let languages = [
+const languages = [
   { label: "German", value: "de" },
   { label: "English", value: "en" },
   { label: "Spanish", value: "es" },
@@ -23,27 +26,62 @@ let languages = [
   { label: "Thai", value: "th" },
   { label: "Turkish", value: "tr" },
 ];
+
 export const GeneralPanel = ({ form }: GeneralPanelProps) => {
-  // States
-  // Translate general
+  const [defaultSettings, setDefaultSettings] = useState<TauriTypes.Settings | null>(null);
+
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`settings.tabs.general.${key}`, { ...context }, i18Key);
   const useTranslateFormFields = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
+  const useTranslateFormButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
+  const useTranslateFormPrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateForm(`prompt.${key}`, { ...context }, i18Key);
+
+  useEffect(() => {
+    api.app.getDefaultSettings().then(setDefaultSettings).catch(console.error);
+  }, []);
+
+  const isDefaultSettings = () => {
+    return JSON.stringify(form.values) != JSON.stringify(defaultSettings);
+  };
+
+  const handleReset = () => {
+    modals.openConfirmModal({
+      title: useTranslateFormPrompt("reset_settings.title"),
+      children: <Text size="sm">{useTranslateFormPrompt("reset_settings.message")}</Text>,
+      labels: { confirm: useTranslateFormButtons("prompt_reset_label"), cancel: useTranslateCommon("buttons.cancel.label") },
+      confirmProps: { color: "red" },
+      onConfirm: async () => {
+        const defaults = await api.app.getDefaultSettings();
+        await api.app.updateSettings(defaults);
+        modals.closeAll();
+        SendTauriEvent(TauriTypes.Events.RefreshSettings);
+      },
+    });
+  };
 
   return (
     <Box h="100%" p={"md"}>
-      <Group gap="md">
-        <Select
-          allowDeselect={false}
-          w={150}
-          label={useTranslateFormFields("language.label")}
-          placeholder={useTranslateFormFields("language.placeholder")}
-          data={languages}
-          {...form.getInputProps("lang")}
-          radius="md"
-        />
-      </Group>
+      <Stack>
+        <Group gap="md">
+          <Select
+            allowDeselect={false}
+            w={150}
+            label={useTranslateFormFields("language.label")}
+            placeholder={useTranslateFormFields("language.placeholder")}
+            data={languages}
+            {...form.getInputProps("lang")}
+            radius="md"
+          />
+        </Group>
+        {isDefaultSettings() && (
+          <Button onClick={handleReset} color="red.7" pos={"absolute"} bottom={55} right={45}>
+            {useTranslateFormButtons("reset_settings_label")}
+          </Button>
+        )}
+      </Stack>
     </Box>
   );
 };

@@ -19,20 +19,11 @@
       "save": {
         "label": "Сохранять"
       },
-      "reset_defaults": {
-        "label": "Сбросить настройки по умолчанию"
-      },
       "delete": {
         "label": "Удалить"
       },
       "cancel": {
         "label": "Отмена"
-      }
-    },
-    "dialogs": {
-      "reset_settings": {
-        "title": "Сбросить настройки",
-        "message": "Сбросить все настройки к значениям по умолчанию?"
       }
     },
     "notifications": {
@@ -1256,62 +1247,15 @@
                 "placeholder": "Выберите язык",
                 "error": "Неверный язык"
               }
-            }
-          },
-          "themes": {
-            "title": "Темы",
-            "community_themes": "Темы сообщества",
-            "get_more_out_of_themes": "Получите больше от тем с помощью редактора тем. Нажмите здесь.",
-            "theme_configuration": "Конфигурация темы"
-          },
-          "notifications": {
-            "title": "Уведомления",
-            "on_new_conversation_title": "При новом разговоре",
-            "on_new_trade_title": "О новой торговле",
-            "on_wfm_chat_message_title": "В сообщении чата WFM"
-          },
-          "advanced": {
-            "title": "Передовой",
-            "fields": {
-              "wf_log_path": {
-                "label": "Путь к журналу Warframe",
-                "placeholder": "Путь к журналу Warframe по умолчанию",
-                "errors": {
-                  "not_exists": "Указанный путь не существует."
-                },
-                "tooltip": "Путь к файлу журнала Warframe. оставьте пустым для пути по умолчанию."
-              }
             },
-            "button_export_logs": "Экспорт журналов"
-          },
-          "summary": {
-            "title": "Краткое содержание",
-            "fields": {
-              "recent_days": {
-                "label": "Последние дни",
-                "tooltip": "За сколько дней показывать данные"
-              },
-              "recent_transactions": {
-                "label": "Недавние транзакции",
-                "tooltip": "Сколько транзакций показывать"
-              }
+            "buttons": {
+              "reset_settings_label": "Сбросить настройки по умолчанию",
+              "prompt_reset_label": "Перезагрузить"
             },
-            "datatable": {
-              "columns": {
-                "name": "Имя",
-                "tags": "Теги",
-                "types": "Типы",
-                "actions": {
-                  "title": "Действия",
-                  "buttons": {
-                    "edit": {
-                      "tooltip": "Редактировать элемент"
-                    },
-                    "delete": {
-                      "tooltip": "Удалить элемент"
-                    }
-                  }
-                }
+            "prompt": {
+              "reset_settings": {
+                "title": "Сбросить настройки",
+                "message": "Сбросить все настройки к значениям по умолчанию?"
               }
             }
           },
@@ -1330,7 +1274,7 @@
                   "error": "Неверное автоматическое удаление",
                   "tooltip": "Автоматически удалять товары со склада"
                 },
-                "should_delete_other_types": {
+                "delete_conflicting_orders": {
                   "label": "Следует удалить другие типы сделок",
                   "error": "Недействительно, следует удалить другие типы сделок.",
                   "tooltip": "Будут удаляться другие типы сделок, если это правда. Пример: если покупка включена, будут удалены элементы продажи/списка желаний, если они не занесены в черный список."
@@ -1523,10 +1467,60 @@
               }
             }
           },
-          "http_server": {
-            "title": "HTTP-сервер",
-            "general": {
-              "title": "Общий",
+          "appearance": {
+            "title": "Появление",
+            "dashboard": {
+              "title": "Панель управления",
+              "fields": {
+                "recent_days": {
+                  "label": "Последние дни",
+                  "tooltip": "За сколько дней показывать данные"
+                },
+                "recent_transactions": {
+                  "label": "Недавние транзакции",
+                  "tooltip": "Сколько транзакций показывать"
+                }
+              },
+              "datatable": {
+                "columns": {
+                  "name": "Имя",
+                  "tags": "Теги",
+                  "types": "Типы",
+                  "actions": {
+                    "title": "Действия",
+                    "buttons": {
+                      "edit": {
+                        "tooltip": "Редактировать элемент"
+                      },
+                      "delete": {
+                        "tooltip": "Удалить элемент"
+                      }
+                    }
+                  }
+                }
+              },
+              "buttons": {
+                "back": "Возвращаться",
+                "edit_categories": "Редактировать категории"
+              }
+            },
+            "theme": {
+              "title": "Тема",
+              "community_themes": "Темы сообщества",
+              "get_more_out_of_themes": "Получите больше от тем с помощью редактора тем. Нажмите здесь.",
+              "theme_configuration": "Конфигурация темы"
+            }
+          },
+          "notifications": {
+            "title": "Уведомления",
+            "on_new_conversation_title": "При новом разговоре",
+            "on_new_trade_title": "О новой торговле",
+            "on_wfm_chat_message_title": "В сообщении чата WFM"
+          },
+          "advanced": {
+            "title": "Передовой",
+            "http_server": {
+              "title": "HTTP-сервер",
               "fields": {
                 "enabled": {
                   "label": "Включено",
@@ -1543,6 +1537,23 @@
                   "error": "Неверный хост",
                   "tooltip": "Хост, на котором будет работать HTTP-сервер."
                 }
+              }
+            },
+            "log": {
+              "title": "Журналы",
+              "button_export_logs": "Экспорт журналов",
+              "fields": {
+                "ee_log_path": {
+                  "label": "Путь к журналу Warframe",
+                  "placeholder": "Путь к журналу Warframe по умолчанию",
+                  "errors": {
+                    "not_exists": "Указанный путь не существует."
+                  },
+                  "tooltip": "Путь к файлу журнала Warframe. оставьте пустым для пути по умолчанию."
+                }
+              },
+              "buttons": {
+                "export_logs": "Экспорт журналов"
               }
             }
           }

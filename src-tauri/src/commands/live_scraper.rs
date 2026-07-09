@@ -5,7 +5,7 @@ use utils::Error;
 
 use crate::{
     add_metric,
-    app::StockItemSettings,
+    app::{ItemSettings, ItemWtbSettings},
     cache::{CacheState, ItemPriceInfo},
     live_scraper::{self, LiveScraperState},
     send_event,
@@ -39,7 +39,7 @@ pub async fn live_scraper_get_state(
 }
 #[tauri::command]
 pub async fn live_scraper_get_interesting_wtb_items(
-    settings: StockItemSettings,
+    settings: ItemSettings,
     cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<Vec<ItemPriceInfo>, Error> {
     let mut items = live_scraper::helpers::get_interesting_items(&settings);

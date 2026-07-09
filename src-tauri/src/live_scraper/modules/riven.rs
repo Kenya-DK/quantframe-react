@@ -106,7 +106,7 @@ impl RivenModule {
             );
 
             // Settings
-            let settings = states::get_settings()?.live_scraper.stock_riven;
+            let settings = states::get_settings()?.live_scraper.rivens;
 
             // Get tradable item info from cache
             let weapon_info = cache
@@ -187,13 +187,13 @@ impl RivenModule {
             // Get the price the item was bought for.
             let mut post_price = average_filtered_lowest_prices(
                 live_auctions.prices(),
-                settings.limit_to,
-                settings.threshold_percentage,
+                settings.wts.max_results,
+                settings.wts.threshold_percentage,
             );
 
             // Check if there are no live auctions
             if live_auctions.total_auctions() == 0 {
-                post_price = stock_riven.bought + settings.min_profit + 1;
+                post_price = stock_riven.bought + settings.wts.min_profit + 1;
                 stock_riven.set_status(StockStatus::NoSellers);
                 stock_riven.set_list_price(Some(post_price));
                 stock_riven.locked = true;
@@ -211,8 +211,8 @@ impl RivenModule {
             let mut profit = post_price - stock_riven.bought;
 
             // Handle Low Profit
-            if !is_disabled(settings.min_profit) && profit < settings.min_profit {
-                post_price += settings.min_profit - profit;
+            if !is_disabled(settings.wts.min_profit) && profit < settings.wts.min_profit {
+                post_price += settings.wts.min_profit - profit;
                 stock_riven.set_status(StockStatus::ToLowProfit);
                 stock_riven.set_list_price(Some(post_price));
                 stock_riven.locked = true;

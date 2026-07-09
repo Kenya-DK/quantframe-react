@@ -1,9 +1,10 @@
-use serde::{Deserialize, Serialize};
-
+use super::*;
 use crate::app::{DiscordNotify, NotificationSetting, SystemNotify, WebHookNotify};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NotificationsSetting {
+    pub custom_sounds: Vec<CustomSound>,
     pub on_new_conversation: NotificationSetting,
     pub on_wfm_chat_message: NotificationSetting,
     pub on_new_trade: NotificationSetting,
@@ -12,6 +13,7 @@ pub struct NotificationsSetting {
 impl Default for NotificationsSetting {
     fn default() -> Self {
         NotificationsSetting {
+            custom_sounds: vec![],
             on_new_conversation: NotificationSetting::new(
                 DiscordNotify::new("<MENTION>\n```ansi\n\x1B[1;36m🗨️ New Conversation\n\n\x1B[1;33m👤 From Player:\x1B[0m \x1B[1;37m<PLAYER_NAME>\x1B[0m\n```", "", vec![]),
                 SystemNotify::new("New Conversation", "From: <PLAYER_NAME>","cat_meow.mp3", 1.0),

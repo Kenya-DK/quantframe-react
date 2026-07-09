@@ -3824,6 +3824,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "es": {
@@ -7651,6 +7777,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "fr": {
@@ -11478,6 +11730,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "it": {
@@ -15305,6 +15683,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "ja": {
@@ -19132,6 +19636,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "ko": {
@@ -22959,6 +23589,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "pl": {
@@ -26786,6 +27542,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "pt": {
@@ -34440,6 +35322,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "tc": {
@@ -38267,6 +39275,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "th": {
@@ -42094,6 +43228,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "tr": {
@@ -45921,6 +47181,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "uk": {
@@ -49748,6 +51134,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   },
   "zh": {
@@ -53575,6 +55087,132 @@
     },
     "pages.process_trade.buttons.delete": {
       "hash": "118ad61cdec470787cd7e8c312fe3f273601d1b3d1bb1661d01c70c25b5eea9a"
+    },
+    "components.forms.settings.tabs.general.buttons.reset_settings_label": {
+      "hash": "14140ae243d606be64c33c925b67d2350c0c6f8b15264b7b4a6d04823fa47a83"
+    },
+    "components.forms.settings.tabs.general.buttons.prompt_reset_label": {
+      "hash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.title": {
+      "hash": "d33a83aa1ac7c5c29892fe59fd9f717aad025541f9aa4cb8a5432996d73d6732"
+    },
+    "components.forms.settings.tabs.general.prompt.reset_settings.message": {
+      "hash": "e6546c35df9c9e24fce5114526c5481d4ae2cbaf753d4e02d565c32b45b21785"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.label": {
+      "hash": "d99bae76e32a3df2a23024c514325b38ddf40656593351aa4d293e56710d13c0"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.error": {
+      "hash": "86a61f12378ff16c66b84c2b0422038c2eb09a3285a146ab3f67cfbd27e3442b"
+    },
+    "components.forms.settings.tabs.live_scraper.general.fields.delete_conflicting_orders.tooltip": {
+      "hash": "642bd1cad530f03420a449ebd9112ad82a1843d0757c513bafb5e47295799b10"
+    },
+    "components.forms.settings.tabs.appearance.title": {
+      "hash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.title": {
+      "hash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.label": {
+      "hash": "7d39aea163ff6692c4398be1264ee54cffefc9cb6a90f816102c0b51824d1503"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_days.tooltip": {
+      "hash": "af16d02718e78432bbd62242e0fdc3b395182e17e5ab40e307b275ec4763e813"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.label": {
+      "hash": "d8d9b7dd3c9e345503fc439a6d43d4fe52478ce9c5078fbf9ad166a700a5583f"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.fields.recent_transactions.tooltip": {
+      "hash": "71a2d7d263f3858acea6501b4af8f973d6750745a72bbea2afad3be45464ebe4"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.name": {
+      "hash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.tags": {
+      "hash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.types": {
+      "hash": "a5fc918683bf9602be66b508a32e2a19f4d59eb866fbc21c8bb3e1d503335d9e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.title": {
+      "hash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.edit.tooltip": {
+      "hash": "7798ea4f8a9a3c8c83e1a423bd659a0d6839d72dcb245e3c4b405d52473a9e11"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.datatable.columns.actions.buttons.delete.tooltip": {
+      "hash": "fcfc38291577e1ba84e03ec2d1e822e1af264f3391c8c36190d59f9caa9efc0e"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.back": {
+      "hash": "b8d99df1066e656219062abd3b949249d34060517eb78640da3f1e6a807c273a"
+    },
+    "components.forms.settings.tabs.appearance.dashboard.buttons.edit_categories": {
+      "hash": "e9e6244869d6d7ceb92ebdca130f2c095e6e34c6c2e359270bcf8d3731e181c3"
+    },
+    "components.forms.settings.tabs.appearance.theme.title": {
+      "hash": "efb52e7172b77731d996ff4f51cd7b3dcfd55fc6f07392994619418d58d170dd"
+    },
+    "components.forms.settings.tabs.appearance.theme.community_themes": {
+      "hash": "b2cff78487d2d9d89907a8d8167b7f91452f72af2d22e9a41856c735b84ba88b"
+    },
+    "components.forms.settings.tabs.appearance.theme.get_more_out_of_themes": {
+      "hash": "14e805a60812d36860bde9552b4f78d5de32f26d01163434d095524fa3ecf253"
+    },
+    "components.forms.settings.tabs.appearance.theme.theme_configuration": {
+      "hash": "fc48d354356b5e91f1b334b12f4243bdcfa9847130b41281e6bbf8da86d4bc05"
+    },
+    "components.forms.settings.tabs.advanced.http_server.title": {
+      "hash": "c82398fc72e7338768d5ef21d4cfaf2c7333b12cb6a2f932c66e08f98f395bac"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.label": {
+      "hash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.enabled.tooltip": {
+      "hash": "5215cc0e08f8966a698b0c36bf41608b6b833e7db7df3c61752f3d8600ab309c"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.label": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.placeholder": {
+      "hash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.port.tooltip": {
+      "hash": "18a7f62ab49cf661eb895c87dbe8e7ff61c32df3f4c09d6f238c230fcc59beb5"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.label": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.placeholder": {
+      "hash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.error": {
+      "hash": "3fd5bebbc689388390496adab0675cf0b8deb90fc0f5c0862fa955823dec4c00"
+    },
+    "components.forms.settings.tabs.advanced.http_server.fields.host.tooltip": {
+      "hash": "4f6c02afef5bdadf6b6be968757b2b1b90701b59d229629262abaac0f0e86325"
+    },
+    "components.forms.settings.tabs.advanced.log.title": {
+      "hash": "ea2100dc89ae9fe21fa9b08ab1bf18662dca1e53a3eebd7d03afebcaf5d57515"
+    },
+    "components.forms.settings.tabs.advanced.log.button_export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.label": {
+      "hash": "3a4b733891283bdb2727c0189394a620f4928bec6cf551287cf80abe1a98aa3a"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.placeholder": {
+      "hash": "950de2a500d309f29328530f0ecbb0883f99c72b029ad3710254ca91ce37bb91"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.errors.not_exists": {
+      "hash": "f98a222d0db344f4eda09e4950986be3a4add2de344922d78306ea0626fc0035"
+    },
+    "components.forms.settings.tabs.advanced.log.fields.ee_log_path.tooltip": {
+      "hash": "9cb2496fd7c402109395b2cdc75e441185c4608668a34b2740aa2537ba190c20"
+    },
+    "components.forms.settings.tabs.advanced.log.buttons.export_logs": {
+      "hash": "6c0633b0a3bb1ec84397d3096760ac49cb0f80f3f3e66e7debd9ed9b781ca5ba"
     }
   }
 }

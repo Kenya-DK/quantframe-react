@@ -250,7 +250,7 @@ impl OnTradeEvent {
                 trade.player_name
             ));
 
-            if settings.live_scraper.auto_trade {
+            if settings.live_scraper.general.auto_trade {
                 operations.add("AutoTrade");
                 logger.add_log("AutoTrade enabled");
             }
