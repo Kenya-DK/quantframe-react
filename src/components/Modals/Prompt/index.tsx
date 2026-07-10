@@ -1,10 +1,24 @@
-import { Button, Group, TextInput, Container, Textarea, Select, NumberInput, Checkbox } from "@mantine/core";
+import { Button, Checkbox, Container, Group, NumberInput, Select, Textarea, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { ContextModalProps } from "@mantine/modals";
 import i18next from "i18next";
+import { NumberInputNullable } from "../../Forms/NumberInputNullable";
 
 export type PromptField = {
-  type: "text" | "number" | "select" | "textarea" | "checkbox" | "radio" | "switch" | "slider" | "range" | "file" | "multiselect" | "group";
+  type:
+    | "text"
+    | "number"
+    | "number_nullable"
+    | "select"
+    | "textarea"
+    | "checkbox"
+    | "radio"
+    | "switch"
+    | "slider"
+    | "range"
+    | "file"
+    | "multiselect"
+    | "group";
   name: string;
   label: string;
   value?: any;
@@ -44,6 +58,9 @@ export function PromptModal({ context, id, innerProps }: ContextModalProps<Promp
       case "slider":
         formValues[field.name] = field.value || 0;
         break;
+      case "number_nullable":
+        formValues[field.name] = field.value ?? undefined;
+        break;
       case "select":
         formValues[field.name] = field.options ? field.value || field.options[0].value : "";
         break;
@@ -64,9 +81,7 @@ export function PromptModal({ context, id, innerProps }: ContextModalProps<Promp
 
   const form = useForm({
     initialValues: formValues,
-    validate: {
-      // password: (val) => (val.length <= 6 ? 'Password should include at least 6 characters' : null),
-    },
+    validate: {},
   });
   return (
     <form
@@ -124,7 +139,23 @@ export function PromptModal({ context, id, innerProps }: ContextModalProps<Promp
                     required={field.required}
                     label={field.label}
                     value={form.values[field.name]}
-                    onChange={(value) => form.setFieldValue(field.name, Number(value))}
+                    onChange={(value) => {
+                      let numValue = Number(value) || 0;
+                      form.setFieldValue(field.name, numValue);
+                    }}
+                  />
+                </Group>
+              );
+            case "number_nullable":
+              return (
+                <Group grow key={index}>
+                  <NumberInputNullable
+                    {...form.getInputProps(field.name)}
+                    {...field.attributes}
+                    required={field.required}
+                    label={field.label}
+                    value={form.values[field.name]}
+                    onChange={(value) => form.setFieldValue(field.name, value)}
                   />
                 </Group>
               );
@@ -163,4 +194,3 @@ export function PromptModal({ context, id, innerProps }: ContextModalProps<Promp
     </form>
   );
 }
-
