@@ -1,14 +1,14 @@
-import { useTranslateModals } from "@hooks/useTranslate.hook";
-import { Box, Group, Button, Progress, Text, Stack } from "@mantine/core";
 import { TauriTypes } from "$types";
+import { useTranslateModals } from "@hooks/useTranslate.hook";
+import { Box, Button, Group, Progress, ScrollAreaAutosize, Stack, Text } from "@mantine/core";
 import { RichTextEditor } from "@mantine/tiptap";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
-import { useState } from "react";
-import { Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { open } from "@tauri-apps/plugin-shell";
+import { Update } from "@tauri-apps/plugin-updater";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useState } from "react";
+import { Markdown } from "tiptap-markdown";
 export interface UpdateAvailableModalProps {
   app_info: TauriTypes.AppInfo | undefined;
   context?: string;
@@ -41,8 +41,10 @@ export function UpdateAvailableModal({ is_manual, download_url, updater, new_ver
 
   return (
     <Box>
-      <RichTextEditor editor={editor} maw="100%" mah="60vh" style={{ border: "none" }}>
-        <RichTextEditor.Content mah="55vh" />
+      <RichTextEditor editor={editor} style={{ border: "none" }}>
+        <ScrollAreaAutosize mah="60vh" scrollbarSize={3}>
+          <RichTextEditor.Content />
+        </ScrollAreaAutosize>
       </RichTextEditor>
 
       {isDownloading && (
@@ -109,4 +111,3 @@ export function UpdateAvailableModal({ is_manual, download_url, updater, new_ver
     </Box>
   );
 }
-
