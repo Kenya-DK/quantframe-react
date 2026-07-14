@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "Quantframe"
-version = "1.6.23"
+version = "1.6.24"
 dependencies = [
  "aes",
  "cbc",
