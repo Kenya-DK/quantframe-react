@@ -1,10 +1,11 @@
-use sea_orm::Set;
+use sea_orm::{ActiveValue, Set};
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
 use crate::{
     dto::{PriceHistory, PriceHistoryVec},
     enums::*,
-    wish_list::wish_list,
+    wish_list::{wish_list, ALLOWED_PROPERTIES_FIELDS},
 };
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -13,12 +14,6 @@ pub struct UpdateWishList {
 
     #[serde(default)]
     pub quantity: FieldChange<i64>,
-
-    #[serde(default)]
-    pub maximum_price: FieldChange<i64>,
-
-    #[serde(default)]
-    pub minimum_price: FieldChange<i64>,
 
     #[serde(default)]
     pub list_price: FieldChange<i64>,
@@ -31,6 +26,9 @@ pub struct UpdateWishList {
 
     #[serde(default)]
     pub price_history: FieldChange<Vec<PriceHistory>>,
+
+    #[serde(default, flatten)]
+    pub properties: FieldChange<Properties>,
 }
 
 impl UpdateWishList {
@@ -39,16 +37,6 @@ impl UpdateWishList {
 
         match self.quantity {
             Value(v) => item.quantity = Set(v),
-            _ => {}
-        }
-        match self.minimum_price {
-            Value(v) => item.minimum_price = Set(Some(v)),
-            Null => item.minimum_price = Set(None),
-            _ => {}
-        }
-        match self.maximum_price {
-            Value(v) => item.maximum_price = Set(Some(v)),
-            Null => item.maximum_price = Set(None),
             _ => {}
         }
         match self.list_price {
@@ -68,6 +56,22 @@ impl UpdateWishList {
             Value(v) => item.price_history = Set(PriceHistoryVec(v)),
             _ => {}
         }
+        match self.properties {
+            Value(mut v) => {
+                v.keep_property_values(ALLOWED_PROPERTIES_FIELDS);
+                v.nullify_zeroed_properties(ALLOWED_PROPERTIES_FIELDS);
+
+                let properties = match item.properties {
+                    ActiveValue::Set(mut existing) | ActiveValue::Unchanged(mut existing) => {
+                        existing.merge_properties(v.properties, true, true);
+                        existing
+                    }
+                    _ => v,
+                };
+                item.properties = Set(properties);
+            }
+            _ => {}
+        }
 
         item
     }
@@ -75,24 +79,15 @@ impl UpdateWishList {
         UpdateWishList {
             id,
             quantity: FieldChange::Ignore,
-            maximum_price: FieldChange::Ignore,
-            minimum_price: FieldChange::Ignore,
             list_price: FieldChange::Ignore,
             is_hidden: FieldChange::Ignore,
             status: FieldChange::Ignore,
             price_history: FieldChange::Ignore,
+            properties: FieldChange::Ignore,
         }
     }
     pub fn with_quantity(mut self, quantity: i64) -> Self {
         self.quantity = FieldChange::Value(quantity);
-        self
-    }
-
-    pub fn with_maximum_price(mut self, maximum_price: Option<i64>) -> Self {
-        self.maximum_price = match maximum_price {
-            Some(v) => FieldChange::Value(v),
-            None => FieldChange::Null,
-        };
         self
     }
 
@@ -115,6 +110,10 @@ impl UpdateWishList {
     }
     pub fn with_price_history(mut self, price_history: Vec<PriceHistory>) -> Self {
         self.price_history = FieldChange::Value(price_history);
+        self
+    }
+    pub fn with_properties(mut self, properties: Properties) -> Self {
+        self.properties = FieldChange::Value(properties);
         self
     }
 }

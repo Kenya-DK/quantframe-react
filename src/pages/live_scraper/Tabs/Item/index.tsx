@@ -1,28 +1,28 @@
-import { Box, Grid, Group, NumberFormatter } from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
 import { TauriTypes } from "$types";
-import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import classes from "../../LiveScraper.module.css";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
-import { useLiveScraperContext } from "@contexts/liveScraper.context";
-import { useStockQueries } from "./queries";
-import { useEffect, useState } from "react";
-import { useModals } from "./modals";
-import { DataTable } from "mantine-datatable";
-import { CreateItemForm } from "@components/Forms/CreateItem";
-import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
-import { SearchField } from "@components/Forms/SearchField";
-import { ColorInfo } from "@components/Shared/ColorInfo";
-import { notifications } from "@mantine/notifications";
-import { getSafePage } from "@utils/helper";
-import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
-import { ColumnActions } from "../../Columns/ColumnActions";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { ItemName } from "@components/DataDisplay/ItemName";
+import { CreateItemForm } from "@components/Forms/CreateItem";
+import { SearchField } from "@components/Forms/SearchField";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { ColorInfo } from "@components/Shared/ColorInfo";
+import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
+import { useLiveScraperContext } from "@contexts/liveScraper.context";
+import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { Box, Grid, Group, NumberFormatter } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
+import { getSafePage } from "@utils/helper";
+import { DataTable } from "mantine-datatable";
+import { useEffect, useState } from "react";
+import { ColumnActions } from "../../Columns/ColumnActions";
+import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
+import classes from "../../LiveScraper.module.css";
+import { useModals } from "./modals";
 import { useMutations } from "./mutations";
+import { useStockQueries } from "./queries";
 
 interface ItemPanelProps {
   isActive?: boolean;
@@ -97,7 +97,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
   }, [paginationQuery.data]);
 
   const hasOverride = (record: TauriTypes.StockItem) => {
-    return record.minimum_sma != null || record.minimum_profit != null;
+    return record.properties?.min_sma != null || record.properties?.min_profit != null;
   };
 
   // Use the custom hook for Tauri events
@@ -248,12 +248,12 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
             width: 310,
             sortable: true,
             title: useTranslateCommon("datatable_columns.minimum_price.title"),
-            render: ({ id, minimum_price, list_price }) => (
+            render: ({ id, properties, list_price }) => (
               <ColumnMinMaxPrice
                 id={id}
-                minimum_price={minimum_price}
-                onUpdate={async (id: number, minimum_price: number) => await updateMutation.mutateAsync({ id, minimum_price, list_price })}
-                onEdit={async (id: number, minimum_price: number) => OpenMinimumPriceModal(id, minimum_price)}
+                minimum_price={properties?.min_price}
+                onUpdate={async (id, min_price) => await updateMutation.mutateAsync({ id, properties: { min_price }, list_price })}
+                onEdit={async (id, min_price) => OpenMinimumPriceModal(id, min_price)}
               />
             ),
           },

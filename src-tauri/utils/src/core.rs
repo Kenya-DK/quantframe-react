@@ -456,7 +456,7 @@ pub fn clear_logs(days: i64) -> Result<(), Error> {
                     && dir_name.chars().nth(4) == Some('-')
                     && dir_name.chars().nth(7) == Some('-')
                 {
-                    if dir_name < &cutoff_date_str {
+                    if dir_name < cutoff_date_str.as_str() {
                         println!("Removing old log directory: {}", dir_name);
                         fs::remove_dir_all(&path).map_err(|e| {
                             Error::from_io(

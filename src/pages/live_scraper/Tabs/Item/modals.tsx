@@ -1,9 +1,9 @@
-import { modals } from "@mantine/modals";
-import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
+import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
 import { ItemDetailsModal, Operations } from "@components/Modals/ItemDetails";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
-import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
+import { Text } from "@mantine/core";
+import { modals } from "@mantine/modals";
 
 interface ModalHooks {
   updateMutation: {
@@ -31,7 +31,7 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
       innerProps: {
         fields: [
           {
-            name: "minimum_price",
+            name: "min_price",
             label: useTranslateCommon("prompts.minimum_price.fields.minimum_price.label"),
             attributes: {
               min: 0,
@@ -41,10 +41,10 @@ export const useModals = ({ updateMutation, updateMultipleMutation, sellStockMut
             type: "number",
           },
         ],
-        onConfirm: async (data: { minimum_price: number }) => {
+        onConfirm: async (data: { min_price: number | undefined }) => {
           if (!id) return;
-          const { minimum_price } = data;
-          await updateMutation.mutateAsync({ id, minimum_price });
+          let { min_price } = data;
+          await updateMutation.mutateAsync({ id, properties: { min_price } });
         },
         onCancel: (id: string) => modals.close(id),
       },

@@ -1,3 +1,24 @@
+## Release Notes - 2026-07-14
+
+## Features
+
+- ✨ Migrated stock item, stock riven, and wish list pricing fields (minimum_price, minimum_profit, minimum_sma, maximum_price) into a unified Properties system for better extensibility.
+- ✨ Added new Properties utility methods: has_property, remove_property_value, remove_property_values, keep_property_values, nullify_zeroed_properties, is_type, and enhanced merge_properties with null-removal support.
+- ✨ Implemented TryGetable and ValueType for sea-orm integration, enabling direct JSON column mapping in the database.
+
+## Fixes
+
+- 🛠️ Fixed log cleanup string comparison in core.rs.
+- 🛠️ Fixed GetProperty helper in edit modals to read from form values instead of the original value reference.
+
+## Dev Notes
+
+- Refactored entity DTOs (create, update, pagination) to use Properties-based field changes instead of individual numeric fields.
+- Added two new database migrations: add_properties column and drop_min_price_columns.
+- Updated live scraper modules (item, riven, wishlist) to read pricing thresholds from properties.
+- Cleaned up frontend edit forms to use properties.* field paths (min_price, min_profit, min_sma, max_price).
+- Removed nested Group wrapper in SelectSubType component.
+
 ## Release Notes - 2026-07-03
 
 ## Features

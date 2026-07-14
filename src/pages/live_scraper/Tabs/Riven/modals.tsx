@@ -1,11 +1,11 @@
-import { modals } from "@mantine/modals";
-import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
 import { CreateRiven } from "@components/Forms/CreateRiven";
 import { RivenFilter } from "@components/Forms/RivenFilter";
-import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
 import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
 import { Operations, RivenDetailsModal } from "@components/Modals/RivenDetails";
+import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
+import { Text } from "@mantine/core";
+import { modals } from "@mantine/modals";
 interface ModalHooks {
   useTranslateBasePrompt: (key: string, context?: { [key: string]: any }) => string;
   updateMutation: {
@@ -37,27 +37,27 @@ export const useStockModals = ({
   deleteMultipleMutation,
   createMutation,
 }: ModalHooks) => {
-  const OpenMinimumPriceModal = (id: number, minimum_price: number) => {
+  const OpenMinimumPriceModal = (id: number, min_price: number) => {
     modals.openContextModal({
       modal: "prompt",
       title: useTranslateCommon("prompts.minimum_price.title"),
       innerProps: {
         fields: [
           {
-            name: "minimum_price",
+            name: "min_price",
             label: useTranslateCommon("prompts.minimum_price.fields.minimum_price.label"),
             attributes: {
               min: 0,
               description: useTranslateCommon("prompts.minimum_price.fields.minimum_price.description"),
             },
-            value: minimum_price,
+            value: min_price,
             type: "number",
           },
         ],
-        onConfirm: async (data: { minimum_price: number }) => {
+        onConfirm: async (data: { min_price: number }) => {
           if (!id) return;
-          const { minimum_price } = data;
-          await updateMutation.mutateAsync({ id, minimum_price });
+          const { min_price } = data;
+          await updateMutation.mutateAsync({ id, properties: { min_price } });
         },
         onCancel: (id: string) => modals.close(id),
       },
@@ -182,7 +182,8 @@ export const useStockModals = ({
 
   const OpenFilterModal = (item: TauriTypes.StockRiven) => {
     const filter = item.filter || { enabled: false, attributes: [] };
-    if (!filter.attributes) filter.attributes = item.attributes.map((x) => ({ positive: x.positive, url_name: x.url_name ?? "", is_required: false }));
+    if (!filter.attributes)
+      filter.attributes = item.attributes.map((x) => ({ positive: x.positive, url_name: x.url_name ?? "", is_required: false }));
 
     modals.open({
       title: useTranslateBasePrompt("update_filter.title"),

@@ -80,4 +80,5 @@ pub enum WishList {
     PriceHistory,
     Status,
     IsHidden,
+    Properties,
 }

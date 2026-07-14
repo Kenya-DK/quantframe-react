@@ -1,28 +1,28 @@
-import { Box, Grid, Group } from "@mantine/core";
-import { SearchField } from "@components/Forms/SearchField";
-import { useLocalStorage } from "@mantine/hooks";
 import { TauriTypes } from "$types";
-import { CreateItemForm } from "@components/Forms/CreateItem";
-import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
-import { ColorInfo } from "@components/Shared/ColorInfo";
-import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { DataTable } from "mantine-datatable";
-import classes from "../../LiveScraper.module.css";
-import { notifications } from "@mantine/notifications";
-import { getSafePage } from "@utils/helper";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
-import { useLiveScraperContext } from "@contexts/liveScraper.context";
-import { useWishListQueries } from "./queries";
-import { useWishListMutations } from "./mutations";
-import { useEffect, useState } from "react";
-import { useStockModals } from "./modals";
-import { ColumnActions } from "../../Columns/ColumnActions";
-import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
 import { ItemName } from "@components/DataDisplay/ItemName";
+import { CreateItemForm } from "@components/Forms/CreateItem";
+import { SearchField } from "@components/Forms/SearchField";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { ColorInfo } from "@components/Shared/ColorInfo";
+import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
+import { useLiveScraperContext } from "@contexts/liveScraper.context";
+import { faDownload, faEdit, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { Box, Grid, Group } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
+import { getSafePage } from "@utils/helper";
+import { DataTable } from "mantine-datatable";
+import { useEffect, useState } from "react";
+import { ColumnActions } from "../../Columns/ColumnActions";
+import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
+import classes from "../../LiveScraper.module.css";
+import { useStockModals } from "./modals";
+import { useWishListMutations } from "./mutations";
+import { useWishListQueries } from "./queries";
 
 interface WishListPanelProps {
   isActive?: boolean;
@@ -79,6 +79,9 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
   useEffect(() => {
     setSelectedRecords([]);
   }, [deleteMultipleMutation.isSuccess, deleteMutation.isSuccess]);
+  const hasOverride = (record: TauriTypes.WishListItem) => {
+    return record.properties?.min_price != null;
+  };
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshWishListItems, handleRefresh, [refetchQueries]);
   return (
@@ -221,13 +224,13 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
             width: 310,
             sortable: true,
             title: useTranslateCommon("datatable_columns.maximum_price.title"),
-            render: ({ id, maximum_price }) => (
+            render: ({ id, properties }) => (
               <ColumnMinMaxPrice
                 i18nKey="maximum_price"
                 id={id}
-                minimum_price={maximum_price}
-                onUpdate={async (id: number, minimum_price: number) => await updateMutation.mutateAsync({ id, maximum_price: minimum_price })}
-                onEdit={async (id: number, minimum_price: number) => OpenMinimumPriceModal(id, minimum_price)}
+                minimum_price={properties?.max_price}
+                onUpdate={async (id, max_price) => await updateMutation.mutateAsync({ id, properties: { max_price } })}
+                onEdit={async (id, max_price) => OpenMinimumPriceModal(id, max_price)}
               />
             ),
           },
@@ -246,6 +249,7 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
                   manual_tooltip: "bought_manual_tooltip",
                   auto_tooltip: "bought_auto_tooltip",
                 }}
+                buttonProps={{ edit: { color: hasOverride(row) ? "yellow.7" : "blue.7" } }}
                 hideButtons={["open_filter"]}
                 loadingRows={loadingRows}
                 onManual={() => OpenBoughtModal(row)}

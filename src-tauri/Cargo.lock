@@ -7398,6 +7398,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "regex",
+ "sea-orm",
  "serde",
  "serde_json",
  "uuid",

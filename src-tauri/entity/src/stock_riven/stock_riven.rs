@@ -5,7 +5,7 @@ use serde_json::json;
 use utils::{generate_uuid_from_list, Properties};
 
 use super::{attribute::RivenAttributeVec, match_riven::MatchRivenStruct};
-
+pub static ALLOWED_PROPERTIES_FIELDS: &[&str] = &["min_price"];
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_riven")]
 pub struct Model {
@@ -25,8 +25,6 @@ pub struct Model {
     pub re_rolls: i64,
     pub polarity: String,
     pub bought: i64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub minimum_price: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub list_price: Option<i64>,
     pub filter: MatchRivenStruct,
@@ -57,8 +55,8 @@ pub struct Model {
     pub changes: Option<String>,
 
     // Extra properties
-    #[sea_orm(ignore)]
-    #[serde(flatten)]
+    #[sea_orm(column_type = "Json")]
+    #[serde(default, flatten)]
     pub properties: Properties,
 }
 
@@ -81,7 +79,6 @@ impl Model {
         re_rolls: i64,
         polarity: String,
         bought: i64,
-        minimum_price: Option<i64>,
         is_hidden: bool,
         comment: String,
     ) -> Self {
@@ -99,7 +96,6 @@ impl Model {
             re_rolls,
             polarity,
             bought,
-            minimum_price,
             list_price: None,
             filter: MatchRivenStruct::new(),
             is_hidden,
@@ -203,9 +199,6 @@ impl Model {
         UpdateStockRiven {
             id: self.id,
             bought: FieldChange::Value(self.bought),
-            minimum_price: self
-                .minimum_price
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
             list_price: self
                 .list_price
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
@@ -217,6 +210,7 @@ impl Model {
             price_history: FieldChange::Value(self.price_history.0.clone()),
             // grade: FieldChange::Value(self.grade.clone()),
             grade: FieldChange::Ignore,
+            properties: FieldChange::Value(self.properties.clone()),
         }
     }
 }

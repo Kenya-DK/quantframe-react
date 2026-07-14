@@ -22,7 +22,7 @@ impl WishListMutation {
             is_hidden: Set(form_data.is_hidden.to_owned()),
             sub_type: Set(form_data.sub_type.to_owned()),
             quantity: Set(form_data.quantity.to_owned()),
-            maximum_price: Set(form_data.maximum_price.to_owned()),
+            properties: Set(form_data.properties.to_owned()),
             created_at: Set(chrono::Utc::now()),
             updated_at: Set(chrono::Utc::now()),
             ..Default::default()

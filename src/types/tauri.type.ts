@@ -425,11 +425,17 @@ export namespace TauriTypes {
   //--------------------------------------------------------------------------------
   //  Stock / Wishlist
   //--------------------------------------------------------------------------------
+
+  export interface StockEntryPropertiesBase {
+    min_price?: number;
+    max_price?: number;
+    min_profit?: number;
+    min_sma?: number;
+    [key: string]: any;
+  }
   export interface StockEntryBase<T = any> {
     id: number;
     bought: number;
-    minimum_price?: number;
-    minimum_profit?: number;
     list_price?: number;
     sub_type?: SubType;
     status: StockStatus;
@@ -438,13 +444,11 @@ export namespace TauriTypes {
     price_history: PriceHistory[];
     properties: T;
   }
-  export interface StockItem<T = any> extends StockEntryBase<T> {
+  export interface StockItem<T = StockEntryPropertiesBase> extends StockEntryBase<T> {
     created_at: string;
     id: number;
     is_hidden: boolean;
     item_name: string;
-    minimum_sma?: number;
-    minimum_profit?: number;
     item_unique_name: string;
     owned: number;
     updated_at: string;
@@ -455,19 +459,16 @@ export namespace TauriTypes {
     raw: string;
     quantity: number;
     bought: number;
-    minimum_price?: number;
     sub_type?: SubType;
   }
   export interface UpdateStockItem {
     id: number;
     owned?: number;
     bought?: number;
-    minimum_price?: number;
-    minimum_sma?: number;
-    minimum_profit?: number;
     list_price?: number;
     status?: StockStatus;
     is_hidden?: boolean;
+    properties?: StockEntryPropertiesBase;
   }
   export interface SellStockItem {
     id?: number;
@@ -476,7 +477,7 @@ export namespace TauriTypes {
     quantity: number;
     price: number;
   }
-  export interface StockRiven<T = any> extends StockEntryBase<T> {
+  export interface StockRiven<T = StockEntryPropertiesBase> extends StockEntryBase<T> {
     attributes: RivenAttribute[];
     comment: string;
     filter: StockRivenFilter;
@@ -531,6 +532,7 @@ export namespace TauriTypes {
     status?: StockStatus;
     filter?: StockRivenFilter;
     is_hidden?: boolean;
+    properties?: StockEntryPropertiesBase;
   }
   export interface SellStockRiven {
     id?: number;
@@ -551,13 +553,11 @@ export namespace TauriTypes {
     expenses: number;
     profit: number;
   }
-  export interface WishListItem<T = any> extends Omit<StockEntryBase<T>, "minimum_price"> {
+  export interface WishListItem<T = StockEntryPropertiesBase> extends StockEntryBase<T> {
     id: number;
     item_name: string;
     wfm_url: string;
     quantity: number;
-    maximum_price?: number;
-    minimum_price?: number;
     is_hidden: boolean;
   }
   export interface CreateWishListItem extends Omit<CreateStockItem, "bought" | "minimum_price"> {
@@ -571,6 +571,7 @@ export namespace TauriTypes {
     list_price?: number;
     status?: StockStatus;
     is_hidden?: boolean;
+    properties?: StockEntryPropertiesBase;
   }
   export interface BoughtWishListItem {
     id: number;

@@ -1,8 +1,8 @@
-import { Box, Button, Group, NumberInput } from "@mantine/core";
 import { TauriTypes } from "$types";
-import { useForm } from "@mantine/form";
-import { useTranslateModals, useTranslateCommon } from "@hooks/useTranslate.hook";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
+import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
+import { Box, Button, Group, NumberInput } from "@mantine/core";
+import { useForm } from "@mantine/form";
 export type EditTabProps = {
   lookup: string;
   value: TauriTypes.StockRiven;
@@ -20,7 +20,7 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
   });
 
   const GetProperty = (key: string) => {
-    return value[key as keyof typeof value] ?? value.properties?.[key];
+    return (form.values as any)[key] ?? form.values.properties?.[key];
   };
 
   const ShowField = (lookupKeys: string[]) => {
@@ -37,6 +37,7 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
           value={GetProperty("bought") ?? 0}
           onChange={(value) => form.setFieldValue("bought", Number(value))}
         />
+        <pre>{JSON.stringify(GetProperty("properties.min_price"), null, 2)}</pre>
         <NumberInput
           min={0}
           display={ShowField(["stock_riven"])}
@@ -55,8 +56,8 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
           min={-1}
           display={ShowField(["stock_riven"])}
           label={useTranslateFields("minimum_price")}
-          value={GetProperty("minimum_price") ?? 0}
-          onChange={(value) => form.setFieldValue("minimum_price", Number(value))}
+          value={GetProperty("min_price") ?? 0}
+          onChange={(value) => form.setFieldValue("properties.min_price", Number(value))}
           rightSection={<TooltipIcon label={useTranslateTab("tooltips.minimum_price")} />}
         />
         <Group mt="md" justify="flex-end">
@@ -68,4 +69,3 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
     </form>
   );
 }
-

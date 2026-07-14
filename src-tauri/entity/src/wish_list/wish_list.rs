@@ -6,6 +6,8 @@ use utils::Properties;
 
 use crate::{dto::*, enums::*, transaction::Model as TransactionModel, wish_list::dto::*};
 
+pub static ALLOWED_PROPERTIES_FIELDS: &[&str] = &["max_price", "min_price"];
+
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "wish_list")]
 pub struct Model {
@@ -19,10 +21,6 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
     pub quantity: i64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub minimum_price: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub maximum_price: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub list_price: Option<i64>,
     #[sea_orm(column_type = "Text")]
@@ -46,7 +44,7 @@ pub struct Model {
     #[serde(rename = "changes")]
     pub changes: Option<String>,
     // Extra properties
-    #[sea_orm(ignore)]
+    #[sea_orm(column_type = "Json")]
     #[serde(default, flatten)]
     pub properties: Properties,
 }
@@ -63,7 +61,6 @@ impl Model {
         item_name: String,
         item_unique_name: String,
         sub_type: Option<SubType>,
-        maximum_price: Option<i64>,
         quantity: i64,
     ) -> Self {
         Self {
@@ -75,8 +72,6 @@ impl Model {
             sub_type,
             quantity,
             list_price: None,
-            minimum_price: None,
-            maximum_price,
             status: StockStatus::Pending,
             price_history: PriceHistoryVec(vec![]),
             updated_at: Default::default(),
@@ -154,18 +149,13 @@ impl Model {
         UpdateWishList {
             id: self.id,
             quantity: FieldChange::Value(self.quantity),
-            maximum_price: self
-                .maximum_price
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
-            minimum_price: self
-                .minimum_price
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
             list_price: self
                 .list_price
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
             is_hidden: FieldChange::Value(self.is_hidden),
             price_history: FieldChange::Value(self.price_history.0.clone()),
             status: FieldChange::Value(self.status.clone()),
+            properties: FieldChange::Value(self.properties.clone()),
         }
     }
 }

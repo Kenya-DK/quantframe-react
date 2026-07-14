@@ -1,9 +1,10 @@
 import { TauriTypes } from "$types";
+import { SelectSubType } from "@components/Forms/SelectSubType";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
 import { Box, Button, Group, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { SelectSubType } from "../../../../Forms/SelectSubType";
+
 interface Properties {
   t_type?: TauriTypes.CacheTradableItemSubType;
   [key: string]: any;
@@ -25,7 +26,7 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
   });
 
   const GetProperty = (key: string) => {
-    return (form.values as any)[key] ?? value.properties?.[key];
+    return (form.values as any)[key] ?? form.values.properties?.[key];
   };
 
   const ShowField = (lookupKeys: string[]) => {
@@ -42,6 +43,7 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
             onChange={(value) => form.setFieldValue("sub_type", value)}
           />
         )}
+
         <NumberInput
           min={0}
           display={ShowField(["stock_item"])}
@@ -67,32 +69,31 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
           min={-1}
           display={ShowField(["stock_item"])}
           label={useTranslateFields("minimum_sma")}
-          value={GetProperty("minimum_sma") ?? 0}
-          onChange={(value) => form.setFieldValue("minimum_sma", Number(value))}
+          value={GetProperty("min_sma")}
+          onChange={(value) => form.setFieldValue("properties.min_sma", Number(value))}
           rightSection={<TooltipIcon label={useTranslateTab("tooltips.minimum_sma")} />}
         />
         <NumberInput
           min={-1}
           display={ShowField(["stock_item"])}
           label={useTranslateFields("minimum_profit")}
-          value={GetProperty("minimum_profit") ?? 0}
-          onChange={(value) => form.setFieldValue("minimum_profit", Number(value))}
+          value={GetProperty("min_profit")}
+          onChange={(value) => form.setFieldValue("properties.min_profit", Number(value))}
           rightSection={<TooltipIcon label={useTranslateTab("tooltips.minimum_profit")} />}
         />
         <NumberInput
-          min={-1}
+          min={0}
           display={ShowField(["stock_item", "wish_list_item"])}
           label={useTranslateFields("minimum_price")}
-          value={GetProperty("minimum_price") ?? 0}
-          onChange={(value) => form.setFieldValue("minimum_price", Number(value))}
+          value={GetProperty("min_price")}
+          onChange={(value) => form.setFieldValue("properties.min_price", Number(value))}
           rightSection={<TooltipIcon label={useTranslateTab("tooltips.minimum_price")} />}
         />
         <NumberInput
-          min={-1}
           display={ShowField(["wish_list_item"])}
           label={useTranslateFields("maximum_price")}
-          value={GetProperty("maximum_price") ?? 0}
-          onChange={(value) => form.setFieldValue("maximum_price", Number(value))}
+          value={GetProperty("max_price")}
+          onChange={(value) => form.setFieldValue("properties.max_price", Number(value))}
           rightSection={<TooltipIcon label={useTranslateTab("tooltips.maximum_price")} />}
         />
 
@@ -105,4 +106,3 @@ export function EditTab({ lookup, value, onSave }: EditTabProps) {
     </form>
   );
 }
-

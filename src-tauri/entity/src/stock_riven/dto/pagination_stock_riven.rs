@@ -72,9 +72,6 @@ impl StockRivenPaginationQueryDto {
                     "weapon_name" => stmt = stmt.order_by(stock_riven::Column::WeaponName, order),
                     "bought" => stmt = stmt.order_by(stock_riven::Column::Bought, order),
                     "status" => stmt = stmt.order_by(stock_riven::Column::Status, order),
-                    "minimum_price" => {
-                        stmt = stmt.order_by(stock_riven::Column::MinimumPrice, order)
-                    }
                     "list_price" => stmt = stmt.order_by(stock_riven::Column::ListPrice, order),
                     _ => {}
                 }

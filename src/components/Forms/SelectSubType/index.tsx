@@ -20,67 +20,64 @@ export function SelectSubType({ value, availableSubTypes, showLabel = true, onCh
 
   return (
     <Group>
-      <Group>
-        {availableSubTypes.variants && (
-          <Select
-            label={showLabel ? useTranslateFormFields("variant.label") : undefined}
-            placeholder={useTranslateFormFields("variant.placeholder")}
-            data={availableSubTypes.variants.map((variant) => ({ label: upperFirst(variant), value: variant }))}
-            required
-            value={value?.variant || availableSubTypes.variants[0] || ""}
-            onChange={(variant) => {
-              if (!value || !variant) return;
-              onChange({ ...value, variant });
-            }}
-          />
-        )}
-        {availableSubTypes.maxRank && (
-          <NumberInput
-            w={150}
-            required
-            label={showLabel ? useTranslateFormFields("rank.label") : undefined}
-            placeholder={showLabel ? useTranslateFormFields("rank.placeholder") : undefined}
-            value={value?.rank || 0}
-            min={0}
-            max={availableSubTypes.maxRank}
-            onChange={(event) => {
-              if (!value) return;
-              onChange({ ...value, rank: Number(event) });
-            }}
-          />
-        )}
-        {availableSubTypes.cyanStars && (
-          <NumberInput
-            w={150}
-            required
-            label={showLabel ? useTranslateFormFields("cyan_stars.label") : undefined}
-            placeholder={useTranslateFormFields("cyan_stars.placeholder")}
-            value={value?.cyan_stars || 0}
-            min={0}
-            max={availableSubTypes.cyanStars}
-            onChange={(event) => {
-              if (!value) return;
-              onChange({ ...value, cyan_stars: Number(event) });
-            }}
-          />
-        )}
-        {availableSubTypes.amberStars && (
-          <NumberInput
-            w={150}
-            required
-            label={showLabel ? useTranslateFormFields("amber_stars.label") : undefined}
-            placeholder={useTranslateFormFields("amber_stars.placeholder")}
-            value={value?.amber_stars || 0}
-            min={0}
-            max={availableSubTypes.amberStars}
-            onChange={(event) => {
-              if (!value) return;
-              onChange({ ...value, amber_stars: Number(event) });
-            }}
-          />
-        )}
-      </Group>
+      {availableSubTypes.variants && (
+        <Select
+          label={showLabel ? useTranslateFormFields("variant.label") : undefined}
+          placeholder={useTranslateFormFields("variant.placeholder")}
+          data={availableSubTypes.variants.map((variant) => ({ label: upperFirst(variant), value: variant }))}
+          required
+          value={value?.variant || availableSubTypes.variants[0] || ""}
+          onChange={(variant) => {
+            if (!value || !variant) return;
+            onChange({ ...value, variant });
+          }}
+        />
+      )}
+      {availableSubTypes.maxRank && (
+        <NumberInput
+          w={150}
+          required
+          label={showLabel ? useTranslateFormFields("rank.label") : undefined}
+          placeholder={showLabel ? useTranslateFormFields("rank.placeholder") : undefined}
+          value={value?.rank || 0}
+          min={0}
+          max={availableSubTypes.maxRank}
+          onChange={(event) => {
+            if (!value) return;
+            onChange({ ...value, rank: Number(event) });
+          }}
+        />
+      )}
+      {availableSubTypes.cyanStars && (
+        <NumberInput
+          w={150}
+          required
+          label={showLabel ? useTranslateFormFields("cyan_stars.label") : undefined}
+          placeholder={useTranslateFormFields("cyan_stars.placeholder")}
+          value={value?.cyan_stars || 0}
+          min={0}
+          max={availableSubTypes.cyanStars}
+          onChange={(event) => {
+            if (!value) return;
+            onChange({ ...value, cyan_stars: Number(event) });
+          }}
+        />
+      )}
+      {availableSubTypes.amberStars && (
+        <NumberInput
+          w={150}
+          required
+          label={showLabel ? useTranslateFormFields("amber_stars.label") : undefined}
+          placeholder={useTranslateFormFields("amber_stars.placeholder")}
+          value={value?.amber_stars || 0}
+          min={0}
+          max={availableSubTypes.amberStars}
+          onChange={(event) => {
+            if (!value) return;
+            onChange({ ...value, amber_stars: Number(event) });
+          }}
+        />
+      )}
     </Group>
   );
 }
-

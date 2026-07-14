@@ -96,4 +96,5 @@ pub enum StockItem {
     UpdatedAt,
     Status,
     PriceHistory,
+    Properties,
 }

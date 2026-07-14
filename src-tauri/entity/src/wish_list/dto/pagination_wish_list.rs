@@ -69,7 +69,6 @@ impl WishListPaginationQueryDto {
                 match sort_by.as_str() {
                     "item_name" => stmt = stmt.order_by(Column::ItemName, order),
                     "status" => stmt = stmt.order_by(Column::Status, order),
-                    "maximum_price" => stmt = stmt.order_by(Column::MaximumPrice, order),
                     "list_price" => stmt = stmt.order_by(Column::ListPrice, order),
                     _ => {}
                 }

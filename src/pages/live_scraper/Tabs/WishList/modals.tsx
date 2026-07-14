@@ -1,9 +1,9 @@
-import { modals } from "@mantine/modals";
-import { Text } from "@mantine/core";
 import { TauriTypes } from "$types";
+import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
 import { ItemDetailsModal, Operations } from "@components/Modals/ItemDetails";
 import { useTranslateCommon, useTranslateModals } from "@hooks/useTranslate.hook";
-import { GenerateTradeMessageModal, GenerateTradeMessageModalProps } from "@components/Modals/GenerateTradeMessage";
+import { Text } from "@mantine/core";
+import { modals } from "@mantine/modals";
 interface ModalHooks {
   updateMutation: {
     mutateAsync: (data: TauriTypes.UpdateWishListItem) => Promise<any>;
@@ -23,27 +23,27 @@ interface ModalHooks {
 }
 
 export const useStockModals = ({ updateMutation, deleteMutation, boughtMutation, updateMultipleMutation, deleteMultipleMutation }: ModalHooks) => {
-  const OpenMinimumPriceModal = (id: number, maximum_price: number) => {
+  const OpenMinimumPriceModal = (id: number, max_price: number) => {
     modals.openContextModal({
       modal: "prompt",
       title: useTranslateCommon("prompts.maximum_price.title"),
       innerProps: {
         fields: [
           {
-            name: "maximum_price",
+            name: "max_price",
             label: useTranslateCommon("prompts.maximum_price.fields.maximum_price.label"),
             attributes: {
               min: 0,
               description: useTranslateCommon("prompts.maximum_price.fields.maximum_price.description"),
             },
-            value: maximum_price,
+            value: max_price,
             type: "number",
           },
         ],
-        onConfirm: async (data: { maximum_price: number }) => {
+        onConfirm: async (data: { max_price: number }) => {
           if (!id) return;
-          const { maximum_price } = data;
-          await updateMutation.mutateAsync({ id, maximum_price });
+          const { max_price } = data;
+          await updateMutation.mutateAsync({ id, properties: { max_price } });
         },
         onCancel: (id: string) => modals.close(id),
       },

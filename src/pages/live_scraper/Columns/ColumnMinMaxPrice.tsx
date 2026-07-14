@@ -1,14 +1,14 @@
-import { Group, Text } from "@mantine/core";
-import { faEdit } from "@fortawesome/free-solid-svg-icons";
-import { ButtonIntervals } from "@components/Shared/ButtonIntervals";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { ButtonIntervals } from "@components/Shared/ButtonIntervals";
+import { faEdit } from "@fortawesome/free-solid-svg-icons";
+import { Group, Text } from "@mantine/core";
 import { useTranslateCommon } from "../../../hooks/useTranslate.hook";
 export type ColumnMinMaxPriceProps = {
   i18nKey?: string;
   id: number;
   minimum_price: number | undefined;
-  onEdit: (id: number, minimum_price: number) => void;
-  onUpdate: (id: number, minimum_price: number) => void;
+  onEdit: (id: number, price: number) => void;
+  onUpdate: (id: number, price: number | undefined) => void;
 };
 
 export function ColumnMinMaxPrice({ i18nKey, minimum_price, id, onEdit, onUpdate }: ColumnMinMaxPriceProps) {

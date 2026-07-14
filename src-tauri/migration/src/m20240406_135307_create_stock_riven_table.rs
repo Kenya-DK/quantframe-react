@@ -117,4 +117,5 @@ pub enum StockRiven {
     UUID,
     CreatedAt,
     UpdatedAt,
+    Properties,
 }

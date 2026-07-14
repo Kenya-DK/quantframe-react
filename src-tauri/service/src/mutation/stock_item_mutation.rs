@@ -15,6 +15,8 @@ impl StockItemMutation {
         db: &DbConn,
         form_data: stock_item::Model,
     ) -> Result<stock_item::Model, Error> {
+        // Remove any properties that are not allowed
+        let mut form_data = form_data;
         stock_item::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),
@@ -22,12 +24,12 @@ impl StockItemMutation {
             item_unique_name: Set(form_data.item_unique_name.to_owned()),
             sub_type: Set(form_data.sub_type.to_owned()),
             bought: Set(form_data.bought.to_owned()),
-            minimum_price: Set(form_data.minimum_price.to_owned()),
             list_price: Set(form_data.list_price.to_owned()),
             owned: Set(form_data.owned.to_owned()),
             is_hidden: Set(form_data.is_hidden.to_owned()),
             status: Set(form_data.status.to_owned()),
             price_history: Set(form_data.price_history.to_owned()),
+            properties: Set(form_data.properties.to_owned()),
             created_at: Set(chrono::Utc::now()),
             updated_at: Set(chrono::Utc::now()),
             ..Default::default()

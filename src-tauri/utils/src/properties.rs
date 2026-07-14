@@ -1,3 +1,5 @@
+use sea_orm::sea_query::ValueType;
+use sea_orm::{TryGetError, TryGetable, Value, sea_query};
 use serde::{Deserialize, Serialize};
 
 use crate::{LoggerOptions, critical};
@@ -58,7 +60,13 @@ impl Properties {
         }
         default
     }
-
+    pub fn has_property(&self, key: impl Into<String>) -> bool {
+        let key = key.into();
+        if let Some(props) = &self.properties {
+            return props.get(&key).is_some();
+        }
+        false
+    }
     pub fn set_property_value<T>(&mut self, key: impl Into<String>, value: T)
     where
         T: serde::Serialize,
@@ -75,6 +83,30 @@ impl Properties {
             self.properties = Some(serde_json::Value::Object(map));
         }
     }
+    pub fn remove_property_value(&mut self, key: impl Into<String>) {
+        let key = key.into();
+        if let Some(props) = &mut self.properties {
+            if let Some(map) = props.as_object_mut() {
+                map.remove(&key);
+            }
+        }
+    }
+    pub fn remove_property_values(&mut self, keys: &[&str]) {
+        if let Some(props) = &mut self.properties {
+            if let Some(map) = props.as_object_mut() {
+                let keys_set: std::collections::HashSet<_> = keys.iter().cloned().collect();
+                map.retain(|k, _| !keys_set.contains(k.as_str()));
+            }
+        }
+    }
+    pub fn keep_property_values(&mut self, keys: &[&str]) {
+        if let Some(props) = &mut self.properties {
+            if let Some(map) = props.as_object_mut() {
+                let keys_set: std::collections::HashSet<_> = keys.iter().cloned().collect();
+                map.retain(|k, _| keys_set.contains(k.as_str()));
+            }
+        }
+    }
     pub fn update_property<T, F>(&mut self, key: impl Into<String>, mut f: F)
     where
         T: Default + serde::de::DeserializeOwned + serde::Serialize,
@@ -89,18 +121,44 @@ impl Properties {
         self.set_property_value(key, value);
     }
 
-    pub fn merge_properties(&mut self, new_props: Option<serde_json::Value>, overwrite: bool) {
+    pub fn merge_properties(
+        &mut self,
+        new_props: Option<serde_json::Value>,
+        overwrite: bool,
+        remove_if_null: bool,
+    ) {
         if let Some(new_props) = new_props {
             if let Some(props) = &mut self.properties {
                 if let (Some(map), Some(new_map)) = (props.as_object_mut(), new_props.as_object()) {
                     for (k, v) in new_map {
                         if overwrite || !map.contains_key(k) {
-                            map.insert(k.clone(), v.clone());
+                            if remove_if_null && v.is_null() {
+                                map.remove(k);
+                            } else {
+                                map.insert(k.clone(), v.clone());
+                            }
                         }
                     }
                 }
             } else {
                 self.properties = Some(new_props);
+            }
+        }
+    }
+    pub fn is_type<T: serde::de::DeserializeOwned>(&self, key: impl Into<String>) -> bool {
+        let key = key.into();
+        if let Some(props) = &self.properties {
+            if let Some(value) = props.get(&key) {
+                return serde_json::from_value::<T>(value.clone()).is_ok();
+            }
+        }
+        false
+    }
+    pub fn nullify_zeroed_properties(&mut self, keys: &[&str]) {
+        for key in keys {
+            let num: f64 = self.get_property_value(*key, f64::default());
+            if num == 0.0 && self.has_property(*key) {
+                self.set_property_value(*key, serde_json::Value::Null);
             }
         }
     }
@@ -118,5 +176,57 @@ impl From<serde_json::Value> for Properties {
         Self {
             properties: Some(value),
         }
+    }
+}
+
+impl TryGetable for Properties {
+    fn try_get_by<I: sea_orm::ColIdx>(
+        res: &sea_orm::QueryResult,
+        index: I,
+    ) -> Result<Self, TryGetError> {
+        let val: Option<serde_json::Value> = res.try_get_by(index)?;
+        match val {
+            Some(v) if !v.is_null() => Ok(Properties {
+                properties: Some(v),
+            }),
+            _ => Ok(Properties::default()),
+        }
+    }
+}
+
+impl From<Properties> for Value {
+    fn from(value: Properties) -> Self {
+        Value::Json(value.properties.map(Box::new))
+    }
+}
+
+impl ValueType for Properties {
+    fn try_from(v: Value) -> Result<Self, sea_query::ValueTypeErr> {
+        match v {
+            Value::Json(Some(v)) => {
+                let inner = *v;
+                if inner.is_null() {
+                    Ok(Properties::default())
+                } else {
+                    Ok(Properties {
+                        properties: Some(inner),
+                    })
+                }
+            }
+            Value::Json(None) => Ok(Properties::default()),
+            _ => Err(sea_query::ValueTypeErr),
+        }
+    }
+
+    fn type_name() -> String {
+        String::from("json")
+    }
+
+    fn column_type() -> sea_query::ColumnType {
+        sea_query::ColumnType::Json
+    }
+
+    fn array_type() -> sea_query::ArrayType {
+        sea_query::ArrayType::Json
     }
 }

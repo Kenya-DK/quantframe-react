@@ -306,7 +306,7 @@ pub async fn populate_item_market_properties(
     }
     // ----------------- Market Populated Info -----------------
     if operations.has("MarketPopulated") {
-        properties.merge_properties(order_properties.properties, true);
+        properties.merge_properties(order_properties.properties, true, true);
     }
     properties.set_property_value("ui_operations", operations.operations.clone());
     Ok(())
@@ -545,7 +545,7 @@ pub async fn populate_riven_market_properties(
 
     // ----------------- Market Populated Info -----------------
     if operations.has("MarketPopulated") {
-        properties.merge_properties(auction_properties.properties, true);
+        properties.merge_properties(auction_properties.properties, true, true);
     }
     properties.set_property_value("attributes", scale_attributes(&attributes, 1.0, rank));
     properties.set_property_value("ui_operations", operations.operations.clone());

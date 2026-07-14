@@ -198,8 +198,11 @@ impl RivenModule {
                 stock_riven.set_list_price(Some(post_price));
                 stock_riven.locked = true;
             }
-
-            if let Some(minimum_price) = stock_riven.minimum_price {
+            // Stock Riven properties for min
+            let min_price = stock_riven
+                .properties
+                .get_property_value("min_price", None::<i64>);
+            if let Some(minimum_price) = min_price {
                 let capped_price = post_price.max(minimum_price);
                 if capped_price != post_price {
                     post_price = capped_price;

@@ -23,10 +23,6 @@ pub struct CreateStockItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "minimum_price")]
-    pub minimum_price: Option<i64>,
-
     // Set By validation method
     #[serde(default = "String::default")]
     #[serde(rename = "wfm_id")]
@@ -69,7 +65,6 @@ impl CreateStockItem {
             tags: vec![],
             sub_type,
             bought: None,
-            minimum_price: None,
             quantity,
             is_validated: false,
         }
@@ -81,17 +76,17 @@ impl CreateStockItem {
     }
 
     pub fn to_model(&self) -> Model {
-        Model::new(
+        let model = Model::new(
             self.wfm_id.clone(),
             self.wfm_url.clone(),
             self.item_name.clone(),
             self.item_unique_name.clone(),
             self.sub_type.clone(),
             self.bought.unwrap_or(0),
-            self.minimum_price,
             self.quantity.clone(),
             false,
-        )
+        );
+        model
     }
     pub fn to_transaction(&self, user_name: impl Into<String>) -> Result<TransactionModel, String> {
         if !self.is_validated {
@@ -142,11 +137,6 @@ impl Display for CreateStockItem {
             write!(f, "Bought: {}, ", bought)?;
         } else {
             write!(f, "Bought: Not provided, ")?;
-        }
-        if let Some(minimum_price) = self.minimum_price {
-            write!(f, "Minimum Price: {}, ", minimum_price)?;
-        } else {
-            write!(f, "Minimum Price: Not provided, ")?;
         }
         write!(f, "Quantity: {}, ", self.quantity)?;
         if let Some(sub_type) = &self.sub_type {

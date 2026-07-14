@@ -6,6 +6,8 @@ use utils::Properties;
 
 use crate::{dto::*, enums::*, stock_item::dto::UpdateStockItem};
 
+pub static ALLOWED_PROPERTIES_FIELDS: &[&str] = &["min_sma", "min_profit", "min_price"];
+
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_item")]
 pub struct Model {
@@ -19,12 +21,6 @@ pub struct Model {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_type: Option<SubType>,
     pub bought: i64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub minimum_price: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub minimum_profit: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub minimum_sma: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub list_price: Option<i64>,
     pub owned: i64,
@@ -50,7 +46,7 @@ pub struct Model {
     pub changes: Vec<String>,
 
     // Extra properties
-    #[sea_orm(ignore)]
+    #[sea_orm(column_type = "Json")]
     #[serde(default, flatten)]
     pub properties: Properties,
 }
@@ -68,7 +64,6 @@ impl Model {
         item_unique_name: String,
         sub_type: Option<SubType>,
         bought: i64,
-        minimum_price: Option<i64>,
         owned: i64,
         is_hidden: bool,
     ) -> Self {
@@ -80,13 +75,10 @@ impl Model {
             item_unique_name,
             sub_type,
             bought,
-            minimum_price,
             list_price: None,
             owned,
             is_hidden,
             status: StockStatus::Pending,
-            minimum_profit: None,
-            minimum_sma: None,
             price_history: PriceHistoryVec(vec![]),
             updated_at: Default::default(),
             created_at: Default::default(),
@@ -147,15 +139,6 @@ impl Model {
             id: self.id,
             owned: FieldChange::Value(self.owned),
             bought: FieldChange::Value(self.bought),
-            minimum_price: self
-                .minimum_price
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
-            minimum_profit: self
-                .minimum_profit
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
-            minimum_sma: self
-                .minimum_sma
-                .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
             list_price: self
                 .list_price
                 .map_or(FieldChange::Null, |v| FieldChange::Value(v)),
@@ -163,6 +146,7 @@ impl Model {
             status: FieldChange::Value(self.status.clone()),
             price_history: FieldChange::Value(self.price_history.0.clone()),
             sub_type: FieldChange::Value(self.sub_type.clone()),
+            properties: FieldChange::Value(self.properties.clone()),
         }
     }
     pub fn update_gui(&self) -> bool {

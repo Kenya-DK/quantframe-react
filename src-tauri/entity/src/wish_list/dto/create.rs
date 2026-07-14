@@ -14,10 +14,6 @@ pub struct CreateWishListItem {
     #[serde(rename = "bought")]
     pub bought: Option<i64>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "maximum_price")]
-    pub maximum_price: Option<i64>,
-
     #[serde(rename = "quantity")]
     pub quantity: i64,
 
@@ -64,7 +60,6 @@ impl CreateWishListItem {
             item_name: "".to_string(),
             item_unique_name: "".to_string(),
             tags: vec![],
-            maximum_price: None,
             bought: None,
             quantity,
             sub_type,
@@ -104,7 +99,6 @@ impl CreateWishListItem {
             self.item_name.clone(),
             self.item_unique_name.clone(),
             self.sub_type.clone(),
-            self.maximum_price.clone(),
             self.quantity.clone(),
         )
     }
@@ -131,11 +125,6 @@ impl Display for CreateWishListItem {
             write!(f, "Bought: {}, ", bought)?;
         } else {
             write!(f, "Bought: Not provided, ")?;
-        }
-        if let Some(maximum_price) = self.maximum_price {
-            write!(f, "Maximum Price: {}, ", maximum_price)?;
-        } else {
-            write!(f, "Maximum Price: Not provided, ")?;
         }
         write!(f, "Quantity: {}, ", self.quantity)?;
         if let Some(sub_type) = &self.sub_type {

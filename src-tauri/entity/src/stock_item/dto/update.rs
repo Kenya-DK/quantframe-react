@@ -1,5 +1,6 @@
-use sea_orm::Set;
+use sea_orm::{ActiveValue, Set};
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
 use crate::{dto::*, enums::*, stock_item::*};
 
@@ -12,15 +13,6 @@ pub struct UpdateStockItem {
 
     #[serde(default)]
     pub bought: FieldChange<i64>,
-
-    #[serde(default)]
-    pub minimum_price: FieldChange<i64>,
-
-    #[serde(default)]
-    pub minimum_profit: FieldChange<i64>,
-
-    #[serde(default)]
-    pub minimum_sma: FieldChange<i64>,
 
     #[serde(default)]
     pub list_price: FieldChange<i64>,
@@ -36,6 +28,9 @@ pub struct UpdateStockItem {
 
     #[serde(default)]
     pub sub_type: FieldChange<Option<SubType>>,
+
+    #[serde(default, flatten)]
+    pub properties: FieldChange<Properties>,
 }
 
 impl UpdateStockItem {
@@ -48,17 +43,6 @@ impl UpdateStockItem {
         }
         match self.bought {
             Value(v) => item.bought = Set(v),
-            _ => {}
-        }
-        match self.minimum_price {
-            Value(v) => {
-                if v <= 0 {
-                    item.minimum_price = Set(None)
-                } else {
-                    item.minimum_price = Set(Some(v))
-                }
-            }
-            Null => item.minimum_price = Set(None),
             _ => {}
         }
         match self.list_price {
@@ -78,35 +62,25 @@ impl UpdateStockItem {
             Value(v) => item.price_history = Set(PriceHistoryVec(v)),
             _ => {}
         }
-        match self.minimum_profit {
-            Value(v) => {
-                if v == 0 {
-                    item.minimum_profit = Set(None)
-                } else if v <= -1 {
-                    item.minimum_profit = Set(Some(v))
-                } else {
-                    item.minimum_profit = Set(Some(v))
-                }
-            }
-            Null => item.minimum_profit = Set(None),
-            _ => {}
-        }
-        match self.minimum_sma {
-            Value(v) => {
-                if v == 0 {
-                    item.minimum_sma = Set(None)
-                } else if v <= -1 {
-                    item.minimum_sma = Set(Some(v))
-                } else {
-                    item.minimum_sma = Set(Some(v))
-                }
-            }
-            Null => item.minimum_sma = Set(None),
-            _ => {}
-        }
         match self.sub_type {
             Value(v) => item.sub_type = Set(v),
             Null => item.sub_type = Set(None),
+            _ => {}
+        }
+        match self.properties {
+            Value(mut v) => {
+                v.keep_property_values(ALLOWED_PROPERTIES_FIELDS);
+                v.nullify_zeroed_properties(ALLOWED_PROPERTIES_FIELDS);
+
+                let properties = match item.properties {
+                    ActiveValue::Set(mut existing) | ActiveValue::Unchanged(mut existing) => {
+                        existing.merge_properties(v.properties, true, true);
+                        existing
+                    }
+                    _ => v,
+                };
+                item.properties = Set(properties);
+            }
             _ => {}
         }
         item
@@ -116,14 +90,12 @@ impl UpdateStockItem {
             id,
             owned: FieldChange::Ignore,
             bought: FieldChange::Ignore,
-            minimum_price: FieldChange::Ignore,
             list_price: FieldChange::Ignore,
             is_hidden: FieldChange::Ignore,
             status: FieldChange::Ignore,
-            minimum_profit: FieldChange::Ignore,
-            minimum_sma: FieldChange::Ignore,
             price_history: FieldChange::Ignore,
             sub_type: FieldChange::Ignore,
+            properties: FieldChange::Ignore,
         }
     }
     pub fn with_owned(mut self, owned: i64) -> Self {
@@ -133,14 +105,6 @@ impl UpdateStockItem {
 
     pub fn with_bought(mut self, bought: i64) -> Self {
         self.bought = FieldChange::Value(bought);
-        self
-    }
-
-    pub fn with_minimum_price(mut self, minimum_price: Option<i64>) -> Self {
-        self.minimum_price = match minimum_price {
-            Some(v) => FieldChange::Value(v),
-            None => FieldChange::Null,
-        };
         self
     }
 
@@ -168,18 +132,8 @@ impl UpdateStockItem {
         };
         self
     }
-    pub fn with_minimum_profit(mut self, minimum_profit: Option<i64>) -> Self {
-        self.minimum_profit = match minimum_profit {
-            Some(v) => FieldChange::Value(v),
-            None => FieldChange::Null,
-        };
-        self
-    }
-    pub fn with_minimum_sma(mut self, minimum_sma: Option<i64>) -> Self {
-        self.minimum_sma = match minimum_sma {
-            Some(v) => FieldChange::Value(v),
-            None => FieldChange::Null,
-        };
+    pub fn with_properties(mut self, properties: Properties) -> Self {
+        self.properties = FieldChange::Value(properties);
         self
     }
 }

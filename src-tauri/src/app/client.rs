@@ -85,7 +85,7 @@ fn send_ws_state(key: impl Into<String>, data: &WsMessage) {
 
     current_error
         .properties
-        .merge_properties(data.payload.clone(), true);
+        .merge_properties(data.payload.clone(), true, true);
 
     let mut operations = OperationSet::from(
         current_error

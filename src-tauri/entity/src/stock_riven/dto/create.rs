@@ -55,10 +55,6 @@ pub struct CreateStockRiven {
     #[serde(default = "String::default")]
     pub weapon_type: String,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "minimum_price")]
-    pub minimum_price: Option<i64>,
-
     #[serde(rename = "is_validated")]
     #[serde(default = "bool::default")]
     pub is_validated: bool,
@@ -87,7 +83,6 @@ impl CreateStockRiven {
             re_rolls,
             polarity: polarity.into(),
             attributes,
-            minimum_price: None,
             bought: None,
             rank,
             is_validated: false,
@@ -111,7 +106,6 @@ impl CreateStockRiven {
             self.re_rolls,
             self.polarity.clone(),
             self.bought.unwrap_or(0),
-            self.minimum_price,
             false,
             "".to_string(),
         )

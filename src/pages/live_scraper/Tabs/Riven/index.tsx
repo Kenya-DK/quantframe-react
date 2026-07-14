@@ -1,29 +1,29 @@
-import { ActionIcon, Box, Grid, Group, NumberFormatter, Paper, Tooltip } from "@mantine/core";
-import { useLiveScraperContext } from "@contexts/liveScraper.context";
-import { useLocalStorage } from "@mantine/hooks";
-import { useEffect, useState } from "react";
-import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
 import { TauriTypes } from "$types";
-import { useStockQueries } from "./queries";
-import { ColorInfo } from "@components/Shared/ColorInfo";
-import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
-import { SearchField } from "@components/Forms/SearchField";
-import classes from "../../LiveScraper.module.css";
-import { DataTable } from "mantine-datatable";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
-import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { getSafePage } from "@utils/helper";
-import { useStockMutations } from "./mutations";
-import { useStockModals } from "./modals";
-import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
-import { ColumnActions } from "../../Columns/ColumnActions";
-import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faDownload, faEdit, faInfo, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { HasPermission } from "@api/index";
-import { notifications } from "@mantine/notifications";
 import { ItemName } from "@components/DataDisplay/ItemName";
 import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
+import { SearchField } from "@components/Forms/SearchField";
+import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
+import { ColorInfo } from "@components/Shared/ColorInfo";
+import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
+import { useLiveScraperContext } from "@contexts/liveScraper.context";
+import { faDownload, faEdit, faInfo, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { ActionIcon, Box, Grid, Group, NumberFormatter, Paper, Tooltip } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
+import { getSafePage } from "@utils/helper";
+import { DataTable } from "mantine-datatable";
+import { useEffect, useState } from "react";
+import { ColumnActions } from "../../Columns/ColumnActions";
+import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
+import classes from "../../LiveScraper.module.css";
+import { useStockModals } from "./modals";
+import { useStockMutations } from "./mutations";
+import { useStockQueries } from "./queries";
 export type RivenPanelProps = {
   isActive?: boolean;
 };
@@ -271,12 +271,12 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
             sortable: true,
             width: 300,
             title: useTranslateCommon("datatable_columns.minimum_price.title"),
-            render: ({ id, minimum_price }) => (
+            render: ({ id, properties }) => (
               <ColumnMinMaxPrice
                 id={id}
-                minimum_price={minimum_price}
-                onUpdate={async (id: number, minimum_price: number) => await updateMutation.mutateAsync({ id, minimum_price })}
-                onEdit={async (id: number, minimum_price: number) => OpenMinimumPriceModal(id, minimum_price)}
+                minimum_price={properties?.min_price}
+                onUpdate={async (id, min_price) => await updateMutation.mutateAsync({ id, properties: { min_price } })}
+                onEdit={async (id, min_price) => OpenMinimumPriceModal(id, min_price)}
               />
             ),
           },

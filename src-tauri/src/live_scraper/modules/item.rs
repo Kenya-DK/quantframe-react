@@ -633,6 +633,19 @@ impl ItemModule {
         // Get existing order properties or initialize new ones
         let mut properties = get_order_info(&entry, OrderType::Sell, &wfm_client);
 
+        // Stock item Minimum Price, Profit, and SMA are now stored in properties, so we can remove them from the stock item struct.
+        let (min_price, min_profit, min_sma) = (
+            stock_item
+                .properties
+                .get_property_value("min_price", None::<i64>),
+            stock_item
+                .properties
+                .get_property_value("min_profit", None::<i64>),
+            stock_item
+                .properties
+                .get_property_value("min_sma", None::<i64>),
+        );
+
         // Set initial properties for order and get operations
         let (_, mut operations) = populate_order_properties(&mut properties, &item_info, &entry);
 
@@ -656,7 +669,7 @@ impl ItemModule {
         // Get the lowest sell order price from the DataFrame of live sell orders
         let lowest_price = if live_orders.sell_orders.len() > 2 {
             live_orders.lowest_price(OrderType::Sell)
-        } else if stock_item.minimum_price.is_none() {
+        } else if min_price.is_none() {
             operations.add("Delete");
             operations.add("NoSellers");
             stock_item.set_status(StockStatus::NoSellers);
@@ -674,8 +687,8 @@ impl ItemModule {
         let mut post_price = lowest_price;
 
         // Handle Minimum Price Limit
-        if let Some(minimum_price) = stock_item.minimum_price {
-            let capped_price = post_price.max(minimum_price);
+        if let Some(min_price) = min_price {
+            let capped_price = post_price.max(min_price);
             if capped_price != post_price {
                 post_price = capped_price;
                 operations.add("MinimumPrice");
@@ -683,8 +696,8 @@ impl ItemModule {
         }
 
         // Handle SMA Threshold Global/Item Specific
-        let minimum_sma = if stock_item.minimum_sma.is_some() {
-            stock_item.minimum_sma.unwrap()
+        let minimum_sma = if min_sma.is_some() {
+            min_sma.unwrap()
         } else {
             settings.wts.min_sma
         };
@@ -705,8 +718,8 @@ impl ItemModule {
         let mut profit = post_price - bought_price;
 
         // Handle Profit Threshold Global/Item Specific
-        let minimum_profit = if stock_item.minimum_profit.is_some() {
-            stock_item.minimum_profit.unwrap()
+        let minimum_profit = if min_profit.is_some() {
+            min_profit.unwrap()
         } else {
             settings.wts.min_profit
         };
@@ -870,8 +883,15 @@ impl ItemModule {
         let mut post_price = highest_price;
 
         // Get Maximum and Minimum Price from Wishlist Item
-        let maximum_price = wishlist_item.maximum_price.unwrap_or(0);
-        let minimum_price = wishlist_item.minimum_price.unwrap_or(0);
+        // Wishlist item Minimum Price and Maximum Price are stored in properties, so we can remove them from the wishlist item struct.
+        let (min_price, max_price) = (
+            wishlist_item
+                .properties
+                .get_property_value("min_price", 0i64),
+            wishlist_item
+                .properties
+                .get_property_value("max_price", 0i64),
+        );
 
         // Return if no buy orders are found.
         if live_orders.buy_orders.len() <= 0 {
@@ -881,14 +901,14 @@ impl ItemModule {
             wishlist_item.set_list_price(Some(post_price));
         }
         // Check if the price is higher than the max price
-        if post_price > maximum_price && maximum_price > 0 {
-            post_price = maximum_price;
+        if post_price > max_price && max_price > 0 {
+            post_price = max_price;
             operations.add("MaxPrice");
         }
         post_price = std::cmp::max(post_price, 1);
 
-        if post_price < minimum_price && minimum_price > 0 {
-            post_price = minimum_price;
+        if post_price < min_price && min_price > 0 {
+            post_price = min_price;
             operations.add("MinPrice");
         }
 
