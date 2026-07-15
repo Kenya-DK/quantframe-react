@@ -14,6 +14,7 @@ mod m20251227_211048_add_wish_minimum_price;
 mod m20260131_103740_add_tra_credits;
 mod m20260710_124000_add_properties;
 mod m20260710_125000_drop_min_price_columns;
+mod m20260715_160000_make_properties_nullable;
 
 pub struct Migrator;
 
@@ -35,6 +36,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260131_103740_add_tra_credits::Migration),
             Box::new(m20260710_124000_add_properties::Migration),
             Box::new(m20260710_125000_drop_min_price_columns::Migration),
+            Box::new(m20260715_160000_make_properties_nullable::Migration),
         ]
     }
 }
