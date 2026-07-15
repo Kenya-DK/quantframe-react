@@ -45,6 +45,17 @@ pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
 pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
 pub static HAS_STARTED: OnceLock<bool> = OnceLock::new();
 pub static APP_ERROR: OnceLock<Mutex<Option<Error>>> = OnceLock::new();
+pub static SENSITIVE_FIELDS: &[&str] = &[
+    "email",
+    "password",
+    "authorization",
+    "check_code",
+    "qf_token",
+    "wfm_token",
+    "webhook",
+    "slug",
+];
+
 // If use_debug is true the debug database will be used and all data will be lost on restart
 async fn init_database(use_debug: bool) -> Result<(), Error> {
     // Create the database connection and store it

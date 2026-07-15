@@ -6,7 +6,7 @@ use crate::app::{Settings, User};
 use crate::http_server::HttpServer;
 use crate::utils::modules::states;
 use crate::utils::ErrorFromExt;
-use crate::{clear_error, emit_error, emit_startup, types::*, APP_ERROR};
+use crate::{clear_error, emit_error, emit_startup, types::*, APP_ERROR, SENSITIVE_FIELDS};
 use crate::{emit_update_user, helper, send_event, APP, HAS_STARTED};
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
@@ -478,10 +478,13 @@ impl AppState {
                 emit_startup!(format!("wfm.{}", state), json!({}));
             })
             .with_callback("api:error", |_, data| {
+                let mut data = data.clone();
+                data.mask_sensitive_data(SENSITIVE_FIELDS);
                 let timestamp = chrono::Local::now()
                     .with_timezone(&chrono::Utc)
                     .format("%Y_%m_%d_%H_%M_%S")
                     .to_string();
+
                 if let Some(data) = data.properties.clone() {
                     log_json(data, &format!("wfm_api_error_{}.json", timestamp)).ok();
                 }

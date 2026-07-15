@@ -3,6 +3,8 @@ use serde_json::json;
 use utils::{Error, LogLevel, Properties};
 use wf_market::errors::ApiError as WFRequestError;
 
+use crate::SENSITIVE_FIELDS;
+
 /// Extension trait for creating Error instances from different error types
 pub trait ErrorFromExt {
     /// Create an Error from a Warframe Market API error
@@ -30,7 +32,7 @@ impl ErrorFromExt for Error {
         mut error: WFRequestError,
         location: impl Into<String>,
     ) -> Self {
-        error.mask_sensitive_data(&["email", "password", "authorization"]);
+        error.mask_sensitive_data(SENSITIVE_FIELDS);
         Error {
             component: format!("WFMClient:{}", component.into()),
             cause: error.to_string(),
@@ -47,7 +49,7 @@ impl ErrorFromExt for Error {
         mut error: QFRequestError,
         location: impl Into<String>,
     ) -> Self {
-        error.mask_sensitive_data(&["email", "password", "authorization"]);
+        error.mask_sensitive_data(SENSITIVE_FIELDS);
         Error {
             component: format!("QFClient:{}", component.into()),
             cause: error.to_string(),

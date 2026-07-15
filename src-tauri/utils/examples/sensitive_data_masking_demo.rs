@@ -23,7 +23,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{}", serde_json::to_string_pretty(&error)?);
 
     // Mask sensitive fields
-    error.mask_sensitive_data(&["password", "session_token"]);
+    error.mask_sensitive_data(&[
+        "password",
+        "session_token",
+        "email",
+        "password",
+        "authorization",
+    ]);
 
     println!("\nAfter masking password and session_token:");
     println!("{}", serde_json::to_string_pretty(&error)?);

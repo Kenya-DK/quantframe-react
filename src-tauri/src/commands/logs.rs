@@ -9,7 +9,7 @@ use crate::{
     live_scraper::LiveScraperState,
     log_parser::LogParserState,
     utils::modules::states::get_app_error,
-    APP,
+    APP, SENSITIVE_FIELDS,
 };
 
 #[tauri::command]
@@ -37,7 +37,7 @@ pub async fn log_export(
 
     let mut zip = ZipOptions::new();
     zip.exclude_patterns(&["EBWebView/"]);
-    zip.mask_properties(&["check_code", "qf_token", "wfm_token", "webhook"]);
+    zip.mask_properties(SENSITIVE_FIELDS);
     zip.create_file(
         "AppError.json",
         json!(get_app_error()).to_string().as_bytes(),
