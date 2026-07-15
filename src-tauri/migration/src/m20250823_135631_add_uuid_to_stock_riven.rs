@@ -26,17 +26,6 @@ impl MigrationTrait for Migration {
             )
             .await
             .ok();
-
-        // Fetch all items
-        let db = manager.get_connection();
-        let items = Entity::find().all(db).await?;
-        // Update each row with deterministic v5 UUID
-        for item in items {
-            let (uuid, _) = item.uuid(); // Compute the UUID using the method from the entity
-            let mut active: ActiveModel = item.into();
-            active.uuid = Set(uuid);
-            active.update(db).await?;
-        }
         // Remove WFMOrderId column
         if let Err(err) = manager
             .get_connection()

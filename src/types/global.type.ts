@@ -14,7 +14,7 @@ export interface ResponseError<T = any> extends Error {
   message: string;
   location: string;
   cause?: string;
-  properties: T;
+  properties?: T;
   log_level: string;
 }
 export interface SubType {

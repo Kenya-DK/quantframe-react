@@ -36,17 +36,17 @@ impl MigrationTrait for Migration {
         ))
         .await?;
         db.execute(Statement::from_string(
-        backend.clone(),
-        "UPDATE wish_list SET properties = json_set(COALESCE(properties, '{}'), '$.min_price', minimum_price) WHERE minimum_price IS NOT NULL".to_string(),
-    ))
-    .await?;
+            backend.clone(),
+            "UPDATE wish_list SET properties = json_set(COALESCE(properties, '{}'), '$.min_price', minimum_price) WHERE minimum_price IS NOT NULL".to_string(),
+        ))
+        .await?;
 
         // For stock riven table
         db.execute(Statement::from_string(
-        backend.clone(),
-        "UPDATE stock_riven SET properties = json_set(COALESCE(properties, '{}'), '$.min_price', minimum_price) WHERE minimum_price IS NOT NULL".to_string(),
-    ))
-    .await?;
+            backend.clone(),
+            "UPDATE stock_riven SET properties = json_set(COALESCE(properties, '{}'), '$.min_price', minimum_price) WHERE minimum_price IS NOT NULL".to_string(),
+        ))
+        .await?;
 
         // Drop columns from stock_item table
         for col in &["minimum_price", "minimum_profit", "minimum_sma"] {
