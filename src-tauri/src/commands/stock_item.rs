@@ -48,7 +48,7 @@ pub async fn get_stock_item_status_counts(
 
 #[tauri::command]
 pub async fn stock_item_create(input: CreateStockItem) -> Result<stock_item::Model, Error> {
-    match handle_item_by_entity(input, "", OrderType::Buy, OperationSet::new()).await {
+    match handle_item_by_entity(input, "", OrderType::Buy, &OperationSet::new()).await {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
             return Err(e
@@ -72,7 +72,7 @@ pub async fn stock_item_sell(
         price,
         "",
         OrderType::Sell,
-        OperationSet::new(),
+        &OperationSet::new(),
     )
     .await
     {

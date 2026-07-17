@@ -37,6 +37,7 @@ export interface TradeItem<T = any> {
 export interface TradeItemProperties {
   price: number;
   wfm_url: string;
+  isWishListItem: boolean;
   requireSubType?: boolean;
   subTypes?: TauriTypes.CacheTradableItemSubType;
 }
@@ -90,7 +91,7 @@ export function ProcessTradePopup() {
       wfm_url: item.properties?.wfm_url,
       price: item.properties?.price,
       order_type: currentTradeForm.values?.type === "purchase" ? "buy" : "sell",
-      flags: [`SetDate:${currentTradeForm.values?.tradeTime}`],
+      operations: [`SetDate:${currentTradeForm.values?.tradeTime}`, item.properties?.isWishListItem ? "WishList" : "NotWishList"],
     }));
     await createMutation.mutateAsync((items as any) || []);
     setCurrentStep(TradeProcessingStep.View);
@@ -263,4 +264,3 @@ export function ProcessTradePopup() {
     </Box>
   );
 }
-

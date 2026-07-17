@@ -1,4 +1,8 @@
-use entity::{dto::SubType, enums::TransactionType, transaction::TransactionPaginationQueryDto};
+use entity::{
+    dto::SubType, enums::TransactionType, stock_item::CreateStockItem,
+    transaction::TransactionPaginationQueryDto, wish_list::CreateWishListItem,
+};
+use serde::{Deserialize, Serialize};
 use service::{TransactionMutation, TransactionQuery};
 use utils::{get_location, info, Error, OperationSet, SortDirection};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
@@ -7,6 +11,30 @@ use crate::{
     utils::{modules::states, ErrorFromExt, SubTypeExt},
     DATABASE,
 };
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ItemEntity {
+    pub wfm_url: String,
+    pub sub_type: Option<SubType>,
+    pub quantity: i64,
+    pub price: i64,
+    pub user_name: String,
+    pub order_type: OrderType,
+    #[serde(default, flatten)]
+    pub operations: OperationSet,
+}
+
+impl From<ItemEntity> for CreateStockItem {
+    fn from(item: ItemEntity) -> Self {
+        CreateStockItem::new(item.wfm_url, item.sub_type, item.quantity).set_bought(item.price)
+    }
+}
+
+impl From<ItemEntity> for CreateWishListItem {
+    fn from(item: ItemEntity) -> Self {
+        CreateWishListItem::new(item.wfm_url, item.sub_type, item.quantity).set_bought(item.price)
+    }
+}
 
 // Handles Warframe Market order operations (close/delete/update)
 pub async fn handle_wfm_item(

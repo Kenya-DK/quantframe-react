@@ -4,7 +4,9 @@ use crate::{
     add_metric,
     app::Settings,
     enums::TradeItemType,
-    handlers::{handle_item, handle_riven_by_name, handle_transaction, handle_wish_list},
+    handlers::{
+        handle_item, handle_riven_by_name, handle_transaction, handle_wish_list, is_wish_list_item,
+    },
     helper::get_or_create_window,
     log_parser::*,
     notify_gui, send_event,
@@ -416,6 +418,11 @@ async fn process_mutable_items(
             .map(|order| order.platinum)
             .unwrap_or(0);
         item.properties.set_property_value("price", json!(price));
+        let is_wish_list_item = is_wish_list_item(info.wfm_url, &item.sub_type)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?;
+        item.properties
+            .set_property_value("isWishListItem", json!(is_wish_list_item));
     }
 
     let mut payload = json!(trade);
@@ -608,7 +615,7 @@ async fn process_trade_item(
         platinum,
         player_name,
         order_type,
-        OperationSet::from(vec!["SkipWFMCheck:ItemSell_NotFound"]), // Will skip WFM check if the item is not found in Stock when selling.
+        &OperationSet::from(vec!["SkipWFMCheck:ItemSell_NotFound"]), // Will skip WFM check if the item is not found in Stock when selling.
     )
     .await
     .map_err(|e| e.with_location(get_location!()))?;

@@ -1,7 +1,7 @@
 use std::vec;
 
 use entity::{dto::*, enums::*, wish_list::*};
-use service::WishListMutation;
+use service::{WishListMutation, WishListQuery};
 use utils::{get_location, info, warning, Error, OperationSet};
 use wf_market::enums::OrderType;
 
@@ -245,4 +245,15 @@ pub async fn handle_wish_list(
     )
     .await
     .map_err(|e| e.with_location(get_location!()))
+}
+
+pub async fn is_wish_list_item(
+    wfm_url: impl Into<String>,
+    sub_type: &Option<SubType>,
+) -> Result<bool, Error> {
+    let conn = DATABASE.get().unwrap();
+    let item =
+        WishListQuery::find_by_url_name_and_sub_type(conn, &wfm_url.into(), sub_type.clone())
+            .await?;
+    Ok(item.is_some())
 }

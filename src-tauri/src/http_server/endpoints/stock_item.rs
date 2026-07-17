@@ -30,7 +30,7 @@ impl StockItemRoute {
     async fn handle_post(&self, body: &str, stream: &mut TcpStream) {
         match serde_json::from_str::<CreateStockItem>(body) {
             Ok(input) => {
-                match handle_item_by_entity(input, "", OrderType::Buy, OperationSet::new()).await {
+                match handle_item_by_entity(input, "", OrderType::Buy, &OperationSet::new()).await {
                     Ok((_, updated_item)) => {
                         respond_json(stream, 200, &serde_json::to_string(&updated_item).unwrap());
                     }

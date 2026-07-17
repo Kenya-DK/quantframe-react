@@ -1,20 +1,10 @@
-use entity::{dto::*, enums::*, stock_item::*};
+use entity::{dto::*, enums::*, stock_item::*, wish_list::CreateWishListItem};
 use serde::{Deserialize, Serialize};
 use service::StockItemMutation;
 use utils::{get_location, info, warning, Error, OperationSet};
 use wf_market::enums::OrderType;
 
 use crate::{handlers::*, utils::CreateStockItemExt, DATABASE};
-#[derive(Serialize, Deserialize)]
-pub struct ItemEntity {
-    pub wfm_url: String,
-    pub sub_type: Option<SubType>,
-    pub quantity: i64,
-    pub price: i64,
-    pub user_name: String,
-    pub order_type: OrderType,
-    pub flags: Vec<String>,
-}
 
 // --------------------------------------------------
 // Helper functions.
@@ -110,7 +100,7 @@ pub async fn handle_item_by_entity(
     mut item: CreateStockItem,
     user_name: impl Into<String>,
     order_type: OrderType,
-    flags: OperationSet,
+    flags: &OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
     let con = DATABASE.get().unwrap();
     let component = "HandleItem";
@@ -224,7 +214,7 @@ pub async fn handle_item(
     price: i64,
     user_name: impl Into<String>,
     order_type: OrderType,
-    flags: OperationSet,
+    flags: &OperationSet,
 ) -> Result<(OperationSet, Model), Error> {
     handle_item_by_entity(
         CreateStockItem::new(wfm_url, sub_type.clone(), quantity).set_bought(price),
@@ -234,33 +224,4 @@ pub async fn handle_item(
     )
     .await
     .map_err(|e| e.with_location(get_location!()))
-}
-
-pub async fn handle_items(
-    items: Vec<ItemEntity>,
-) -> Result<(i32, Vec<(OperationSet, String)>), Error> {
-    let mut total = 0;
-    let mut processed_items = Vec::new();
-    for item in items {
-        match handle_item(
-            item.wfm_url,
-            item.sub_type,
-            item.quantity,
-            item.price,
-            item.user_name,
-            item.order_type,
-            OperationSet::from(item.flags.clone()),
-        )
-        .await
-        {
-            Ok((o, updated_item)) => {
-                total += 1;
-                processed_items.push((o, updated_item.item_name));
-            }
-            Err(e) => {
-                return Err(e.with_location(get_location!()));
-            }
-        }
-    }
-    Ok((total, processed_items))
 }

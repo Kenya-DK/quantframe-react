@@ -755,7 +755,7 @@ export namespace TauriTypes {
     price: number;
     user_name: string;
     order_type: string;
-    flags: string[];
+    operations: string[];
   }
   export interface ChatLink {
     prefix: string;
