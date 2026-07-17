@@ -132,19 +132,18 @@ impl LiveScraperState {
                                     _ => LogLevel::Warning,
                                 };
 
-                                notify_gui!(
-                                    "app_error",
-                                    e.log_level.to_color(),
-                                    "error",
-                                    json!(e),
-                                    json!({ "autoClose": false })
-                                );
-
                                 e.clone()
                                     .with_location(get_location!())
                                     .log("live_scraper_item.log");
 
                                 if matches!(e.log_level, LogLevel::Critical | LogLevel::Error) {
+                                    notify_gui!(
+                                        "app_error",
+                                        e.log_level.to_color(),
+                                        "error",
+                                        json!(e),
+                                        json!({ "autoClose": false })
+                                    );
                                     is_running.store(false, Ordering::SeqCst);
                                     play_sound!("windows_xp_error.mp3", 1.0);
                                     emit_error!(e);
