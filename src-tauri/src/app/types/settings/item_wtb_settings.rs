@@ -12,6 +12,8 @@ pub struct ItemWtbSettings {
     pub min_wtb_profit_margin: i64,
     pub quantity_per_trade: i64,
     pub max_stock_quantity: i64,
+    pub max_price_drop: i64,
+    pub min_listings_below: i64,
 }
 
 impl Default for ItemWtbSettings {
@@ -27,6 +29,8 @@ impl Default for ItemWtbSettings {
             min_wtb_profit_margin: -1,
             quantity_per_trade: 1,
             max_stock_quantity: -1,
+            max_price_drop: -1,
+            min_listings_below: -1,
         }
     }
 }

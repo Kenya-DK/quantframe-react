@@ -24,6 +24,8 @@ pub enum StockStatus {
     Overpriced,
     #[sea_orm(string_value = "underpriced")]
     Underpriced,
+    #[sea_orm(string_value = "max_price_drop")]
+    MaxPriceDrop,
 }
 impl StockStatus {
     // Create method to convert `OrderType` to a `&str`
@@ -39,6 +41,7 @@ impl StockStatus {
             StockStatus::OrderLimit => "order_limit",
             StockStatus::Overpriced => "overpriced",
             StockStatus::Underpriced => "underpriced",
+            StockStatus::MaxPriceDrop => "max_price_drop",
         }
     }
     pub fn to_string(&self) -> String {
@@ -53,6 +56,7 @@ impl StockStatus {
             StockStatus::OrderLimit => StockStatus::OrderLimit.as_str().to_string(),
             StockStatus::Overpriced => StockStatus::Overpriced.as_str().to_string(),
             StockStatus::Underpriced => StockStatus::Underpriced.as_str().to_string(),
+            StockStatus::MaxPriceDrop => StockStatus::MaxPriceDrop.as_str().to_string(),
         }
     }
     pub fn from_string(s: &str) -> StockStatus {
@@ -67,6 +71,7 @@ impl StockStatus {
             "order_limit" => StockStatus::OrderLimit,
             "overpriced" => StockStatus::Overpriced,
             "underpriced" => StockStatus::Underpriced,
+            "max_price_drop" => StockStatus::MaxPriceDrop,
             _ => StockStatus::Pending,
         }
     }
@@ -87,6 +92,7 @@ impl Serialize for StockStatus {
             StockStatus::OrderLimit => StockStatus::OrderLimit.as_str(),
             StockStatus::Overpriced => StockStatus::Overpriced.as_str(),
             StockStatus::Underpriced => StockStatus::Underpriced.as_str(),
+            StockStatus::MaxPriceDrop => StockStatus::MaxPriceDrop.as_str(),
         };
         serializer.serialize_str(value)
     }
@@ -109,6 +115,7 @@ impl<'de> Deserialize<'de> for StockStatus {
             "order_limit" => StockStatus::OrderLimit,
             "overpriced" => StockStatus::Overpriced,
             "underpriced" => StockStatus::Underpriced,
+            "max_price_drop" => StockStatus::MaxPriceDrop,
             _ => StockStatus::Pending,
         })
     }

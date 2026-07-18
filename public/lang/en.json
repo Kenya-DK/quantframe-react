@@ -591,6 +591,7 @@
       "order_limit": "Order Limit",
       "overpriced": "Overpriced",
       "underpriced": "Underpriced",
+      "max_price_drop": "Max Price Drop",
       "details": {
         "pending": "Waiting to be processed",
         "live": "Live on Warframe Market",
@@ -601,7 +602,8 @@
         "sma_limit": "Is limited by the SMA",
         "order_limit": "Is limited by the order limit",
         "overpriced": "Is overpriced",
-        "underpriced": "Is underpriced"
+        "underpriced": "Is underpriced",
+        "max_price_drop": "Has a max price drop"
       }
     },
     "stock_mode": {
@@ -1403,9 +1405,19 @@
                     "tooltip": "Maximum quantity of an item to have in stock before stopping WTB order creation. Set to -1 to disable this feature.",
                     "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-stock-quantity"
                   },
-                  "wts": {
-                    "title": "WTS",
-                    "fields": {}
+                  "max_price_drop": {
+                    "label": "Max Price Increase",
+                    "placeholder": "Max Price Increase",
+                    "error": "Invalid max price increase",
+                    "tooltip": "Maximum platinum increase to follow on buy orders. Limits how much your buy price can go up in one cycle. -1 to disable. Overridden by Min Listings Below.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-price-increase"
+                  },
+                  "min_listings_below": {
+                    "label": "Min Buyers Above",
+                    "placeholder": "Min Buyers Above",
+                    "error": "Invalid min buyers above",
+                    "tooltip": "Minimum number of buy orders above your current price to override the Max Price Increase limit. -1 to disable.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#min-buyers-above"
                   }
                 }
               },
@@ -1425,6 +1437,20 @@
                     "error": "Invalid minimum profit",
                     "tooltip": "Minimum profit to consider for trading",
                     "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
+                  },
+                  "max_price_drop": {
+                    "label": "Max Price Drop",
+                    "placeholder": "Max Price Drop",
+                    "error": "Invalid max price drop",
+                    "tooltip": "Maximum platinum drop to follow automatically. -1 to disable. When disabled, price will always follow the lowest listing unless overridden by Min Listings Below.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#max-price-drop"
+                  },
+                  "min_listings_below": {
+                    "label": "Min Listings Below",
+                    "placeholder": "Min Listings Below",
+                    "error": "Invalid min listings below",
+                    "tooltip": "Minimum number of listings below your price to override the max price drop limit. -1 to disable. Example: 3 means follow down only when 4+ sellers are below you.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-listings-below"
                   }
                 }
               },

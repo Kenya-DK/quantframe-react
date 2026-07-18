@@ -1,5 +1,5 @@
-import { getGradient, DEFAULT_THEME } from "@mantine/core";
 import { TauriTypes, UserStatus } from "$types";
+import { DEFAULT_THEME, getGradient } from "@mantine/core";
 const { colors: DEFAULT_COLORS } = DEFAULT_THEME;
 export const defaultTheme = {
   name: "Default",
@@ -36,6 +36,7 @@ export const defaultTheme = {
         [TauriTypes.StockStatus.OrderLimit]: DEFAULT_COLORS.cyan[8],
         [TauriTypes.StockStatus.Overpriced]: DEFAULT_COLORS.pink[9],
         [TauriTypes.StockStatus.Underpriced]: DEFAULT_COLORS.orange[6],
+        [TauriTypes.StockStatus.MaxPriceDrop]: DEFAULT_COLORS.pink[7],
       },
       alertType: {
         error: DEFAULT_COLORS.red[7],

@@ -36,6 +36,22 @@ export const WTSItemAccordion = ({ form }: WTSItemAccordionProps) => {
           radius="md"
           {...form.getInputProps(getFieldPath("min_sma"))}
         />
+        <NumberInput
+          label={useTranslateFormFields("max_price_drop.label")}
+          min={-1}
+          placeholder={useTranslateFormFields("max_price_drop.placeholder")}
+          rightSection={<TooltipIcon label={useTranslateFormFields("max_price_drop.tooltip")} link={useTranslateFormFields("max_price_drop.link")} />}
+          radius="md"
+          {...form.getInputProps(getFieldPath("max_price_drop"))}
+        />
+        <NumberInput
+          label={useTranslateFormFields("min_listings_below.label")}
+          min={-1}
+          placeholder={useTranslateFormFields("min_listings_below.placeholder")}
+          rightSection={<TooltipIcon label={useTranslateFormFields("min_listings_below.tooltip")} link={useTranslateFormFields("min_listings_below.link")} />}
+          radius="md"
+          {...form.getInputProps(getFieldPath("min_listings_below"))}
+        />
       </Group>
     </Box>
   );

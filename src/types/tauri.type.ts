@@ -58,6 +58,7 @@ export namespace TauriTypes {
     OrderLimit = "order_limit",
     Overpriced = "overpriced",
     Underpriced = "underpriced",
+    MaxPriceDrop = "max_price_drop",
   }
   export enum TransactionType {
     Purchase = "purchase",
@@ -134,6 +135,8 @@ export namespace TauriTypes {
   export interface ItemWtbSettings {
     min_sma: number;
     min_profit: number;
+    max_price_drop: number;
+    min_listings_below: number;
   }
   export interface ItemWtsSettings {
     volume_threshold: number;
@@ -146,6 +149,8 @@ export namespace TauriTypes {
     min_wtb_profit_margin: number;
     quantity_per_trade: number;
     max_stock_quantity: number;
+    max_price_drop: number;
+    min_listings_below: number;
   }
   export interface RivenSettings {
     general: RivenGeneralSettings;

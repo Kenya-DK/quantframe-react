@@ -116,6 +116,10 @@
   --color: var(--qf-stock-status-underpriced);
 }
 
+[data-stock-status="max_price_drop"] {
+  --color: var(--qf-stock-status-max_price_drop);
+}
+
 [data-alert-type="error"] {
   --color: var(--qf-alert-type-error);
 }

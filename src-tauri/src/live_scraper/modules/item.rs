@@ -391,6 +391,42 @@ impl ItemModule {
         }
         post_price = post_price.max(1);
 
+        // Handle Max Price Increase & Min Listings Above (WTB)
+        if !is_disabled(settings.wtb.max_price_drop)
+            || !is_disabled(settings.wtb.min_listings_below)
+        {
+            if let Some(current_price) = wfm_client
+                .order()
+                .cache_orders()
+                .find_order(
+                    &entry.wfm_id,
+                    &SubTypeExt::from_entity(entry.sub_type.clone()),
+                    OrderType::Buy,
+                )
+                .map(|o| i64::from(o.platinum))
+            {
+                if current_price < post_price {
+                    let price_increase = post_price - current_price;
+                    let max_drop = settings.wtb.max_price_drop;
+                    let min_listings = settings.wtb.min_listings_below;
+                    let listings_above = live_orders
+                        .buy_orders
+                        .iter()
+                        .filter(|o| i64::from(o.order.platinum) > current_price)
+                        .count() as i64;
+
+                    let skip = !is_disabled(max_drop)
+                        && price_increase > max_drop
+                        && (is_disabled(min_listings) || listings_above <= min_listings);
+
+                    if skip {
+                        post_price = current_price;
+                        operations.add("MaxPriceDrop");
+                    }
+                }
+            }
+        }
+
         let closed_avg_metric = (closed_avg - post_price as f64) as i64;
         let potential_profit = closed_avg_metric - 1;
 
@@ -668,7 +704,7 @@ impl ItemModule {
         }
 
         // Get the lowest sell order price from the DataFrame of live sell orders
-        let lowest_price = if live_orders.sell_orders.len() > 2 {
+        let lowest_price = if live_orders.sell_orders.len() >= 2 {
             live_orders.lowest_price(OrderType::Sell)
         } else if min_price.is_none() {
             operations.add("Delete");
@@ -693,6 +729,35 @@ impl ItemModule {
             if capped_price != post_price {
                 post_price = capped_price;
                 operations.add("MinimumPrice");
+            }
+        }
+
+        // Handle Max Price Drop & Min Listings Below
+        if !is_disabled(settings.wts.max_price_drop)
+            || !is_disabled(settings.wts.min_listings_below)
+        {
+            if let Some(current_price) = stock_item.list_price {
+                if current_price > lowest_price {
+                    let price_drop = current_price - lowest_price;
+                    let max_drop = settings.wts.max_price_drop;
+                    let min_listings = settings.wts.min_listings_below;
+                    let listings_below = live_orders
+                        .sell_orders
+                        .iter()
+                        .filter(|o| i64::from(o.order.platinum) < current_price)
+                        .count() as i64;
+
+                    let skip = !is_disabled(max_drop)
+                        && price_drop > max_drop
+                        && (is_disabled(min_listings) || listings_below <= min_listings);
+
+                    if skip {
+                        post_price = current_price;
+                        operations.add("MaxPriceDrop");
+                        stock_item.set_status(StockStatus::MaxPriceDrop);
+                        stock_item.locked = true;
+                    }
+                }
             }
         }
 
@@ -760,16 +825,18 @@ impl ItemModule {
         info(
             format!("{}Summary", component),
             format!(
-                "Item {}: PostPrice: {} | ClosedAvg: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | StockChanges: {} | Operations: {:?}",
+                "Item {}: PostPrice: {} | LowestPrice: {} | HighestPrice: {} | ClosedAvg: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | StockChanges: {} | Operations: {:?}",
                 item_info.name,
                 post_price,
+                lowest_price,
+                live_orders.highest_price(OrderType::Sell),
                 closed_avg,
                 profit,
                 stock_item.is_dirty,
                 stock_item.status,
                 stock_item.list_price,
                 stock_item.changes.join(", "),
-                operations,
+                operations.operations,
             ),
             &log_options,
         );

@@ -1,6 +1,7 @@
 ## Features
 
 - ✨ Purchased Wishlist items are now routed to the Wishlist handler instead of being added to the Selling List — they are removed/updated on the Wishlist as expected.
+- ✨ Added Max Price Drop / Min Listings Below settings for both WTS (selling) and WTB (buying) to control auto-pricing follow behavior — prevents following large price drops unless enough competition is present (closes #108).
 
 ## Fixes
 
