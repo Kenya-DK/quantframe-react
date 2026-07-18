@@ -1,20 +1,20 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ModalsProvider } from "@mantine/modals";
-import i18n from "i18next";
-import classes from "./modals.module.css";
-import { initReactI18next } from "react-i18next";
-import { DatesProvider } from "@mantine/dates";
-import { library, dom } from "@fortawesome/fontawesome-svg-core";
 import { AppRoutes } from "@components/Layouts/Routes";
-import { AppContextProvider } from "@contexts/app.context";
-import * as Icons from "@icons";
-import { useEffect, useState } from "react";
-import api from "./api";
-import { PromptModal } from "@components/Modals/Prompt";
 import { PatreonModal } from "@components/Modals/PatreonModal/indexx";
+import { PromptModal } from "@components/Modals/Prompt";
+import { AppContextProvider } from "@contexts/app.context";
+import { dom, library } from "@fortawesome/fontawesome-svg-core";
+import * as Icons from "@icons";
 import { MantineProvider } from "@mantine/core";
+import { DatesProvider } from "@mantine/dates";
+import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import i18n from "i18next";
+import { useEffect, useState } from "react";
+import { initReactI18next } from "react-i18next";
+import api from "./api";
 import { ThemeProvider, useTheme } from "./contexts/theme.context";
+import classes from "./modals.module.css";
 const ICONS = [
   Icons.faMoneyBillTrendDown,
   Icons.faAmberStar,

@@ -2,14 +2,16 @@ use std::sync::Mutex;
 
 use utils::Error;
 
-use crate::app::client::AppState;
+use crate::{app::client::AppState, HAS_STARTED};
 
 #[tauri::command]
 pub fn analytics_set_last_user_activity(
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<(), Error> {
-    let app = app.lock()?;
-    app.qf_client.analytics().set_last_user_activity();
+    if HAS_STARTED.get().cloned().unwrap_or(false) {
+        let app = app.lock()?;
+        app.qf_client.analytics().set_last_user_activity();
+    }
     Ok(())
 }
 
