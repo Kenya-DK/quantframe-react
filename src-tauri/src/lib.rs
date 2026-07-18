@@ -280,6 +280,7 @@ pub fn run() {
             commands::debug::debug_get_wfm_state,
             commands::debug::debug_get_ee_logs,
             commands::debug::debug_export_ee_logs,
+            commands::debug::debug_test,
             // Order commands
             commands::order::get_wfm_orders_pagination,
             commands::order::get_wfm_orders_status_counts,

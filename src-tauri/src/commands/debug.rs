@@ -8,8 +8,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tauri_plugin_dialog::DialogExt;
 use utils::*;
+use wf_market::enums::OrderType;
 
-use crate::{add_metric, app::client::AppState, helper::paginate, log_parser::LogParserState, APP};
+use crate::{
+    add_metric, app::client::AppState, enums::TradeMode, helper::paginate,
+    log_parser::LogParserState, utils::SubTypeExt, APP,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LineEntryPaginationQueryDto {
@@ -134,4 +138,25 @@ pub async fn debug_export_ee_logs(
         return Ok(file_path.to_string());
     }
     Ok("".to_string())
+}
+#[tauri::command]
+pub async fn debug_test(app: tauri::State<'_, Mutex<AppState>>) -> Result<Properties, Error> {
+    let mut properties = Properties::default();
+    let app = app.lock()?.clone();
+    for item in app.wfm_client.order().cache_orders().to_vec() {
+        let mode = match item.order_type {
+            OrderType::Buy => TradeMode::Buy,
+            OrderType::Sell => TradeMode::Sell,
+        };
+        if !app.settings.live_scraper.items.general.is_item_blacklisted(
+            &item.item_id,
+            &SubTypeExt::to_entity(&item.subtype),
+            &mode,
+        ) {
+            properties.update_property("ids", |ids: &mut Vec<String>| {
+                ids.push(item.id.clone());
+            });
+        }
+    }
+    Ok(properties)
 }

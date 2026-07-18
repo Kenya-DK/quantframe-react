@@ -1,3 +1,4 @@
+use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
 
 use crate::enums::TradeMode;
@@ -10,9 +11,14 @@ pub struct ItemGeneralSettings {
     pub buy_list: Vec<BuyListItemSetting>,
 }
 impl ItemGeneralSettings {
-    pub fn is_item_blacklisted(&self, wfm_id: &str, mode: &TradeMode) -> bool {
+    pub fn is_item_blacklisted(
+        &self,
+        wfm_id: &str,
+        sub_type: &Option<SubType>,
+        mode: &TradeMode,
+    ) -> bool {
         for item in &self.blacklist {
-            if item.is_disabled_for(wfm_id, mode) {
+            if item.is_disabled_for(wfm_id, sub_type, mode) {
                 return true;
             }
         }

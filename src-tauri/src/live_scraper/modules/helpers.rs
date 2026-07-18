@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     path::Path,
     sync::{atomic::Ordering, OnceLock},
+    vec,
 };
 
 use entity::{
@@ -184,10 +185,11 @@ pub async fn collect_interesting_items(
         for item in buy_list {
             let item_entry = ItemEntry::from(&item)
                 .set_quantity(OrderType::Buy, settings.live_scraper.items.wtb.buy_quantity);
-            if !stock_item_settings
-                .general
-                .is_item_blacklisted(&item.wfm_id, &TradeMode::Buy)
-            {
+            if !stock_item_settings.general.is_item_blacklisted(
+                &item.wfm_id,
+                &item.sub_type,
+                &TradeMode::Buy,
+            ) {
                 interesting_items.insert(item_entry.uuid().clone(), item_entry);
             }
         }
@@ -199,10 +201,11 @@ pub async fn collect_interesting_items(
             .await
             .map_err(|e| e.with_location(get_location!()))?;
         for item in stock_items.results {
-            if !stock_item_settings
-                .general
-                .is_item_blacklisted(&item.wfm_id, &TradeMode::Sell)
-            {
+            if !stock_item_settings.general.is_item_blacklisted(
+                &item.wfm_id,
+                &item.sub_type,
+                &TradeMode::Sell,
+            ) {
                 interesting_items
                     .entry(item.uuid())
                     .and_modify(|entry| {
@@ -224,10 +227,11 @@ pub async fn collect_interesting_items(
             .await
             .map_err(|e| e.with_location(get_location!()))?;
         for item in wish_items.results {
-            if !stock_item_settings
-                .general
-                .is_item_blacklisted(&item.wfm_id, &TradeMode::WishList)
-            {
+            if !stock_item_settings.general.is_item_blacklisted(
+                &item.wfm_id,
+                &item.sub_type,
+                &TradeMode::WishList,
+            ) {
                 interesting_items
                     .entry(item.uuid())
                     .and_modify(|entry| {
@@ -338,11 +342,23 @@ pub fn orders_to_delete(
     my_orders: &OrderList<Order>,
 ) -> Vec<String> {
     if settings.live_scraper.general.auto_delete && client.just_started.load(Ordering::SeqCst) {
-        return my_orders
-            .order_ids(OrderType::Buy)
-            .into_iter()
-            .chain(my_orders.order_ids(OrderType::Sell))
-            .collect();
+        let mut ids = vec![];
+        for item in my_orders.to_vec() {
+            let mode = match item.order_type {
+                OrderType::Buy => TradeMode::Buy,
+                OrderType::Sell => TradeMode::Sell,
+            };
+
+            if !settings.live_scraper.items.general.is_item_blacklisted(
+                &item.item_id,
+                &SubTypeExt::to_entity(&item.subtype),
+                &mode,
+            ) {
+                ids.push(item.id.clone());
+            }
+        }
+
+        return ids;
     }
 
     match (

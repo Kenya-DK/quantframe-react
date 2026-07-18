@@ -124,6 +124,7 @@ export namespace TauriTypes {
   }
   export interface BlackListItemSetting {
     wfmId: string;
+    subType?: SubType;
     disabled_for: TradeMode[];
   }
   export interface BuyListItemSetting {

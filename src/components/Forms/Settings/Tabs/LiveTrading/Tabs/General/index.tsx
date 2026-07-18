@@ -427,4 +427,3 @@ export const GeneralPanel = ({ form, setHideTab, setHideButtons }: GeneralPanelP
     </Box>
   );
 };
-

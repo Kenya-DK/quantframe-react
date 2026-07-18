@@ -305,7 +305,7 @@ impl ItemModule {
         // Check if item is blacklisted for buying
         if settings
             .general
-            .is_item_blacklisted(&item_info.wfm_id, &TradeMode::Buy)
+            .is_item_blacklisted(&item_info.wfm_id, &entry.sub_type, &TradeMode::Buy)
         {
             info(
                 &comp("Blacklisted"),
@@ -602,10 +602,11 @@ impl ItemModule {
         let settings = states::get_settings()?.live_scraper.items;
 
         // Check if item is blacklisted for selling
-        if settings
-            .general
-            .is_item_blacklisted(&item_info.wfm_id, &TradeMode::Sell)
-        {
+        if settings.general.is_item_blacklisted(
+            &item_info.wfm_id,
+            &entry.sub_type,
+            &TradeMode::Sell,
+        ) {
             info(
                 &comp("Blacklisted"),
                 &format!(
@@ -836,10 +837,11 @@ impl ItemModule {
         );
         let settings = states::get_settings()?.live_scraper.items;
         // Check if item is blacklisted for wishlist
-        if settings
-            .general
-            .is_item_blacklisted(&item_info.wfm_id, &TradeMode::WishList)
-        {
+        if settings.general.is_item_blacklisted(
+            &item_info.wfm_id,
+            &entry.sub_type,
+            &TradeMode::WishList,
+        ) {
             info(
                 &comp("Blacklisted"),
                 &format!(
@@ -988,5 +990,5 @@ impl ItemModule {
     }
 }
 fn comp(suffix: &str) -> String {
-    format!("{}{}", COMPONENT, suffix)
+    return format!("{}{}", COMPONENT, suffix);
 }

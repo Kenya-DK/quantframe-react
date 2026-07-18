@@ -6,6 +6,7 @@
 
 - 🛠️ Moved `notify_gui!` call inside the Critical/Error check in `live_scraper/client.rs` to prevent GUI notifications for non-critical log levels.
 - 🛠️ Fixed purchased Wishlist items appearing in the Selling List instead of being handled on the Wishlist (closes #116).
+- 🛠️ Fixed Auto Delete deleting blacklisted item orders on Live Scraper start — blacklist now checks sub_type (e.g. riven rank) so items like "Longbow Sharpshot" are properly skipped (closes #114).
 
 ## Dev Notes
 
