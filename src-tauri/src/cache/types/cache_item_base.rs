@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
-use entity::dto::sub_type;
 use serde::{Deserialize, Serialize};
+use utils::SubType;
 
 use crate::cache::modules::LanguageModule;
 
@@ -26,7 +26,7 @@ pub struct CacheItemBase {
     pub tags: Vec<String>,
 
     #[serde(rename = "subType")]
-    pub sub_type: Option<sub_type::SubType>,
+    pub sub_type: Option<SubType>,
 
     #[serde(rename = "previousNames", default)]
     pub previous_names: Vec<String>,

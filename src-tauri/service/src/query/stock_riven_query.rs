@@ -1,7 +1,6 @@
 use ::entity::stock_riven::*;
 
 use crate::{paginate_query, ErrorFromExt};
-use ::entity::dto::SubType;
 use sea_orm::*;
 use sea_query::Expr;
 use utils::*;

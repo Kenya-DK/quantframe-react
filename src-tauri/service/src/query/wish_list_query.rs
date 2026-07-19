@@ -1,7 +1,6 @@
 use ::entity::wish_list::*;
 
 use crate::{paginate_query, ErrorFromExt};
-use ::entity::dto::SubType;
 use sea_orm::{sea_query::Expr, *};
 use utils::*;
 pub struct WishListQuery;

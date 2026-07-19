@@ -1,8 +1,6 @@
 use chrono::{DateTime, Utc};
 use entity::{
-    dto::{
-        FinancialGraph, FinancialReport, PaginatedResult, PriceHistory, PriceHistoryVec, SubType,
-    },
+    dto::{FinancialGraph, FinancialReport, PaginatedResult, PriceHistory, PriceHistoryVec},
     enums::RivenGrade,
     stock_riven::RivenAttribute,
     transaction::TransactionPaginationQueryDto,
@@ -14,6 +12,7 @@ use std::{
     path::PathBuf,
 };
 use tauri::{Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+use utils::SubType;
 use utils::*;
 use wf_market::{enums::OrderType, types::AuctionLike, Authenticated};
 

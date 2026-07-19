@@ -12,6 +12,7 @@ pub mod properties;
 pub mod retry_utils;
 pub mod sorting;
 pub mod stop_watch;
+pub mod sub_type;
 pub mod zip_folder;
 pub mod zip_logger;
 
@@ -28,5 +29,6 @@ pub use properties::*;
 pub use retry_utils::*;
 pub use sorting::*;
 pub use stop_watch::*;
+pub use sub_type::*;
 pub use zip_folder::*;
 pub use zip_logger::*;

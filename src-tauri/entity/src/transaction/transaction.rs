@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::dto::*;
 use crate::enums::*;
-
+use utils::SubType;
 #[derive(
     Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, FromJsonQueryResult,
 )]

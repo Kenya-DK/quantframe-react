@@ -2,6 +2,7 @@ use crate::{dto::*, enums::*, stock_riven::dto::*, transaction::Model as Transac
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use utils::SubType;
 use utils::{generate_uuid_from_list, Properties};
 
 use super::{attribute::RivenAttributeVec, match_riven::MatchRivenStruct};

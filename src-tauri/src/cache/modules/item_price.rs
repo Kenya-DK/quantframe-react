@@ -10,8 +10,8 @@ use crate::{
     emit_startup,
     utils::ErrorFromExt,
 };
-use entity::dto::SubType;
 use qf_api::Client as QFClient;
+use utils::SubType;
 use utils::{find_by, get_location, info, read_json_file_optional, Error, LoggerOptions};
 
 #[derive(Debug)]

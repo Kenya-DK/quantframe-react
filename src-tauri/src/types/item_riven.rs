@@ -1,9 +1,9 @@
-use entity::{dto::SubType, stock_riven::RivenAttribute};
+use crate::cache::CacheState;
+use entity::stock_riven::RivenAttribute;
 use serde::{Deserialize, Serialize};
+use utils::SubType;
 use utils::{generate_uuid_from_list, get_location, Error, Properties};
 use wf_market::{enums::AuctionType, types::Auction};
-
-use crate::cache::CacheState;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ItemRivenBase {
@@ -17,7 +17,7 @@ pub struct ItemRivenBase {
     pub wfm_url: String,
 
     #[serde(rename = "sub_type", skip_serializing_if = "Option::is_none")]
-    pub sub_type: Option<entity::dto::SubType>,
+    pub sub_type: Option<SubType>,
 
     #[serde(rename = "mod_name", default)]
     pub mod_name: String,

@@ -2,7 +2,7 @@ use sea_orm::Set;
 use serde::{Deserialize, Serialize};
 
 use crate::{dto::*, enums::*, trade_entry::*};
-
+use utils::SubType;
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct UpdateTradeEntry {
     pub id: i64,

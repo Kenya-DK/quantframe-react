@@ -2,8 +2,8 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{dto::*, enums::*, transaction::Model as TransactionModel, wish_list::*};
-
+use crate::{enums::*, transaction::Model as TransactionModel, wish_list::*};
+use utils::SubType;
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateWishListItem {
     // Properties use for validation

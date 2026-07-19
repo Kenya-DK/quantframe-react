@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
-use crate::types::SubType;
+use utils::SubType;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct SyndicateItemPrice {
@@ -10,6 +11,8 @@ pub struct SyndicateItemPrice {
     pub syndicate: String,
     #[serde(default, rename = "standingCost")]
     pub standing_cost: i64,
+    #[serde(default, rename = "syndicateUniqueName")]
+    pub syndicate_unique_name: String,
     #[serde(default, rename = "wfmId")]
     pub wfm_id: String,
     #[serde(default, rename = "uuid")]
@@ -22,4 +25,7 @@ pub struct SyndicateItemPrice {
     pub min_price: f64,
     #[serde(default, rename = "volume")]
     pub volume: f64,
+
+    #[serde(default, flatten)]
+    pub properties: Properties,
 }

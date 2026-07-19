@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::types::SubType;
+use utils::SubType;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct ItemPriceDetails {

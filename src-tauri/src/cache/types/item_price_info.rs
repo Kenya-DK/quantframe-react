@@ -1,6 +1,6 @@
-use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
 use utils::Properties;
+use utils::SubType;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct ItemPriceInfo {

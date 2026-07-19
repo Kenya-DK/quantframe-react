@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use utils::Properties;
+use utils::{Properties, SubType};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WFInvItemBase {
@@ -19,7 +19,7 @@ pub struct WFInvItemBase {
     pub quantity: i64,
 
     #[serde(rename = "sub_type", skip_serializing_if = "Option::is_none")]
-    pub sub_type: Option<entity::dto::SubType>,
+    pub sub_type: Option<SubType>,
 
     // Extra properties that may be needed for specific item types, stored as a JSON object
     #[serde(flatten)]

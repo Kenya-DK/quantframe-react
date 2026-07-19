@@ -5,7 +5,7 @@ use sea_orm::*;
 use sea_query::Expr;
 use serde::{Deserialize, Serialize};
 use utils::sorting::SortDirection;
-
+use utils::SubType;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransactionPaginationQueryDto {
     #[serde(flatten)]

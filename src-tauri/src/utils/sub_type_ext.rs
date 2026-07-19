@@ -1,5 +1,6 @@
-use entity::dto::SubType as EntitySubType;
+use utils::SubType as EntitySubType;
 use wf_market::types::SubType as WFSubType;
+
 /// Extension trait for creating Error instances from different error types
 pub trait SubTypeExt {
     fn to_entity(&self) -> Option<EntitySubType>;

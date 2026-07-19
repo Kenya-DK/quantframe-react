@@ -1,9 +1,10 @@
 use entity::{
-    dto::SubType, enums::TransactionType, stock_item::CreateStockItem,
+    enums::TransactionType, stock_item::CreateStockItem,
     transaction::TransactionPaginationQueryDto, wish_list::CreateWishListItem,
 };
 use serde::{Deserialize, Serialize};
 use service::{TransactionMutation, TransactionQuery};
+use utils::SubType;
 use utils::{get_location, info, Error, OperationSet, SortDirection};
 use wf_market::{enums::OrderType, types::UpdateOrderParams};
 

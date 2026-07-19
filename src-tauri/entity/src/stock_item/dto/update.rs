@@ -1,6 +1,7 @@
 use sea_orm::{ActiveValue, Set};
 use serde::{Deserialize, Serialize};
 use utils::Properties;
+use utils::SubType;
 
 use crate::{dto::*, enums::*, stock_item::*};
 

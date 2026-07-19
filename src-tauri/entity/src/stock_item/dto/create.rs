@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
+use utils::SubType;
 
 use crate::stock_item::*;
 

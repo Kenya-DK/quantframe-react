@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-use crate::trade_entry::*;
-
 use crate::dto::*;
+use crate::trade_entry::*;
+use utils::SubType;
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateTradeEntry {

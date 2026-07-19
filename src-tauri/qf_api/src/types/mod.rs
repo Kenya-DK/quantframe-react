@@ -22,9 +22,6 @@ pub use item_price_details::*;
 pub mod riven_price_details;
 pub use riven_price_details::*;
 
-pub mod sub_type;
-pub use sub_type::*;
-
 pub mod pagination_item_price;
 pub use pagination_item_price::*;
 

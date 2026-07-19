@@ -1,6 +1,5 @@
 use ::entity::stock_item::*;
 
-use ::entity::dto::SubType;
 use sea_orm::{sea_query::Expr, *};
 
 use crate::{paginate_query, ErrorFromExt};

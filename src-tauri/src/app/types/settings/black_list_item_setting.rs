@@ -1,5 +1,5 @@
-use entity::dto::SubType;
 use serde::{Deserialize, Serialize};
+use utils::SubType;
 
 use crate::enums::TradeMode;
 
