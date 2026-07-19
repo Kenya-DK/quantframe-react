@@ -7,6 +7,7 @@ pub struct LiveScraperSettings {
     pub general: LiveScraperGeneralSettings,
     pub items: ItemSettings,
     pub rivens: RivenSettings,
+    pub syndicate: SyndicateSettings,
 }
 impl LiveScraperSettings {
     pub fn has_trade_mode(&self, mode: TradeMode) -> bool {
@@ -19,6 +20,7 @@ impl Default for LiveScraperSettings {
             general: LiveScraperGeneralSettings::default(),
             items: ItemSettings::default(),
             rivens: RivenSettings::default(),
+            syndicate: SyndicateSettings::default(),
         }
     }
 }

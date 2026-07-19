@@ -1,5 +1,5 @@
 use entity::{dto::*, enums::*};
-use utils::SortDirection;
+use utils::{OperationSet, SortDirection};
 use wf_market::enums::OrderType;
 
 use serde::{Deserialize, Serialize};
@@ -17,6 +17,10 @@ pub struct WfmOrderPaginationQueryDto {
 
     #[serde(default)]
     pub sort_by: FieldChange<String>,
+
     #[serde(default)]
     pub sort_direction: FieldChange<SortDirection>,
+
+    #[serde(default)]
+    pub operations: FieldChange<Vec<String>>,
 }

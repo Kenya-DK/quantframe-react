@@ -4432,6 +4432,7 @@ dependencies = [
  "serde_urlencoded",
  "tokio",
  "tokio-tungstenite",
+ "utils",
  "uuid",
  "zip 0.6.6",
 ]
@@ -7830,7 +7831,7 @@ checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
 [[package]]
 name = "wf-market"
 version = "0.1.11"
-source = "git+https://github.com/KibbeWater/wf-market?rev=becd55ccea63b28d7caebf937f735417867b4441#becd55ccea63b28d7caebf937f735417867b4441"
+source = "git+https://github.com/KibbeWater/wf-market?rev=90ca2baea4f6dce9edb686aa86f315190bb86f40#90ca2baea4f6dce9edb686aa86f315190bb86f40"
 dependencies = [
  "chrono",
  "futures-util",

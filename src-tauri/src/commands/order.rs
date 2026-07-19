@@ -79,6 +79,18 @@ pub fn get_wfm_orders_pagination(
             }
             _ => {}
         }
+        match &query.operations {
+            FieldChange::Value(raw) => {
+                let operations = OperationSet::from(raw.clone());
+                let order_operations = o
+                    .properties
+                    .get_property_value("operations", OperationSet::default());
+                if !operations.is_subset(&order_operations) {
+                    return false;
+                }
+            }
+            _ => {}
+        }
 
         true
     });

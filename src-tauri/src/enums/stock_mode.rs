@@ -30,9 +30,9 @@ impl Serialize for StockMode {
             StockMode::Riven => "riven",
             StockMode::Unknown(i) => {
                 log_critical_opt!(
-                    "OrderMode",
+                    "StockMode",
                     &LoggerOptions::default().set_file("enums.log"),
-                    "Unknown OrderMode: {}",
+                    "Unknown StockMode: {}",
                     i
                 );
                 "unknown"
@@ -54,7 +54,7 @@ impl<'de> Deserialize<'de> for StockMode {
             "riven" => StockMode::Riven,
             s => StockMode::Unknown(s.parse().map_err(|_| {
                 serde::de::Error::custom(format!(
-                    "invalid value for Color, must be an string: {}",
+                    "invalid value for StockMode, must be an string: {}",
                     s
                 ))
             })?),

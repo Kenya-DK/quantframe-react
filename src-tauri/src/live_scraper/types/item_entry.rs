@@ -1,13 +1,14 @@
 use std::hash::{Hash, Hasher};
 
-use entity::dto::SubType;
 use entity::stock_item::Model as StockItemModel;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use service::{sea_orm::DatabaseConnection, StockItemQuery, WishListQuery};
-use utils::{get_location, Error, OperationSet};
+use utils::SubType;
+use utils::{get_location, Error, OperationSet, Properties};
 use wf_market::enums::OrderType;
 
-use crate::cache::types::ItemPriceInfo;
+use crate::{cache::types::ItemPriceInfo, utils::SubTypeExt};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ItemEntry {
@@ -49,6 +50,9 @@ pub struct ItemEntry {
     #[serde(rename = "order_type")]
     #[serde(default)]
     pub order_type: String,
+
+    #[serde(flatten)]
+    pub properties: Properties,
 }
 
 impl Hash for ItemEntry {
@@ -62,26 +66,28 @@ impl ItemEntry {
     pub fn new(
         stock_id: Option<i64>,
         wish_list_id: Option<i64>,
-        wfm_url: String,
-        wfm_id: String,
+        wfm_url: impl Into<String>,
+        wfm_id: impl Into<String>,
         sub_type: Option<SubType>,
         priority: i64,
         buy_quantity: i64,
         sell_quantity: i64,
         operation: Vec<String>,
         order_type: &str,
+        properties: Properties,
     ) -> ItemEntry {
         ItemEntry {
             stock_id,
             wish_list_id,
-            wfm_url,
-            wfm_id,
+            wfm_url: wfm_url.into(),
+            wfm_id: wfm_id.into(),
             sub_type,
             priority,
             buy_quantity,
             sell_quantity,
             operation: OperationSet::from(operation),
             order_type: order_type.to_string(),
+            properties,
         }
     }
     pub fn uuid(&self) -> String {
@@ -175,6 +181,7 @@ impl From<&ItemPriceInfo> for ItemEntry {
             0,
             vec!["Buy".to_string()],
             "closed",
+            Properties::default(),
         )
     }
 }
@@ -191,6 +198,7 @@ impl From<&StockItemModel> for ItemEntry {
             item.owned,
             vec!["Sell".to_string()],
             "closed",
+            Properties::default(),
         )
     }
 }
@@ -207,6 +215,27 @@ impl From<&entity::wish_list::wish_list::Model> for ItemEntry {
             0,
             vec!["WishList".to_string()],
             "buy",
+            Properties::default(),
+        )
+    }
+}
+impl From<&qf_api::types::SyndicateItemPrice> for ItemEntry {
+    fn from(item: &qf_api::types::SyndicateItemPrice) -> Self {
+        ItemEntry::new(
+            None,
+            None,
+            item.wfm_id.clone(),
+            item.wfm_id.clone(),
+            item.sub_type.clone(),
+            1,
+            0,
+            1,
+            vec!["Syndicate".to_string()],
+            "sell",
+            Properties::from(json!({
+                "standingCost": item.standing_cost,
+                "syndicate": item.syndicate,
+            })),
         )
     }
 }

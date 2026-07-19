@@ -67,6 +67,9 @@ impl OperationSet {
         let operation = operation.into();
         self.operations.iter().any(|op| op.contains(&operation))
     }
+    pub fn is_subset(&self, other: &OperationSet) -> bool {
+        self.operations.iter().all(|op| other.has(op.clone()))
+    }
 }
 
 impl Default for OperationSet {

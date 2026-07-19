@@ -7,6 +7,7 @@ pub enum TradeMode {
     Buy,
     Sell,
     WishList,
+    Syndicate,
     Unknown(String),
 }
 impl TradeMode {
@@ -15,6 +16,7 @@ impl TradeMode {
             TradeMode::Buy => "buy".to_string(),
             TradeMode::Sell => "sell".to_string(),
             TradeMode::WishList => "wishlist".to_string(),
+            TradeMode::Syndicate => "syndicate".to_string(),
             TradeMode::Unknown(i) => {
                 log_critical_opt!(
                     "TradeMode",
@@ -46,9 +48,10 @@ impl<'de> Deserialize<'de> for TradeMode {
             "buy" => TradeMode::Buy,
             "sell" => TradeMode::Sell,
             "wishlist" => TradeMode::WishList,
+            "syndicate" => TradeMode::Syndicate,
             s => TradeMode::Unknown(s.parse().map_err(|_| {
                 serde::de::Error::custom(format!(
-                    "invalid value for Color, must be an string: {}",
+                    "invalid value for TradeMode, must be an string: {}",
                     s
                 ))
             })?),

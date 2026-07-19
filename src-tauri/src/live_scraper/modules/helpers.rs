@@ -10,6 +10,7 @@ use entity::{
     stock_item::*,
     wish_list::*,
 };
+use qf_api::types::{SyndicateItemPrice, SyndicateItemPricePaginationQueryDto};
 use serde_json::json;
 use service::*;
 use utils::*;
@@ -19,7 +20,7 @@ use wf_market::{
 };
 
 use crate::{
-    app::{ItemSettings, ItemWtbSettings, Settings},
+    app::{client::AppState, ItemSettings, ItemWtbSettings, Settings, SyndicateSettings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
     live_scraper::*,
@@ -35,6 +36,80 @@ pub fn is_disabled(value: i64) -> bool {
     value <= -1
 }
 
+pub async fn get_syndicate_interesting_items(
+    app: &AppState,
+    settings: &SyndicateSettings,
+) -> Result<Vec<SyndicateItemPrice>, Error> {
+    let items = match app
+        .qf_client
+        .syndicate()
+        .get_prices(SyndicateItemPricePaginationQueryDto::new(1, -1))
+        .await
+    {
+        Ok(items) => items.results,
+        Err(e) => {
+            return Err(Error::from_qf(
+                "SyndicateModule:InterestingItems",
+                "Failed to get syndicate items",
+                e,
+                get_location!(),
+            ));
+        }
+    };
+
+    // Dynamic filter using closures
+    let volume_filter = |item: &SyndicateItemPrice| {
+        is_disabled(settings.wts.volume_threshold)
+            || item.volume > settings.wts.volume_threshold as f64
+    };
+    let standing_cost_filter = |item: &SyndicateItemPrice| {
+        is_disabled(settings.wts.max_standing_cost)
+            || item.standing_cost <= settings.wts.max_standing_cost
+    };
+    let types = |item: &SyndicateItemPrice| {
+        if item.sub_type.is_none() || item.sub_type.clone().unwrap().rank.is_none() {
+            return true;
+        }
+        let types = &settings.wts.max_rank_for_type;
+        let sub_type = item.sub_type.as_ref().unwrap();
+        let rank = sub_type.rank.unwrap_or(0);
+
+        if types.contains(&String::from("mod"))
+            || types.contains(&String::from("arcane_enhancement"))
+        {
+            rank > 0
+        } else {
+            rank <= 0
+        }
+    };
+
+    let syndicates = |item: &SyndicateItemPrice| {
+        let syndicates = &settings.wts.syndicates;
+        if syndicates.is_empty() {
+            return true;
+        }
+        syndicates.contains(&item.syndicate_unique_name)
+    };
+    let min_price = |item: &SyndicateItemPrice| {
+        is_disabled(settings.wts.min_price) || item.min_price <= settings.wts.min_price as f64
+    };
+
+    let combined_filter = |item: &SyndicateItemPrice| {
+        volume_filter(item)
+            && standing_cost_filter(item)
+            && types(item)
+            && min_price(item)
+            && syndicates(item)
+    };
+
+    // Filter items based on settings
+    let filtered_items: Vec<SyndicateItemPrice> = items
+        .into_iter()
+        .filter(|item| combined_filter(item))
+        .collect();
+
+    Ok(filtered_items)
+}
 pub fn get_interesting_items(settings: &ItemSettings) -> Vec<ItemPriceInfo> {
     if let Some(items) = INTERESTING_ITEMS.get() {
         if let Some(interesting_items) = items.get(&settings.get_query_id()) {
@@ -160,6 +235,7 @@ pub fn skip_if_no_market_activity(live_orders: &OrderList<OrderWithUser>) -> (bo
 }
 
 pub async fn collect_interesting_items(
+    app: &AppState,
     component: impl Into<String>,
     settings: &Settings,
 ) -> Result<Vec<ItemEntry>, Error> {
@@ -180,7 +256,9 @@ pub async fn collect_interesting_items(
     }
 
     // --- Buy Mode ---
-    if settings.live_scraper.has_trade_mode(TradeMode::Buy) {
+    if settings.live_scraper.has_trade_mode(TradeMode::Buy)
+        && !settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
+    {
         let buy_list = get_interesting_items(&settings.live_scraper.items);
         for item in buy_list {
             let item_entry = ItemEntry::from(&item)
@@ -196,7 +274,9 @@ pub async fn collect_interesting_items(
     }
 
     // --- Sell Mode ---
-    if settings.live_scraper.has_trade_mode(TradeMode::Sell) {
+    if settings.live_scraper.has_trade_mode(TradeMode::Sell)
+        && !settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
+    {
         let stock_items = StockItemQuery::get_all(conn, StockItemPaginationQueryDto::new(1, -1))
             .await
             .map_err(|e| e.with_location(get_location!()))?;
@@ -222,7 +302,9 @@ pub async fn collect_interesting_items(
     }
 
     // --- WishList Mode ---
-    if settings.live_scraper.has_trade_mode(TradeMode::WishList) {
+    if settings.live_scraper.has_trade_mode(TradeMode::WishList)
+        && !settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
+    {
         let wish_items = WishListQuery::get_all(conn, WishListPaginationQueryDto::new(1, -1))
             .await
             .map_err(|e| e.with_location(get_location!()))?;
@@ -239,6 +321,33 @@ pub async fn collect_interesting_items(
                         entry.buy_quantity = item.quantity;
                         entry.wish_list_id = Some(item.id);
                         entry.operation.add("WishList".to_string());
+                    })
+                    .or_insert_with(|| ItemEntry::from(&item));
+            }
+        }
+    }
+    // --- Syndicate Mode ---
+    if settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
+        && !settings.live_scraper.has_trade_mode(TradeMode::Buy)
+        && !settings.live_scraper.has_trade_mode(TradeMode::Sell)
+        && !settings.live_scraper.has_trade_mode(TradeMode::WishList)
+        && app
+            .user
+            .has_permission(PermissionsFlags::from_str("syndicate_prices_search"))?
+    {
+        let items = get_syndicate_interesting_items(&app, &settings.live_scraper.syndicate)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?;
+        for item in items {
+            if !stock_item_settings.general.is_item_blacklisted(
+                &item.wfm_id,
+                &item.sub_type,
+                &TradeMode::Syndicate,
+            ) {
+                interesting_items
+                    .entry(item.uuid.clone())
+                    .and_modify(|entry| {
+                        entry.operation.add("Syndicate".to_string());
                     })
                     .or_insert_with(|| ItemEntry::from(&item));
             }
@@ -428,13 +537,12 @@ async fn handler_wfm_error(
 pub async fn progress_order(
     component: &str,
     entry: &ItemEntry,
-    operations: &OperationSet,
     wfm_client: &wf_market::Client<wf_market::Authenticated>,
     order_type: OrderType,
     post_price: u32,
     per_trade: Option<i64>,
     log_options: &LoggerOptions,
-    properties: &wf_market::types::Properties,
+    properties: &mut wf_market::types::Properties,
 ) -> Result<OperationSet, Error> {
     let can_create_order = wfm_client.order().can_create_order();
     let file_name = "progress_order.log";
@@ -445,8 +553,8 @@ pub async fn progress_order(
     let update_string = properties.get_property_value("update_string", String::new());
     let original_update_string =
         properties.get_property_value("original_update_string", String::new());
-
-    if operations.has("Create") && !operations.has("Delete") && can_create_order {
+    properties.set_property_value("operations", entry.operation.clone());
+    if entry.operation.has("Create") && !entry.operation.has("Delete") && can_create_order {
         match wfm_client
             .order()
             .create(
@@ -486,7 +594,7 @@ pub async fn progress_order(
                 return Err(err);
             }
         }
-    } else if operations.has("Update") && !operations.has("Delete") {
+    } else if entry.operation.has("Update") && !entry.operation.has("Delete") {
         match wfm_client
             .order()
             .update(
@@ -524,7 +632,7 @@ pub async fn progress_order(
                 return Err(err);
             }
         }
-    } else if operations.has("Update") && operations.has("Delete") {
+    } else if entry.operation.has("Update") && entry.operation.has("Delete") {
         match wfm_client.order().delete(&order_id).await {
             Ok(_) => {
                 info(
@@ -562,7 +670,7 @@ pub async fn progress_order(
             &log_options,
         );
     }
-    Ok(operations.clone())
+    Ok(entry.operation.clone())
 }
 pub fn log_summary(component: &str, message: impl AsRef<str>, options: &LoggerOptions) {
     info(format!("{}Summary", component), message.as_ref(), options);

@@ -75,3 +75,9 @@ pub use custom_sound::*;
 
 pub mod wf_inventory_settings;
 pub use wf_inventory_settings::*;
+
+pub mod live_syndicate_settings;
+pub use live_syndicate_settings::*;
+
+pub mod live_syndicate_wts_settings;
+pub use live_syndicate_wts_settings::*;
