@@ -7,6 +7,7 @@ use ::utils::error;
 use ::utils::get_location;
 use ::utils::info;
 use ::utils::init_logger;
+use ::utils::loki;
 use ::utils::set_base_path;
 use ::utils::warning;
 use ::utils::Error;
@@ -210,6 +211,9 @@ pub fn run() {
             });
             init_logger();
             set_base_path(helper::get_app_storage_path().to_str().unwrap());
+            loki::init("http://localhost:3100/loki/api/v1/push", vec![
+                ("app".into(), "quantframe".into()),
+            ]);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

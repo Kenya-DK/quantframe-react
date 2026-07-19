@@ -8,29 +8,16 @@ import classes from "./LiveScraper.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 
 export default function LiveScraperPage() {
-  // Translate general
-  const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslatePages(`live_scraper.${key}`, { ...context }, i18Key);
-  const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateForm(`tabs.${key}`, { ...context }, i18Key);
+  const hasAlert = useHasAlert();
+  const itemTitle = useTranslatePages("live_scraper.tabs.item.title");
+  const rivenTitle = useTranslatePages("live_scraper.tabs.riven.title");
+  const wishListTitle = useTranslatePages("live_scraper.tabs.wish_list.title");
 
   const tabs = useMemo(() => [
-    {
-      label: useTranslateTabs("item.title"),
-      component: (isActive: boolean) => <ItemPanel isActive={isActive} />,
-      id: "item",
-    },
-    {
-      label: useTranslateTabs("riven.title"),
-      component: (isActive: boolean) => <RivenPanel isActive={isActive} />,
-      id: "riven",
-    },
-    {
-      label: useTranslateTabs("wish_list.title"),
-      component: (isActive: boolean) => <WishListPanel isActive={isActive} />,
-      id: "wish_list",
-    },
-  ], []);
+    { label: itemTitle, component: (isActive: boolean) => <ItemPanel isActive={isActive} />, id: "item" },
+    { label: rivenTitle, component: (isActive: boolean) => <RivenPanel isActive={isActive} />, id: "riven" },
+    { label: wishListTitle, component: (isActive: boolean) => <WishListPanel isActive={isActive} />, id: "wish_list" },
+  ], [itemTitle, rivenTitle, wishListTitle]);
 
   const [activeTab, setActiveTab] = useLocalStorage<string>({
     key: "live_scraper.active_tab",
@@ -39,7 +26,7 @@ export default function LiveScraperPage() {
 
   return (
     <Container size={"100%"}>
-      <Box data-has-alert={useHasAlert()} className={classes.liveScraper}>
+      <Box data-has-alert={hasAlert} className={classes.liveScraper}>
         <LiveScraperControl />
       </Box>
       <Tabs value={activeTab} onChange={(value) => setActiveTab(value || tabs[0].id)}>

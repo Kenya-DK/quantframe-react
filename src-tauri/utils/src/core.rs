@@ -218,6 +218,8 @@ pub fn dolog(
             .unwrap();
         writeln!(file, "{}", clean_message).ok();
     }
+
+    crate::loki::push(level.prefix(), &component_str, &clean_message);
 }
 
 macro_rules! make_level_fn {

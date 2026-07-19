@@ -4789,7 +4789,9 @@ dependencies = [
  "cookie",
  "cookie_store",
  "encoding_rs",
+ "futures-channel",
  "futures-core",
+ "futures-util",
  "h2",
  "http",
  "http-body",
@@ -7399,6 +7401,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "regex",
+ "reqwest 0.12.28",
  "sea-orm",
  "serde",
  "serde_json",
