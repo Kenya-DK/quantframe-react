@@ -1,4 +1,4 @@
-import { TauriTypes } from "$types";
+import { ResponseError, TauriTypes } from "$types";
 import { invoke } from "@tauri-apps/api/core";
 import { AlertModule } from "./alert";
 import { AnalyticsModule } from "./analytics";
@@ -248,14 +248,68 @@ export {
 };
 export default window.api;
 
-const SendErrorLog = async (error: any) => {
+const errorHandlers = [
+  {
+    test: (e: unknown): e is PromiseRejectionEvent => e instanceof PromiseRejectionEvent,
+    map: (e: PromiseRejectionEvent): ResponseError => ({
+      cause: e.reason instanceof Error ? e.reason.message : String(e.reason),
+      component: "UI:PromiseRejection",
+      properties: e.reason,
+      message: e.reason instanceof Error ? e.reason.message : String(e.reason),
+      log_level: "error",
+      name: e.reason instanceof Error ? e.reason.name : "Error",
+    }),
+  },
+  {
+    test: (e: unknown): e is ErrorEvent => e instanceof ErrorEvent,
+    map: (e: ErrorEvent): ResponseError => ({
+      cause: e.message,
+      component: "UI:ErrorEvent",
+      properties: e,
+      message: e.message,
+      log_level: "error",
+      name: e.error?.name || "Error",
+    }),
+  },
+  {
+    test: (e: unknown): e is Error => e instanceof Error,
+    map: (e: Error): ResponseError => ({
+      cause: e.message,
+      component: "UI:Error",
+      properties: e,
+      message: e.message,
+      log_level: "error",
+      name: e.name,
+    }),
+  },
+];
+
+function getLogInfo(error: unknown): ResponseError {
+  const handler = errorHandlers.find((h) => h.test(error));
+
+  if (handler) return handler.map(error as never);
+
+  return {
+    cause: String(error),
+    component: "UI:UnknownError",
+    properties: error,
+    message: String(error),
+    log_level: "error",
+    name: "Error",
+  };
+}
+
+const SendErrorLog = async (error: unknown) => {
+  console.error("Unhandled error:", error);
+  const { cause, component, properties } = getLogInfo(error);
+
   await invoke("log", {
-    cause: "",
-    component: error instanceof PromiseRejectionEvent ? "UI:UnhandledPromiseRejection" : "UI:GlobalError",
+    cause,
+    component,
     location: "unknown",
     logLevel: "Critical",
-    message: `Unhandled Promise Rejection: ${error instanceof PromiseRejectionEvent ? (error.reason instanceof Error ? error.reason.message : String(error.reason)) : String(error)}`,
-    context: { reason: error instanceof PromiseRejectionEvent ? error.reason || "No reason provided" : "No reason provided" },
+    message: cause,
+    properties,
   });
 };
 window.addEventListener("unhandledrejection", async (event) => await SendErrorLog(event));

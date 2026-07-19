@@ -177,7 +177,7 @@ export const GeneralPanel = ({ form, setHideTab, setHideButtons }: GeneralPanelP
                 form.values.live_scraper.general.stock_mode != TauriTypes.StockMode.All
               }
               label={useTranslateFormFields("trade_modes.label")}
-              w={250}
+              w={"30%"}
               description={useTranslateFormFields(`trade_modes.description`)}
               data={Object.values(TauriTypes.TradeMode).map((status) => {
                 return { value: status, label: useTranslateTradeMode(status) };

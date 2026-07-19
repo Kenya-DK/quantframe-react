@@ -1,9 +1,9 @@
-import { TauriClient } from "..";
 import { WFMarketTypes } from "$types";
+import { TauriClient } from "..";
 export class OrderModule {
   constructor(private readonly client: TauriClient) {}
-  async getPagination(query: WFMarketTypes.WfmOrderControllerGetListParams): Promise<WFMarketTypes.WfmOrderControllerGetListData> {
-    return await this.client.sendInvoke<WFMarketTypes.WfmOrderControllerGetListData>("get_wfm_orders_pagination", { query });
+  async getPagination<T = any>(query: WFMarketTypes.WfmOrderControllerGetListParams): Promise<WFMarketTypes.WfmOrderControllerGetListData<T>> {
+    return await this.client.sendInvoke<WFMarketTypes.WfmOrderControllerGetListData<T>>("get_wfm_orders_pagination", { query });
   }
 
   async getStatusCounts(query: WFMarketTypes.WfmOrderControllerGetListParams): Promise<{ [key: string]: number[] }> {

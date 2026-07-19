@@ -73,8 +73,8 @@ export namespace WFMarketTypes {
     missing: any[];
     score: number;
   }
-  export type WfmOrderControllerGetListData = PaginatedDto & {
-    results?: WFMarketTypes.Order[];
+  export type WfmOrderControllerGetListData<T = any> = PaginatedDto & {
+    results?: WFMarketTypes.Order<T>[];
   };
   export interface WfmOrderControllerGetListParams {
     page: number;
@@ -83,6 +83,7 @@ export namespace WFMarketTypes {
     sort_direction?: "asc" | "desc";
     order_type?: WFMarketTypes.OrderType;
     query?: string;
+    operations?: string[];
   }
   export type WfmAuctionControllerGetListData = PaginatedDto & {
     results?: WFMarketTypes.Auction[];

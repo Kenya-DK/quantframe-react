@@ -1,11 +1,10 @@
-import { useMemo } from "react";
-import { Box, Container, Tabs } from "@mantine/core";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { ItemPanel, RivenPanel, WishListPanel } from "./Tabs";
-import { useLocalStorage } from "@mantine/hooks";
 import { LiveScraperControl } from "@components/Forms/LiveScraperControl";
-import classes from "./LiveScraper.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { Box, Container, Tabs } from "@mantine/core";
+import { useLocalStorage } from "@mantine/hooks";
+import classes from "./LiveScraper.module.css";
+import { ItemPanel, RivenPanel, SyndicatePanel, WishListPanel } from "./Tabs";
 
 export default function LiveScraperPage() {
   // Translate general
@@ -14,7 +13,7 @@ export default function LiveScraperPage() {
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`tabs.${key}`, { ...context }, i18Key);
 
-  const tabs = useMemo(() => [
+  const tabs = [
     {
       label: useTranslateTabs("item.title"),
       component: (isActive: boolean) => <ItemPanel isActive={isActive} />,
@@ -30,7 +29,13 @@ export default function LiveScraperPage() {
       component: (isActive: boolean) => <WishListPanel isActive={isActive} />,
       id: "wish_list",
     },
-  ], []);
+    {
+      label: useTranslateTabs("syndicate.title"),
+      component: (isActive: boolean) => <SyndicatePanel isActive={isActive} />,
+      hide: !import.meta.env.DEV,
+      id: "syndicate",
+    },
+  ];
 
   const [activeTab, setActiveTab] = useLocalStorage<string>({
     key: "live_scraper.active_tab",
@@ -44,11 +49,13 @@ export default function LiveScraperPage() {
       </Box>
       <Tabs value={activeTab} onChange={(value) => setActiveTab(value || tabs[0].id)}>
         <Tabs.List>
-          {tabs.map((tab) => (
-            <Tabs.Tab value={tab.id} key={tab.id}>
-              {tab.label}
-            </Tabs.Tab>
-          ))}
+          {tabs
+            .filter((tab) => !tab.hide)
+            .map((tab) => (
+              <Tabs.Tab value={tab.id} key={tab.id}>
+                {tab.label}
+              </Tabs.Tab>
+            ))}
         </Tabs.List>
         {tabs.map((tab) => (
           <Tabs.Panel value={tab.id} key={tab.id}>

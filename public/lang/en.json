@@ -614,7 +614,8 @@
     "trade_mode": {
       "buy": "Buy",
       "sell": "Sell",
-      "wishlist": "Wishlist"
+      "wishlist": "Wishlist",
+      "syndicate": "Syndicate"
     },
     "user_status": {
       "online": "Online",
@@ -1302,7 +1303,8 @@
                   "description": {
                     "all": "Will go through all",
                     "riven": "Will go through only rivens",
-                    "item": "Will go through only items"
+                    "item": "Will go through only items",
+                    "syndicate": "Will go through only syndicate items"
                   },
                   "placeholder": "Stock Mode",
                   "error": "Invalid stock mode"
@@ -1495,6 +1497,54 @@
                   "error": "Invalid update interval",
                   "tooltip": "Interval for updating riven trades",
                   "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                }
+              }
+            },
+            "syndicate": {
+              "title": "Syndicate",
+              "wts": {
+                "title": "WTS",
+                "fields": {
+                  "max_standing_cost": {
+                    "label": "Max Standing Cost",
+                    "placeholder": "Max Standing Cost",
+                    "tooltip": "Maximum standing cost to consider for trading",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#max-standing-cost"
+                  },
+                  "syndicates": {
+                    "label": "Syndicates",
+                    "placeholder": "Syndicates"
+                  },
+                  "max_rank_for_type": {
+                    "label": "Max Rank for Type",
+                    "placeholder": "Max Rank for Type",
+                    "description": "Maximum rank for the selected syndicate item type",
+                    "options": {
+                      "mod": "Mod",
+                      "arcane": "Arcane"
+                    }
+                  },
+                  "volume_threshold": {
+                    "label": "Volume Threshold",
+                    "placeholder": "Volume Threshold",
+                    "error": "Invalid volume threshold",
+                    "tooltip": "Minimum volume threshold to consider for trading",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#volume-threshold"
+                  },
+                  "max_price_drop": {
+                    "label": "Max Price Increase",
+                    "placeholder": "Max Price Increase",
+                    "error": "Invalid max price increase",
+                    "tooltip": "Maximum platinum increase to follow on buy orders. Limits how much your buy price can go up in one cycle. -1 to disable. Overridden by Min Listings Below.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#max-price-increase"
+                  },
+                  "min_listings_below": {
+                    "label": "Min Buyers Above",
+                    "placeholder": "Min Buyers Above",
+                    "error": "Invalid min buyers above",
+                    "tooltip": "Minimum number of buy orders above your current price to override the Max Price Increase limit. -1 to disable.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wtb#min-buyers-above"
+                  }
                 }
               }
             }
@@ -2150,6 +2200,15 @@
         },
         "wish_list": {
           "title": "Wishlist"
+        },
+        "syndicate": {
+          "title": "Syndicate",
+          "datatable": {
+            "columns": {
+              "syndicate": "Syndicate",
+              "standing_cost": "Standing Cost"
+            }
+          }
         }
       }
     },

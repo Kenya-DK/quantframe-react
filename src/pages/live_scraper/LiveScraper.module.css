@@ -8,6 +8,7 @@
 
 .databaseStockItems,
 .databaseStockRivens,
+.databaseSyndicateItems,
 .databaseStockWishlist {
   --offset: 400px;
   height: calc(100vh - var(--offset)) !important;

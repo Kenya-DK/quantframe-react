@@ -12,7 +12,7 @@ import { WFMarketTypes } from "./warframeMarket.type";
 export interface ResponseError<T = any> extends Error {
   component: string;
   message: string;
-  location: string;
+  location?: string;
   cause?: string;
   properties?: T;
   log_level: string;
@@ -72,7 +72,7 @@ export interface ItemMeta {
 }
 
 export type ItemWithMeta =
-  | (WFMarketTypes.Order<{ name?: string }> & ItemMeta)
+  | (WFMarketTypes.Order & ItemMeta)
   | (TauriTypes.StockItem & ItemMeta)
   | (TauriTypes.StockRiven & ItemMeta)
   | (TauriTypes.WishListItem & ItemMeta)

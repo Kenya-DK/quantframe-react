@@ -21,6 +21,7 @@ export namespace TauriTypes {
     Buy = "buy",
     Sell = "sell",
     Wishlist = "wishlist",
+    Syndicate = "syndicate",
   }
   export enum Events {
     OnError = "App:Error",
@@ -99,6 +100,7 @@ export namespace TauriTypes {
     general: LiveScraperGeneralSettings;
     items: ItemSettings;
     rivens: RivenSettings;
+    syndicate: SyndicateSettings;
   }
   export interface LiveScraperGeneralSettings {
     report_to_wfm: boolean;
@@ -113,6 +115,9 @@ export namespace TauriTypes {
   }
   export interface LogSettings {
     ee_log_path: string;
+  }
+  export interface SyndicateSettings {
+    wts: SyndicateWtsSettings;
   }
   export interface ItemSettings {
     general: ItemGeneralSettings;
@@ -131,6 +136,14 @@ export namespace TauriTypes {
   export interface BuyListItemSetting {
     wfmId: string;
     max_price: number;
+  }
+  export interface SyndicateWtsSettings {
+    max_standing_cost: number;
+    syndicates: string[];
+    max_rank_for_type: string[];
+    volume_threshold: number;
+    max_price_drop: number;
+    min_listings_below: number;
   }
   export interface ItemWtbSettings {
     min_sma: number;

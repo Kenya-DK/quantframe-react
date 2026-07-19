@@ -6,9 +6,11 @@ import { useEffect, useState } from "react";
 
 export type SelectItemTagsProps = {
   value: string[];
+  label?: string;
+  description?: string;
   onChange(tags: string[]): void;
 };
-export function SelectItemTags({ value, onChange }: SelectItemTagsProps) {
+export function SelectItemTags({ value, onChange, label, description }: SelectItemTagsProps) {
   // State
   const [tags, setTags] = useState<{ label: string; value: string }[]>([]);
 
@@ -29,8 +31,8 @@ export function SelectItemTags({ value, onChange }: SelectItemTagsProps) {
     <MultiSelect
       searchable
       limit={5}
-      label={useTranslate("tags.label")}
-      description={useTranslate("tags.description")}
+      label={label ?? useTranslate("tags.label")}
+      description={description ?? useTranslate("tags.description")}
       data={tags}
       value={value}
       onChange={onChange}
@@ -38,4 +40,3 @@ export function SelectItemTags({ value, onChange }: SelectItemTagsProps) {
     />
   );
 }
-
