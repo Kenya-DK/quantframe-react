@@ -30,7 +30,7 @@ import { faAmberStar, faCyanStar } from "../../../../icons";
 import classes from "../../WarframeMarket.module.css";
 import { useStockModals } from "./modals";
 import { useStockMutations } from "./mutations";
-import { useStockQueries } from "./queries";
+import { useOrderQueries } from "./queries";
 
 interface OrderPanelProps {
   isActive?: boolean;
@@ -58,7 +58,7 @@ export const OrderPanel = ({ isActive }: OrderPanelProps) => {
     useTranslateTabOrder(`fields.${key}`, { ...context }, i18Key);
 
   // Queries
-  const { refetchQueries, paginationQuery, statusCountsQuery } = useStockQueries({ queryData, isActive });
+  const { refetchQueries, paginationQuery, statusCountsQuery } = useOrderQueries({ queryData, isActive });
 
   // Mutations
   const { refreshOrdersMutation, deleteAllOrdersMutation, deleteStockMutation, createStockMutation, sellStockMutation, blacklistOrderMutation } =

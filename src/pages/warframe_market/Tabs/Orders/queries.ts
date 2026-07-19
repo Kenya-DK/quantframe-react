@@ -1,13 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { TauriTypes } from "$types";
+import { WFMarketTypes } from "$types";
 import api from "@api/index";
+import { useQuery } from "@tanstack/react-query";
 
 interface QueriesHooks {
-  queryData: TauriTypes.WishListControllerGetListParams;
+  queryData: WFMarketTypes.WfmOrderControllerGetListParams;
   isActive?: boolean;
 }
 
-export const useStockQueries = ({ queryData, isActive }: QueriesHooks) => {
+export const useOrderQueries = ({ queryData, isActive }: QueriesHooks) => {
   const getPaginationQuery = useQuery({
     queryKey: ["get_wfm_orders_pagination", queryData],
     queryFn: () => api.order.getPagination(queryData),
