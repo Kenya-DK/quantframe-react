@@ -714,8 +714,17 @@ impl LineHandler for OnTradeEvent {
         ));
         self.start_process_logs();
         match result {
-            TradeResult::Failed | TradeResult::Cancelled => {
-                self.logger.add_log("Done");
+            TradeResult::Failed | TradeResult::Cancelled | TradeResult::OnTradeAcceptedFailed => {
+                self.logger
+                    .add_log("Trade Failed or Cancelled, resetting state");
+                info(
+                    get_component("TradeFailed"),
+                    &format!(
+                        "Trade failed or cancelled with result: {}",
+                        result.display()
+                    ),
+                    &LoggerOptions::default(),
+                );
             }
             TradeResult::Success => {
                 self.logger

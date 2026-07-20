@@ -49,10 +49,11 @@ impl TradeDetection {
         prev_line: &str,
         target: &str,
         ignored_combinations: &[DetectionStatus],
+        skip_dialog_check: bool,
     ) -> DetectionStatus {
         let is_dialog = self.is_dialog_line(line, prev_line, ignored_combinations);
 
-        if !is_dialog.is_found() {
+        if !is_dialog.is_found() && !skip_dialog_check {
             return DetectionStatus::None;
         }
 
@@ -72,18 +73,25 @@ impl TradeDetection {
         prev_line: &str,
         ignored_combinations: &[DetectionStatus],
     ) -> (DetectionStatus, TradeResult) {
-        let checks: [(DetectionStatus, TradeResult); 3] = [
+        let checks: [(DetectionStatus, TradeResult); 4] = [
             (
                 self.detect_trade_state(
                     line,
                     prev_line,
                     &self.confirmation_line,
                     ignored_combinations,
+                    false,
                 ),
                 TradeResult::Success,
             ),
             (
-                self.detect_trade_state(line, prev_line, &self.failed_line, ignored_combinations),
+                self.detect_trade_state(
+                    line,
+                    prev_line,
+                    &self.failed_line,
+                    ignored_combinations,
+                    false,
+                ),
                 TradeResult::Failed,
             ),
             (
@@ -92,8 +100,19 @@ impl TradeDetection {
                     prev_line,
                     &self.cancelled_line,
                     ignored_combinations,
+                    false,
                 ),
                 TradeResult::Cancelled,
+            ),
+            (
+                self.detect_trade_state(
+                    line,
+                    prev_line,
+                    "[Info]: OnTradeAccepted failed",
+                    ignored_combinations,
+                    true,
+                ),
+                TradeResult::OnTradeAcceptedFailed,
             ),
         ];
 

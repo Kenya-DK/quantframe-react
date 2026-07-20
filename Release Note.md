@@ -11,6 +11,7 @@
 - 🛠️ Fixed purchased Wishlist items appearing in the Selling List instead of being handled on the Wishlist (closes #116).
 - 🛠️ Fixed Auto Delete deleting blacklisted item orders on Live Scraper start — blacklist now checks sub_type (e.g. riven rank) so items like "Longbow Sharpshot" are properly skipped (closes #114).
 - 🛠️ Fixed analytics crash on startup by guarding `set_last_user_activity` behind `HAS_STARTED` check.
+- 🛠️ Added `[Info]: OnTradeAccepted failed` detection — trade state is now properly reset when the trade dialog is not accepted, preventing the auto-pricer from getting stuck (closes #117).
 
 ## Refactors
 
