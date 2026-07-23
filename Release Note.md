@@ -2,7 +2,7 @@
 
 - ✨ Purchased Wishlist items are now routed to the Wishlist handler instead of being added to the Selling List — they are removed/updated on the Wishlist as expected.
 - ✨ Added Max Price Drop / Min Listings Below settings for both WTS (selling) and WTB (buying) to control auto-pricing follow behavior — prevents following large price drops unless enough competition is present (closes #108).
-- ✨ Added Syndicate live scraper mode — new TradeMode, filtering by standing cost/volume/syndicate/rank, and dedicated processing pipeline for syndicate items (hidden behind dev flag).
+- ✨ Added Syndicate live scraper mode — new TradeMode, filtering by standing cost/volume/syndicate/rank, and dedicated processing pipeline for syndicate items (hidden behind dev flag) (WIP).
 - ✨ Added `operations` filtering to WFM order pagination — allows filtering backend orders by their current operation set.
 
 ## Fixes

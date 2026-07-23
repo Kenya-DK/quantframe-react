@@ -275,7 +275,7 @@ impl ItemModule {
             }
 
             // Process syndicate logic (future expansion)
-            if item_entry.operation.has("Syndicate") && item_entry.operation.has("WIP") {
+            if item_entry.operation.has("Syndicate") {
                 if let Err(e) = self
                     .progress_syndicate(&item_info, item_entry, &item_price, &orders)
                     .await

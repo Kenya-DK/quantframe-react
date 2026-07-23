@@ -122,13 +122,11 @@ impl LiveScraperState {
                                     e.properties.get_property_value("type", String::new());
 
                                 e.log_level = match err_type.as_str() {
-                                    "RequestError"
-                                    | "ParsingError"
+                                    "ParsingError"
                                     | "BadRequest"
                                     | "Unknown"
                                     | "InternalServerError"
-                                    | "InvalidType"
-                                    | "EndOfFile" => LogLevel::Critical,
+                                    | "InvalidType" => LogLevel::Critical,
                                     _ => LogLevel::Warning,
                                 };
 

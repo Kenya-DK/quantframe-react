@@ -256,9 +256,7 @@ pub async fn collect_interesting_items(
     }
 
     // --- Buy Mode ---
-    if settings.live_scraper.has_trade_mode(TradeMode::Buy)
-        && !settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
-    {
+    if settings.live_scraper.has_trade_mode(TradeMode::Buy) {
         let buy_list = get_interesting_items(&settings.live_scraper.items);
         for item in buy_list {
             let item_entry = ItemEntry::from(&item)
@@ -274,9 +272,7 @@ pub async fn collect_interesting_items(
     }
 
     // --- Sell Mode ---
-    if settings.live_scraper.has_trade_mode(TradeMode::Sell)
-        && !settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
-    {
+    if settings.live_scraper.has_trade_mode(TradeMode::Sell) {
         let stock_items = StockItemQuery::get_all(conn, StockItemPaginationQueryDto::new(1, -1))
             .await
             .map_err(|e| e.with_location(get_location!()))?;
@@ -302,9 +298,7 @@ pub async fn collect_interesting_items(
     }
 
     // --- WishList Mode ---
-    if settings.live_scraper.has_trade_mode(TradeMode::WishList)
-        && !settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
-    {
+    if settings.live_scraper.has_trade_mode(TradeMode::WishList) {
         let wish_items = WishListQuery::get_all(conn, WishListPaginationQueryDto::new(1, -1))
             .await
             .map_err(|e| e.with_location(get_location!()))?;
@@ -328,30 +322,27 @@ pub async fn collect_interesting_items(
     }
     // --- Syndicate Mode ---
     if settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
-        && !settings.live_scraper.has_trade_mode(TradeMode::Buy)
-        && !settings.live_scraper.has_trade_mode(TradeMode::Sell)
-        && !settings.live_scraper.has_trade_mode(TradeMode::WishList)
         && app
             .user
             .has_permission(PermissionsFlags::from_str("syndicate_prices_search"))?
     {
-        let items = get_syndicate_interesting_items(&app, &settings.live_scraper.syndicate)
-            .await
-            .map_err(|e| e.with_location(get_location!()))?;
-        for item in items {
-            if !stock_item_settings.general.is_item_blacklisted(
-                &item.wfm_id,
-                &item.sub_type,
-                &TradeMode::Syndicate,
-            ) {
-                interesting_items
-                    .entry(item.uuid.clone())
-                    .and_modify(|entry| {
-                        entry.operation.add("Syndicate".to_string());
-                    })
-                    .or_insert_with(|| ItemEntry::from(&item));
-            }
-        }
+        // let items = get_syndicate_interesting_items(&app, &settings.live_scraper.syndicate)
+        //     .await
+        //     .map_err(|e| e.with_location(get_location!()))?;
+        // for item in items {
+        //     if !stock_item_settings.general.is_item_blacklisted(
+        //         &item.wfm_id,
+        //         &item.sub_type,
+        //         &TradeMode::Syndicate,
+        //     ) {
+        //         interesting_items
+        //             .entry(item.uuid.clone())
+        //             .and_modify(|entry| {
+        //                 entry.operation.add("Syndicate".to_string());
+        //             })
+        //             .or_insert_with(|| ItemEntry::from(&item));
+        //     }
+        // }
     }
     Ok(interesting_items.into_values().collect())
 }
