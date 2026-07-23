@@ -35,7 +35,7 @@ export const SyndicatePanel = ({ isActive }: SyndicatePanelProps = {}) => {
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`datatable.columns.${key}`, { ...context }, i18Key);
   // Queries
-  const { paginationQuery, refetchQueries } = useStockQueries({ queryData, isActive });
+  const { paginationQuery } = useStockQueries({ queryData, isActive });
 
   // Use the custom hook for Tauri events
   // useTauriEvent(TauriTypes.Events.RefreshStockItems, handleRefresh, [refetchQueries]);
