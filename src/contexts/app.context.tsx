@@ -105,8 +105,8 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
     });
   };
 
-  const checkForUpdates = async (info: TauriTypes.AppInfo, canClose: boolean, notifyIfNone?: boolean) => {
-    const update = await check({ headers: { IsPreRelease: info.is_pre_release ? "true" : "false" } });
+  const checkForUpdates = async (info: TauriTypes.AppInfo | undefined, canClose: boolean, notifyIfNone?: boolean) => {
+    const update = await check({ headers: { IsPreRelease: info?.is_pre_release ? "true" : "false" } });
     if (notifyIfNone && !update)
       notifications.show({
         title: useTranslateCommon("notifications.no_updates_available.title"),
@@ -120,7 +120,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       closeOnClickOutside: false,
       closeOnEscape: false,
       size: "75%",
-      children: <UpdateAvailableModal updater={update} app_info={info} context={update.body || ""} />,
+      children: <UpdateAvailableModal updater={update} context={update.body || ""} />,
     });
   };
 
@@ -174,6 +174,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       },
       10 * 60 * 1000,
     );
+    checkForUpdates(undefined, false, false).catch((e) => console.error("Error checking for updates:", e));
   }, []);
 
   useEffect(() => {
@@ -182,7 +183,6 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
 
   useEffect(() => {
     if (!app_info) return;
-    checkForUpdates(app_info, true);
     checkForTosUpdates(app_info);
   }, [app_info]);
 

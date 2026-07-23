@@ -2,7 +2,7 @@ use qf_api::Client as QFClient;
 use serde_json::json;
 use sha256::digest;
 use tauri::AppHandle;
-use utils::{Error, LogLevel};
+use utils::{get_location, Error, LogLevel};
 use wf_market::Client as WFClient;
 
 use crate::app::modules::auth::update_user;
@@ -11,7 +11,11 @@ use crate::http_server::HttpServer;
 use crate::{emit_update_user, helper};
 
 impl AppState {
-    pub async fn new(tauri_app: AppHandle, use_temp_db: bool, is_pre_release: bool) -> Self {
+    pub async fn new(
+        tauri_app: AppHandle,
+        use_temp_db: bool,
+        is_pre_release: bool,
+    ) -> Result<Self, Error> {
         let user = User::load().unwrap_or_else(|e| {
             e.log("app_init.log");
             User::default()
@@ -76,7 +80,7 @@ impl AppState {
         if http_settings.enable {
             state.http_server.start();
         }
-        state
+        Ok(state)
     }
 
     pub fn update_settings(&mut self, settings: Settings) -> Result<(), Error> {

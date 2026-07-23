@@ -1,4 +1,3 @@
-import { TauriTypes } from "$types";
 import { useTranslateModals } from "@hooks/useTranslate.hook";
 import { Box, Button, Group, Progress, ScrollAreaAutosize, Stack, Text } from "@mantine/core";
 import { RichTextEditor } from "@mantine/tiptap";
@@ -10,7 +9,6 @@ import StarterKit from "@tiptap/starter-kit";
 import { useState } from "react";
 import { Markdown } from "tiptap-markdown";
 export interface UpdateAvailableModalProps {
-  app_info: TauriTypes.AppInfo | undefined;
   context?: string;
   is_manual?: boolean;
   new_version?: string;

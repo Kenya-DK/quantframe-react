@@ -18,11 +18,15 @@
 - ♻️ Consolidated `SubType` struct into the `utils` crate — removed duplicate definitions from `entity::dto` and `qf_api::types`, unified all imports across the codebase.
 - ♻️ Moved `OperationSet` into `ItemEntry` for live scraper progress stages — operations are now tracked on the entry itself and passed by mutable reference, enabling syndicate and future modes to update operation state.
 - ♻️ Split `app/client.rs` into `types/app_state.rs` (AppState struct), `modules/ws.rs` (WebSocket lifecycle), and `modules/auth.rs` (login/validate/auth flows).
+- ♻️ `AppState::new()` now returns `Result` instead of panicking — WFM client creation failure is propagated upward.
+- ♻️ `User::load()` and `Settings::load()` failures log to `app_init.log` before falling back to defaults.
 
 ## Dev Notes
 
 - 🔧 Improved frontend error handling with typed error handlers for `PromiseRejectionEvent`, `ErrorEvent`, and generic `Error` — errors now include structured cause, component, and properties for better debugging.
 - 🔧 Syndicate live scraper tab and settings panel are hidden behind `import.meta.env.DEV` flag.
+- 🔧 `UpdateAvailableModal` no longer requires `app_info` prop — update check is also triggered on startup independently.
+- 🔧 Cleaned up unused `TauriTypes` import and optional `app_info` parameter in `checkForUpdates`.
 
 ## Icons
 
