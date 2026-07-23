@@ -66,6 +66,7 @@ impl Model {
         bought: i64,
         owned: i64,
         is_hidden: bool,
+        properties: Properties,
     ) -> Self {
         Self {
             id: Default::default(),
@@ -85,7 +86,7 @@ impl Model {
             is_dirty: true,
             locked: false,
             changes: vec![],
-            properties: Properties::default(),
+            properties,
         }
     }
     fn set_if_changed<T: PartialEq>(current: &mut T, new_value: T, is_dirty: &mut bool) -> bool {

@@ -12,6 +12,7 @@
 - 🛠️ Fixed Auto Delete deleting blacklisted item orders on Live Scraper start — blacklist now checks sub_type (e.g. riven rank) so items like "Longbow Sharpshot" are properly skipped (closes #114).
 - 🛠️ Fixed analytics crash on startup by guarding `set_last_user_activity` behind `HAS_STARTED` check.
 - 🛠️ Added `[Info]: OnTradeAccepted failed` detection — trade state is now properly reset when the trade dialog is not accepted, preventing the auto-pricer from getting stuck (closes #117).
+- 🛠️ Fixed `properties` field being silently dropped when creating Stock Items, Rivens, and Wishlist items — the `Create*` DTOs now pass `properties` through to the model instead of always defaulting (closes #119).
 
 ## Refactors
 
@@ -27,6 +28,8 @@
 - 🔧 Syndicate live scraper tab and settings panel are hidden behind `import.meta.env.DEV` flag.
 - 🔧 `UpdateAvailableModal` no longer requires `app_info` prop — update check is also triggered on startup independently.
 - 🔧 Cleaned up unused `TauriTypes` import and optional `app_info` parameter in `checkForUpdates`.
+
+- 🔧 Bumped version to 1.6.26.
 
 ## Icons
 

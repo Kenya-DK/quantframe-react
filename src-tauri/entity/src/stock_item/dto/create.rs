@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
+use utils::Properties;
 use utils::SubType;
 
 use crate::stock_item::*;
@@ -49,6 +50,9 @@ pub struct CreateStockItem {
     #[serde(rename = "tags")]
     pub tags: Vec<String>,
 
+    #[serde(default, flatten)]
+    pub properties: Properties,
+
     #[serde(rename = "is_validated")]
     #[serde(default = "bool::default")]
     pub is_validated: bool,
@@ -68,6 +72,7 @@ impl CreateStockItem {
             bought: None,
             quantity,
             is_validated: false,
+            properties: Properties::default(),
         }
     }
 
@@ -86,6 +91,7 @@ impl CreateStockItem {
             self.bought.unwrap_or(0),
             self.quantity.clone(),
             false,
+            self.properties.clone(),
         );
         model
     }

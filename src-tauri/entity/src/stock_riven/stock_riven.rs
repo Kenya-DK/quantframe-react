@@ -82,6 +82,7 @@ impl Model {
         bought: i64,
         is_hidden: bool,
         comment: String,
+        properties: Properties,
     ) -> Self {
         let mut item = Self {
             id: Default::default(),
@@ -109,7 +110,7 @@ impl Model {
             locked: false,
             changes: None,
             uuid: "".to_string(),
-            properties: Properties::default(),
+            properties,
         };
         let (uuid, _) = item.uuid();
         item.uuid = uuid;

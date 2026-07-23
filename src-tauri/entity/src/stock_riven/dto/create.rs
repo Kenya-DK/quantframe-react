@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use utils::Properties;
 
 use super::attribute::RivenAttribute;
 use crate::stock_riven::*;
@@ -55,6 +56,9 @@ pub struct CreateStockRiven {
     #[serde(default = "String::default")]
     pub weapon_type: String,
 
+    #[serde(default, flatten)]
+    pub properties: Properties,
+
     #[serde(rename = "is_validated")]
     #[serde(default = "bool::default")]
     pub is_validated: bool,
@@ -86,6 +90,7 @@ impl CreateStockRiven {
             bought: None,
             rank,
             is_validated: false,
+            properties: Properties::default(),
         }
     }
     pub fn set_bought(mut self, bought: i64) -> Self {
@@ -108,6 +113,7 @@ impl CreateStockRiven {
             self.bought.unwrap_or(0),
             false,
             "".to_string(),
+            self.properties.clone(),
         )
     }
 }

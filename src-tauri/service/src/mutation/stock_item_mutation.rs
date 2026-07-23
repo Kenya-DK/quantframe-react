@@ -17,7 +17,7 @@ impl StockItemMutation {
         form_data: stock_item::Model,
     ) -> Result<stock_item::Model, Error> {
         // Remove any properties that are not allowed
-        let mut form_data = form_data;
+        let form_data = form_data;
         stock_item::ActiveModel {
             wfm_id: Set(form_data.wfm_id.to_owned()),
             wfm_url: Set(form_data.wfm_url.to_owned()),

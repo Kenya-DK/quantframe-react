@@ -3,7 +3,7 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 
 use crate::{enums::*, transaction::Model as TransactionModel, wish_list::*};
-use utils::SubType;
+use utils::{Properties, SubType};
 #[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct CreateWishListItem {
     // Properties use for validation
@@ -45,6 +45,9 @@ pub struct CreateWishListItem {
     #[serde(rename = "tags")]
     pub tags: Vec<String>,
 
+    #[serde(default, flatten)]
+    pub properties: Properties,
+
     #[serde(rename = "is_validated")]
     #[serde(default = "bool::default")]
     pub is_validated: bool,
@@ -61,6 +64,7 @@ impl CreateWishListItem {
             item_unique_name: "".to_string(),
             tags: vec![],
             bought: None,
+            properties: Properties::default(),
             quantity,
             sub_type,
             is_validated: false,
@@ -100,6 +104,7 @@ impl CreateWishListItem {
             self.item_unique_name.clone(),
             self.sub_type.clone(),
             self.quantity.clone(),
+            self.properties.clone(),
         )
     }
 }

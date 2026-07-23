@@ -62,6 +62,7 @@ impl Model {
         item_unique_name: String,
         sub_type: Option<SubType>,
         quantity: i64,
+        properties: Properties,
     ) -> Self {
         Self {
             id: Default::default(),
@@ -80,7 +81,7 @@ impl Model {
             locked: false,
             is_hidden: false,
             changes: None,
-            properties: Properties::default(),
+            properties,
         }
     }
     pub fn to_transaction(
