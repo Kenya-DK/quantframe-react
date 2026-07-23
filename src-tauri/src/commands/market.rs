@@ -5,7 +5,7 @@ use serde_json::Value;
 use utils::{get_location, Error};
 
 use crate::{
-    app::client::AppState,
+    app::AppState,
     utils::ErrorFromExt,
 };
 

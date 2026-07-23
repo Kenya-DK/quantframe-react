@@ -11,7 +11,7 @@ use wf_market::{enums::OrderType, types::Auction};
 
 use crate::{
     add_metric,
-    app::client::AppState,
+    app::AppState,
     cache::client::CacheState,
     handlers::handle_riven_by_entity,
     helper::{self, paginate},

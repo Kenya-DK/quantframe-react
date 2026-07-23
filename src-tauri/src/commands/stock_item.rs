@@ -8,7 +8,7 @@ use wf_market::enums::OrderType;
 
 use crate::{
     add_metric,
-    app::client::AppState,
+    app::AppState,
     cache::CacheState,
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::{self},

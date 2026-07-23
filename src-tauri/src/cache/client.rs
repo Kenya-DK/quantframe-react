@@ -14,7 +14,7 @@ use service::{
 use tauri::Manager;
 
 use crate::{
-    app::{client::AppState, User},
+    app::{AppState, User},
     cache::{types::CacheVersion, CacheWeaponBase},
     emit_startup, helper,
     utils::{AuctionListExt, ErrorFromExt, OrderListExt},

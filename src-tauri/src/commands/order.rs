@@ -11,7 +11,7 @@ use wf_market::{enums::OrderType, types::Order};
 
 use crate::{
     add_metric,
-    app::client::AppState,
+    app::AppState,
     cache::client::CacheState,
     helper::{self, paginate},
     live_scraper::LiveScraperState,

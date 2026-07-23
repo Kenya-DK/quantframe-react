@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use crate::{
-    app::{client::AppState, Settings},
+    app::{AppState, Settings},
     cache::client::CacheState,
     log_parser::LogParserState,
     APP, APP_ERROR,

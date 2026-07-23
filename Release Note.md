@@ -17,6 +17,7 @@
 
 - ♻️ Consolidated `SubType` struct into the `utils` crate — removed duplicate definitions from `entity::dto` and `qf_api::types`, unified all imports across the codebase.
 - ♻️ Moved `OperationSet` into `ItemEntry` for live scraper progress stages — operations are now tracked on the entry itself and passed by mutable reference, enabling syndicate and future modes to update operation state.
+- ♻️ Split `app/client.rs` into `types/app_state.rs` (AppState struct), `modules/ws.rs` (WebSocket lifecycle), and `modules/auth.rs` (login/validate/auth flows).
 
 ## Dev Notes
 

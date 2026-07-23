@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use crate::{
-    app::{client::AppState, SummaryCategorySetting},
+    app::{AppState, SummaryCategorySetting},
     helper::generate_transaction_summary,
     DATABASE,
 };

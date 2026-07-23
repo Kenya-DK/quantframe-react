@@ -11,7 +11,7 @@ use utils::*;
 use wf_market::enums::OrderType;
 
 use crate::{
-    add_metric, app::client::AppState, enums::TradeMode, helper::paginate,
+    add_metric, app::AppState, enums::TradeMode, helper::paginate,
     log_parser::LogParserState, utils::SubTypeExt, APP,
 };
 

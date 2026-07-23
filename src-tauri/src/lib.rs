@@ -11,7 +11,7 @@ use ::utils::set_base_path;
 use ::utils::warning;
 use ::utils::Error;
 use ::utils::LoggerOptions;
-use app::client::AppState;
+use app::AppState;
 use migration::{Migrator, MigratorTrait};
 use service::sea_orm::{Database, DatabaseConnection};
 use std::collections::HashMap;

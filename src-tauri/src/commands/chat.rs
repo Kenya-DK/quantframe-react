@@ -6,7 +6,7 @@ use utils::{filters_by, get_location, info, sorting::SortDirection, Error, Logge
 use wf_market::types::{Chat, ChatMessage};
 
 use crate::{
-    app::client::{set_active_chat_id, AppState},
+    app::{set_active_chat_id, AppState},
     emit_update_user,
     helper::paginate,
     utils::{ErrorFromExt, WfmChatPaginationQueryDto},

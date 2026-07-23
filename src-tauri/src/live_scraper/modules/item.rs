@@ -14,7 +14,7 @@ use wf_market::{
 };
 
 use crate::{
-    app::{client::AppState, Settings},
+    app::{AppState, Settings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     utils::OrderListExt,
 };

@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use serde_json::json;
 use utils::{get_location, info, Error, LoggerOptions};
 
-use crate::app::client::AppState;
+use crate::app::AppState;
 
 #[tauri::command]
 pub async fn user_set_status(

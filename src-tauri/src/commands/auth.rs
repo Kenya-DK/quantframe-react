@@ -4,7 +4,7 @@ use utils::{get_location, info, warning, Error, LoggerOptions};
 
 use crate::{
     add_metric,
-    app::{client::AppState, User},
+    app::{AppState, User},
     cache::client::CacheState,
     live_scraper::LiveScraperState,
     send_event,

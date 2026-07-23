@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use utils::Error;
 
-use crate::{app::client::AppState, HAS_STARTED};
+use crate::{app::AppState, HAS_STARTED};
 
 #[tauri::command]
 pub fn analytics_set_last_user_activity(

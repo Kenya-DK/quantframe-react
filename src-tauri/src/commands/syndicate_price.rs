@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, info, Error, LoggerOptions};
 
-use crate::{add_metric, app::client::AppState, utils::ErrorFromExt, APP};
+use crate::{add_metric, app::AppState, utils::ErrorFromExt, APP};
 
 #[tauri::command]
 pub async fn syndicate_item_prices_lookup(

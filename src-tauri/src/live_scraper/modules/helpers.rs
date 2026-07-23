@@ -20,7 +20,7 @@ use wf_market::{
 };
 
 use crate::{
-    app::{client::AppState, ItemSettings, ItemWtbSettings, Settings, SyndicateSettings},
+    app::{AppState, ItemSettings, ItemWtbSettings, Settings, SyndicateSettings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
     live_scraper::*,

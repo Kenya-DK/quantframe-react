@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 use utils::{Error, Properties, ZipOptions};
 
 use crate::{
-    app::{client::AppState, user},
+    app::{AppState, user},
     helper,
     live_scraper::LiveScraperState,
     log_parser::LogParserState,

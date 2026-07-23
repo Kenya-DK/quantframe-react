@@ -6,7 +6,7 @@ use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, info, Error, LoggerOptions};
 
 use crate::{
-    add_metric, app::client::AppState, types::PermissionsFlags, utils::CreateTradeEntryExt, APP,
+    add_metric, app::AppState, types::PermissionsFlags, utils::CreateTradeEntryExt, APP,
     DATABASE,
 };
 

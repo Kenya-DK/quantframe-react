@@ -10,7 +10,7 @@ use service::{TransactionMutation, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, warning, Error, LoggerOptions};
 
-use crate::{add_metric, app::client::AppState, types::PermissionsFlags, APP, DATABASE};
+use crate::{add_metric, app::AppState, types::PermissionsFlags, APP, DATABASE};
 
 #[tauri::command]
 pub async fn get_transaction_pagination(
