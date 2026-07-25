@@ -305,6 +305,7 @@ impl ItemModule {
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
+		 entry.operation.retain_trade_modes_only();
         let log_options = &LoggerOptions::default()
             .set_show_component(false)
             .set_show_time(false);
@@ -642,6 +643,7 @@ impl ItemModule {
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
+		 entry.operation.retain_trade_modes_only();
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default();
         let component = comp("Selling:");
@@ -912,6 +914,7 @@ impl ItemModule {
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
+		 entry.operation.retain_trade_modes_only();
         let log_options = &LoggerOptions::default();
         let component = comp("Syndicate:");
         info(
@@ -1060,6 +1063,7 @@ impl ItemModule {
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
+		 entry.operation.retain_trade_modes_only();
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default();
         let component = comp("WishList:");
