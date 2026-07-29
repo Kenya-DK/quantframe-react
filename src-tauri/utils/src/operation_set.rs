@@ -111,3 +111,10 @@ impl From<&[&str]> for OperationSet {
         op_set
     }
 }
+impl OperationSet {
+    pub fn retain_trade_modes_only(&mut self) {
+        const TRADE_MODES: &[&str] = &["Buy", "Sell", "WishList", "Syndicate"];
+        self.operations
+            .retain(|op| TRADE_MODES.contains(&op.as_str()));
+    }
+}

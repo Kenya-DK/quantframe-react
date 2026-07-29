@@ -305,6 +305,7 @@ impl ItemModule {
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
+		 entry.operation.retain_trade_modes_only();
         let log_options = &LoggerOptions::default()
             .set_show_component(false)
             .set_show_time(false);
@@ -642,6 +643,7 @@ impl ItemModule {
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
+		 entry.operation.retain_trade_modes_only();
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default();
         let component = comp("Selling:");
@@ -912,6 +914,7 @@ impl ItemModule {
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
+		 entry.operation.retain_trade_modes_only();
         let log_options = &LoggerOptions::default();
         let component = comp("Syndicate:");
         info(
@@ -1060,6 +1063,7 @@ impl ItemModule {
         price: &ItemPriceInfo,
         live_orders: &OrderList<OrderWithUser>,
     ) -> Result<(), Error> {
+		 entry.operation.retain_trade_modes_only();
         let conn = DATABASE.get().unwrap();
         let log_options = &LoggerOptions::default();
         let component = comp("WishList:");
@@ -1072,6 +1076,10 @@ impl ItemModule {
                 .set_enable(false),
         );
         let settings = states::get_settings()?.live_scraper.items;
+        let mut wishlist_item = entry.get_wish_list_item(conn).await.map_err(|e| {
+            e.with_location(get_location!())
+                .with_context(entry.to_json())
+        })?;
         // Check if item is blacklisted for wishlist
         if settings.general.is_item_blacklisted(
             &item_info.wfm_id,
@@ -1088,17 +1096,30 @@ impl ItemModule {
             );
             return Ok(());
         }
+        if settings.general.is_item_blacklisted(
+            &item_info.wfm_id,
+            &entry.sub_type,
+            &TradeMode::Buy,
+        ) {
+            let in_wishlist = !wishlist_item.is_hidden;
+            if !in_wishlist {
+                info(
+                    &comp("Blacklisted"),
+                    &format!(
+                        "Item {} is buy-blacklisted and not in wishlist. Skipping buy order creation.",
+                        item_info.name
+                    ),
+                    &log_options.set_enable(false),
+                );
+                return Ok(());
+            }
+        }
         let wfm_client = states::app_state()?.wfm_client;
         let per_trade = if item_info.bulk_tradable {
             Some(1)
         } else {
             None
         };
-
-        let mut wishlist_item = entry.get_wish_list_item(conn).await.map_err(|e| {
-            e.with_location(get_location!())
-                .with_context(entry.to_json())
-        })?;
 
         // Get existing order properties or initialize new ones
         let mut properties = get_order_info(&entry, OrderType::Buy, &wfm_client);
