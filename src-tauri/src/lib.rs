@@ -181,6 +181,12 @@ pub fn run() {
         .setup(move |app| {
             // log_parser::types::trade_detection::init_detections();
             APP.get_or_init(|| app.handle().clone());
+            // Set the window title with the current package version so it doesn't need manual updating
+            if let Some(window) = app.get_webview_window("main") {
+                let version = app.package_info().version.to_string();
+                let name = app.package_info().name.as_str();
+                let _ = window.set_title(&format!("{name} v{version} - By Kenya-DK"));
+            }
             // Clone the handle for async task
             let app_handle = app.handle().clone();
 
