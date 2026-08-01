@@ -1,23 +1,68 @@
-use std::hash::{Hash, Hasher};
+use std::{
+    fmt::Display,
+    hash::{Hash, Hasher},
+};
 
 use entity::stock_item::Model as StockItemModel;
+use entity::wish_list::Model as WishListModel;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use service::{sea_orm::DatabaseConnection, StockItemQuery, WishListQuery};
-use utils::SubType;
-use utils::{get_location, Error, OperationSet, Properties};
-use wf_market::enums::OrderType;
+use service::{
+    sea_orm::DatabaseConnection, StockItemMutation, StockItemQuery, WishListMutation, WishListQuery,
+};
+use utils::{get_location, info, Error, LoggerOptions, OperationSet, Properties, SubType};
+use wf_market::{
+    enums::OrderType,
+    types::{OrderList, OrderWithUser},
+};
 
-use crate::{cache::types::ItemPriceInfo, utils::SubTypeExt};
+use crate::{cache::types::ItemPriceInfo, send_event, types::UIEvent, utils::SubTypeExt};
+
+//
+// Market Information
+//
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct ItemMarketInfo {
+    pub lowest_price: i64,
+    pub highest_price: i64,
+    pub price_range: i64,
+    pub volume: usize,
+}
+
+impl ItemMarketInfo {
+    pub fn new(live_orders: &OrderList<OrderWithUser>, order_type: OrderType) -> Self {
+        Self {
+            lowest_price: live_orders.lowest_price(order_type),
+            highest_price: live_orders.highest_price(order_type),
+            price_range: live_orders.price_range(order_type),
+            volume: if order_type == OrderType::Buy {
+                live_orders.buy_orders.len()
+            } else {
+                live_orders.sell_orders.len()
+            },
+        }
+    }
+}
+impl Display for ItemMarketInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Lowest: {} | Highest: {} | Range: {} | Volume: {}",
+            self.lowest_price, self.highest_price, self.price_range, self.volume
+        )
+    }
+}
+//
+// Item Entry
+//
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ItemEntry {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "stock_id")]
     pub stock_id: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "wish_list_id")]
     pub wish_list_id: Option<i64>,
 
     #[serde(rename = "wfm_url")]
@@ -27,31 +72,29 @@ pub struct ItemEntry {
     pub wfm_id: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "sub_type")]
     pub sub_type: Option<SubType>,
 
-    // Trading Stats.
     #[serde(default)]
-    #[serde(rename = "priority")]
     pub priority: i64,
 
     #[serde(default)]
-    #[serde(rename = "buy_quantity")]
     pub buy_quantity: i64,
 
-    #[serde(default)]
-    #[serde(rename = "sell_quantity")]
     pub sell_quantity: i64,
 
-    #[serde(rename = "operation")]
     #[serde(default, flatten)]
-    pub operation: OperationSet,
+    pub operations: OperationSet,
 
-    #[serde(rename = "order_type")]
     #[serde(default)]
     pub order_type: String,
 
-    #[serde(flatten)]
+    #[serde(default)]
+    pub buy_market_info: ItemMarketInfo,
+
+    #[serde(default)]
+    pub sell_market_info: ItemMarketInfo,
+
+    #[serde(default, flatten)]
     pub properties: Properties,
 }
 
@@ -72,11 +115,11 @@ impl ItemEntry {
         priority: i64,
         buy_quantity: i64,
         sell_quantity: i64,
-        operation: Vec<String>,
+        operations: Vec<String>,
         order_type: &str,
         properties: Properties,
-    ) -> ItemEntry {
-        ItemEntry {
+    ) -> Self {
+        Self {
             stock_id,
             wish_list_id,
             wfm_url: wfm_url.into(),
@@ -85,92 +128,189 @@ impl ItemEntry {
             priority,
             buy_quantity,
             sell_quantity,
-            operation: OperationSet::from(operation),
-            order_type: order_type.to_string(),
+            operations: OperationSet::from(operations),
+            order_type: order_type.to_owned(),
+            buy_market_info: ItemMarketInfo::default(),
+            sell_market_info: ItemMarketInfo::default(),
             properties,
         }
     }
-    pub fn uuid(&self) -> String {
-        let mut uuid = self.wfm_url.clone();
-        if let Some(sub_type) = self.sub_type.clone() {
-            uuid.push_str(&format!("-{}", sub_type.shot_display()));
-        }
-        uuid
+
+    //
+    // Market
+    //
+
+    pub fn apply_market_info(&mut self, live_orders: &OrderList<OrderWithUser>) {
+        self.buy_market_info = ItemMarketInfo::new(live_orders, OrderType::Buy);
+        self.sell_market_info = ItemMarketInfo::new(live_orders, OrderType::Sell);
     }
+
+    //
+    // Helpers
+    //
+
+    pub fn uuid(&self) -> String {
+        match &self.sub_type {
+            Some(sub_type) => format!("{}-{}", self.wfm_url, sub_type.shot_display()),
+            None => self.wfm_url.clone(),
+        }
+    }
+
     pub fn get_quantity(&self, order_type: OrderType) -> i64 {
         match order_type {
             OrderType::Buy => self.buy_quantity,
             OrderType::Sell => self.sell_quantity,
         }
     }
+
     pub fn set_quantity(&mut self, order_type: OrderType, quantity: i64) -> Self {
         match order_type {
             OrderType::Buy => self.buy_quantity = quantity,
             OrderType::Sell => self.sell_quantity = quantity,
         }
+
         self.clone()
-    }
-    pub async fn get_stock_item(&self, conn: &DatabaseConnection) -> Result<StockItemModel, Error> {
-        if let Some(stock_id) = self.stock_id {
-            match StockItemQuery::find_by_id(conn, stock_id).await {
-                Ok(stock_item) => {
-                    if let Some(item) = stock_item {
-                        Ok(item)
-                    } else {
-                        Err(Error::new(
-                            "ItemEntry:GetStockItem",
-                            "Stock item not found",
-                            get_location!(),
-                        )
-                        .set_log_level(utils::LogLevel::Warning))
-                    }
-                }
-                Err(e) => return Err(e.with_location(get_location!())),
-            }
-        } else {
-            Err(Error::new(
-                "ItemEntry:GetStockItem",
-                "Stock ID is None",
-                get_location!(),
-            ))
-        }
-    }
-    pub async fn get_wish_list_item(
-        &self,
-        conn: &DatabaseConnection,
-    ) -> Result<entity::wish_list::wish_list::Model, Error> {
-        if let Some(wish_list_id) = self.wish_list_id {
-            match WishListQuery::get_by_id(conn, wish_list_id).await {
-                Ok(item) => {
-                    if let Some(item) = item {
-                        Ok(item)
-                    } else {
-                        Err(Error::new(
-                            "ItemEntry:GetWishListItem",
-                            "Wish list item not found",
-                            get_location!(),
-                        )
-                        .set_log_level(utils::LogLevel::Warning))
-                    }
-                }
-                Err(e) => return Err(e.with_location(get_location!())),
-            }
-        } else {
-            Err(Error::new(
-                "ItemEntry:GetWishListItem",
-                "Wish List ID is None",
-                get_location!(),
-            ))
-        }
     }
 
     pub fn to_json(&self) -> serde_json::Value {
         serde_json::to_value(self).unwrap_or_default()
     }
+
+    //
+    // Database
+    //
+
+    pub async fn get_stock_item(&self, conn: &DatabaseConnection) -> Result<StockItemModel, Error> {
+        let stock_id = self.stock_id.ok_or_else(|| {
+            Error::new(
+                "ItemEntry:GetStockItem",
+                "Stock ID is None",
+                get_location!(),
+            )
+        })?;
+
+        let item = StockItemQuery::find_by_id(conn, stock_id)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?;
+
+        item.ok_or_else(|| {
+            Error::new(
+                "ItemEntry:GetStockItem",
+                format!("Stock item not found for ID: {}", stock_id),
+                get_location!(),
+            )
+            .set_log_level(utils::LogLevel::Warning)
+        })
+    }
+
+    pub async fn get_wish_list_item(
+        &self,
+        conn: &DatabaseConnection,
+    ) -> Result<WishListModel, Error> {
+        let wish_list_id = self.wish_list_id.ok_or_else(|| {
+            Error::new(
+                "ItemEntry:GetWishListItem",
+                "Wish List ID is None",
+                get_location!(),
+            )
+        })?;
+
+        let item = WishListQuery::get_by_id(conn, wish_list_id)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?;
+
+        item.ok_or_else(|| {
+            Error::new(
+                "ItemEntry:GetWishListItem",
+                format!("Wish List item not found for ID: {}", wish_list_id),
+                get_location!(),
+            )
+            .set_log_level(utils::LogLevel::Warning)
+        })
+    }
+
+    pub async fn get_stock_item_or_error(
+        &self,
+        conn: &DatabaseConnection,
+    ) -> Result<StockItemModel, Error> {
+        self.get_stock_item(conn).await.map_err(|e| {
+            e.with_location(get_location!())
+                .with_context(self.to_json())
+        })
+    }
+
+    pub async fn get_wishlist_item_or_error(
+        &self,
+        conn: &DatabaseConnection,
+    ) -> Result<WishListModel, Error> {
+        self.get_wish_list_item(conn).await.map_err(|e| {
+            e.with_location(get_location!())
+                .with_context(self.to_json())
+        })
+    }
+
+    pub async fn finalize_stock_item(
+        &self,
+        conn: &DatabaseConnection,
+        component: &str,
+        stock_item: &mut StockItemModel,
+        log_options: &LoggerOptions,
+    ) -> Result<(), Error> {
+        if stock_item.is_dirty {
+            match StockItemMutation::update_by_id(conn, stock_item.to_update()).await {
+                Ok(_) => {
+                    info(
+                        format!("{}StockItemUpdate", component),
+                        &format!("Updated stock item: {:?}", self.stock_id),
+                        log_options,
+                    );
+                    if stock_item.update_gui() {
+                        send_event!(
+                            UIEvent::RefreshStockItems,
+                            json!({"id": self.stock_id, "source": component})
+                        );
+                    }
+                }
+                Err(e) => return Err(e.with_location(get_location!())),
+            }
+        }
+        Ok(())
+    }
+
+    pub async fn finalize_wishlist_item(
+        &self,
+        conn: &DatabaseConnection,
+        component: &str,
+        wishlist_item: &mut WishListModel,
+        log_options: &LoggerOptions,
+    ) -> Result<(), Error> {
+        if wishlist_item.is_dirty {
+            match WishListMutation::update_by_id(conn, wishlist_item.to_update()).await {
+                Ok(_) => {
+                    info(
+                        format!("{}WishListUpdate", component),
+                        &format!("Updated wishlist item: {:?}", self.wish_list_id),
+                        log_options,
+                    );
+                    send_event!(
+                        UIEvent::RefreshWishListItems,
+                        json!({"id": self.wish_list_id, "source": component})
+                    );
+                }
+                Err(e) => return Err(e.with_location(get_location!())),
+            }
+        }
+        Ok(())
+    }
 }
+
+//
+// Conversions
+//
+
 impl From<&ItemPriceInfo> for ItemEntry {
     fn from(item: &ItemPriceInfo) -> Self {
-        ItemEntry::new(
+        Self::new(
             None,
             None,
             item.wfm_url.clone(),
@@ -179,15 +319,16 @@ impl From<&ItemPriceInfo> for ItemEntry {
             0,
             1,
             0,
-            vec!["Buy".to_string()],
+            vec!["Buy".into()],
             "closed",
             Properties::default(),
         )
     }
 }
+
 impl From<&StockItemModel> for ItemEntry {
     fn from(item: &StockItemModel) -> Self {
-        ItemEntry::new(
+        Self::new(
             Some(item.id),
             None,
             item.wfm_url.clone(),
@@ -196,15 +337,16 @@ impl From<&StockItemModel> for ItemEntry {
             1,
             0,
             item.owned,
-            vec!["Sell".to_string()],
+            vec!["Sell".into()],
             "closed",
             Properties::default(),
         )
     }
 }
+
 impl From<&entity::wish_list::wish_list::Model> for ItemEntry {
     fn from(item: &entity::wish_list::wish_list::Model) -> Self {
-        ItemEntry::new(
+        Self::new(
             None,
             Some(item.id),
             item.wfm_url.clone(),
@@ -213,15 +355,16 @@ impl From<&entity::wish_list::wish_list::Model> for ItemEntry {
             2,
             item.quantity,
             0,
-            vec!["WishList".to_string()],
+            vec!["WishList".into()],
             "buy",
             Properties::default(),
         )
     }
 }
+
 impl From<&qf_api::types::SyndicateItemPrice> for ItemEntry {
     fn from(item: &qf_api::types::SyndicateItemPrice) -> Self {
-        ItemEntry::new(
+        Self::new(
             None,
             None,
             item.wfm_id.clone(),
@@ -230,11 +373,11 @@ impl From<&qf_api::types::SyndicateItemPrice> for ItemEntry {
             1,
             0,
             1,
-            vec!["Syndicate".to_string()],
+            vec!["Syndicate".into()],
             "sell",
             Properties::from(json!({
-                "standingCost": item.standing_cost,
                 "syndicate": item.syndicate,
+                "standingCost": item.standing_cost,
             })),
         )
     }

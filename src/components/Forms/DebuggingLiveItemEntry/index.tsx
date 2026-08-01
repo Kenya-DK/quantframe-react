@@ -1,7 +1,7 @@
 import { TauriTypes } from "$types";
 import { SelectTradableItem } from "@components/Forms/SelectTradableItem";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faBan, faPen, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
 import { Box, BoxProps, Group, MultiSelect, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -11,15 +11,18 @@ export type DebuggingLiveItemEntryFormProps = {
   boxProps?: BoxProps;
   disabled?: boolean;
   initialValues?: Partial<TauriTypes.DebuggingLiveItemEntry>;
+  isEditing?: boolean;
+  onCancel?: () => void;
 };
 
 const OPERATION_OPTIONS = [
   { value: "Buy", label: "Buy" },
   { value: "Sell", label: "Sell" },
   { value: "WishList", label: "WishList" },
+  { value: "Syndicate", label: "Syndicate" },
 ];
 
-export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initialValues }: DebuggingLiveItemEntryFormProps) {
+export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initialValues, isEditing, onCancel }: DebuggingLiveItemEntryFormProps) {
   // Translate general
   const useTranslateForm = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForms(`debugging_live_item_entry.${key}`, { ...context }, i18Key);
@@ -34,6 +37,7 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
       stock_id: initialValues?.stock_id || null,
       wish_list_id: initialValues?.wish_list_id || null,
       wfm_url: initialValues?.wfm_url || "",
+      wfm_id: initialValues?.wfm_id || "",
       sub_type: initialValues?.sub_type || null,
       priority: initialValues?.priority || 0,
       buy_quantity: initialValues?.buy_quantity || 0,
@@ -136,18 +140,20 @@ export function DebuggingLiveItemEntryForm({ disabled, boxProps, onSubmit, initi
 
           {/* Submit Button */}
           <ActionWithTooltip
-            tooltip={useTranslateButtons("add.tooltip")}
-            icon={faPlus}
-            color="green.7"
+            tooltip={isEditing ? useTranslateButtons("edit.tooltip") : useTranslateButtons("add.tooltip")}
+            icon={isEditing ? faPen : faPlus}
+            color={isEditing ? "blue.7" : "green.7"}
             onClick={() => {}}
             actionProps={{
               type: "submit",
               disabled: disabled || form.values.wfm_url.length <= 0,
             }}
           />
+          {isEditing && onCancel && (
+            <ActionWithTooltip tooltip={useTranslateButtons("cancel.tooltip")} icon={faBan} color="gray.5" onClick={onCancel} />
+          )}
         </Group>
       </form>
     </Box>
   );
 }
-

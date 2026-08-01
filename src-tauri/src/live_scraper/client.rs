@@ -78,6 +78,8 @@ impl LiveScraperState {
 
                 while is_running.load(Ordering::SeqCst) {
                     let app = states::app_state().expect("App state not initialized");
+                    // let wfm_client = app.wfm_client;
+                    // println!("{}", wfm_client.order().cache_orders());
                     if matches!(
                         app.settings.live_scraper.general.stock_mode,
                         StockMode::Riven | StockMode::All
