@@ -8,6 +8,7 @@
 ## Fixes
 
 - 🛠️ Removed the `999` hard cap on the Max Standing Cost input in the Syndicate settings.
+- 🛠️ Fixed a bug where sell orders was deleted
 
 ## Refactors
 

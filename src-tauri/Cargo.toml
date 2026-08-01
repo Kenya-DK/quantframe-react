@@ -46,8 +46,8 @@ chrono = "0.4"
 zip = "0.6"
 sha256 = "1.5.0"
 uuid = { version = "1.19.0",features = ["v4"] }
-#wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
-wf-market = { git = "https://github.com/KibbeWater/wf-market", rev = "90ca2baea4f6dce9edb686aa86f315190bb86f40" }
+# wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
+wf-market = { git = "https://github.com/KibbeWater/wf-market", rev = "aba1d268a7a0f76d54ba3dcd862d2f3a4f7e3496" }
 
 # Database dependencies
 migration = { path = "./migration" }
