@@ -29,6 +29,15 @@ export const WTSItemAccordion = ({ form }: WTSItemAccordionProps) => {
           {...form.getInputProps(getFieldPath("min_profit"))}
         />
         <NumberInput
+          label={useTranslateFormFields("min_profit_percentage.label")}
+          min={-1}
+          max={999}
+          placeholder={useTranslateFormFields("min_profit_percentage.placeholder")}
+          rightSection={<TooltipIcon label={useTranslateFormFields("min_profit_percentage.tooltip")} link={useTranslateFormFields("min_profit_percentage.link")} />}
+          radius="md"
+          {...form.getInputProps(getFieldPath("min_profit_percentage"))}
+        />
+        <NumberInput
           label={useTranslateFormFields("min_sma.label")}
           min={-1}
           placeholder={useTranslateFormFields("min_sma.placeholder")}

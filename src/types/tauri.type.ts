@@ -152,6 +152,7 @@ export namespace TauriTypes {
     min_listings_below: number;
   }
   export interface ItemWtsSettings {
+    min_profit_percentage: number;
     volume_threshold: number;
     profit_threshold: number;
     avg_price_cap: number;
