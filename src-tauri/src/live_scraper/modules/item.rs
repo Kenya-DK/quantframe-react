@@ -531,6 +531,9 @@ impl ItemModule {
             trade_operations.add("Underpriced");
         }
 
+        // Warframe Market prices cannot be below 1 platinum.
+        post_price = post_price.max(1);
+
         log_summary(
             &component,
             format!(
@@ -768,7 +771,8 @@ impl ItemModule {
             post_price,
         ));
 
-        post_price = std::cmp::max(post_price, 1);
+        // Warframe Market prices cannot be below 1 platinum.
+        post_price = post_price.max(1);
 
         log_summary(
             &component,
