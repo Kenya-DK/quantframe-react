@@ -20,7 +20,7 @@ use wf_market::{
 };
 
 use crate::{
-    app::{AppState, ItemSettings, ItemWtbSettings, Settings, SyndicateSettings},
+    app::{AppState, ItemSettings, Settings, SyndicateSettings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
     live_scraper::*,
@@ -223,17 +223,6 @@ pub fn knapsack(
     (selected_items, unselected_items)
 }
 
-pub fn skip_if_no_market_activity(live_orders: &OrderList<OrderWithUser>) -> (bool, String) {
-    let sell_count = live_orders.sell_orders.len();
-    let buy_count = live_orders.buy_orders.len();
-
-    if sell_count == 0 || buy_count == 0 {
-        let operation = if sell_count == 0 { "selling" } else { "buying" };
-        return (true, operation.to_string());
-    }
-    (false, "".to_string())
-}
-
 pub async fn collect_interesting_items(
     app: &AppState,
     component: impl Into<String>,
@@ -288,7 +277,7 @@ pub async fn collect_interesting_items(
                         entry.priority = 1;
                         entry.sell_quantity = item.owned;
                         entry.stock_id = Some(item.id);
-                        entry.operation.add("Sell".to_string());
+                        entry.operations.add("Sell".to_string());
                     })
                     .or_insert_with(|| {
                         ItemEntry::from(&item).set_quantity(OrderType::Sell, item.owned)
@@ -314,35 +303,39 @@ pub async fn collect_interesting_items(
                         entry.priority = 2;
                         entry.buy_quantity = item.quantity;
                         entry.wish_list_id = Some(item.id);
-                        entry.operation.add("WishList".to_string());
+                        entry.operations.add("WishList".to_string());
                     })
                     .or_insert_with(|| ItemEntry::from(&item));
             }
         }
     }
-    // --- Syndicate Mode ---
-    if settings.live_scraper.has_trade_mode(TradeMode::Syndicate)
-        && app
+
+    // --- Syndicate Mode --- Disabled for now, WIP
+    if settings.live_scraper.has_trade_mode(TradeMode::Syndicate) {
+        return Ok(interesting_items.into_values().collect());
+        let Ok(_) = app
             .user
-            .has_permission(PermissionsFlags::from_str("syndicate_prices_search"))?
-    {
-        // let items = get_syndicate_interesting_items(&app, &settings.live_scraper.syndicate)
-        //     .await
-        //     .map_err(|e| e.with_location(get_location!()))?;
-        // for item in items {
-        //     if !stock_item_settings.general.is_item_blacklisted(
-        //         &item.wfm_id,
-        //         &item.sub_type,
-        //         &TradeMode::Syndicate,
-        //     ) {
-        //         interesting_items
-        //             .entry(item.uuid.clone())
-        //             .and_modify(|entry| {
-        //                 entry.operation.add("Syndicate".to_string());
-        //             })
-        //             .or_insert_with(|| ItemEntry::from(&item));
-        //     }
-        // }
+            .has_permission(PermissionsFlags::from_str("syndicate_prices_search"))
+        else {
+            return Ok(interesting_items.into_values().collect());
+        };
+
+        let items = get_syndicate_interesting_items(&app, &settings.live_scraper.syndicate)
+            .await
+            .map_err(|e| e.with_location(get_location!()))?;
+
+        for item in items.into_iter().filter(|item| {
+            !stock_item_settings.general.is_item_blacklisted(
+                &item.wfm_id,
+                &item.sub_type,
+                &TradeMode::Syndicate,
+            )
+        }) {
+            interesting_items
+                .entry(item.uuid.clone())
+                .and_modify(|entry| entry.operations.add("Syndicate".to_string()))
+                .or_insert_with(|| ItemEntry::from(&item));
+        }
     }
     Ok(interesting_items.into_values().collect())
 }
@@ -351,40 +344,47 @@ pub fn get_order_info(
     entry: &ItemEntry,
     order_type: OrderType,
     wfm_client: &wf_market::Client<wf_market::Authenticated>,
-) -> wf_market::types::Properties {
-    wfm_client
-        .order()
-        .cache_orders()
-        .find_order(
-            &entry.wfm_id,
-            &SubTypeExt::from_entity(entry.sub_type.clone()),
-            order_type,
+) -> (String, i64, wf_market::types::Properties, OperationSet) {
+    let order = wfm_client.order().cache_orders().find_order(
+        &entry.wfm_id,
+        &SubTypeExt::from_entity(entry.sub_type.clone()),
+        order_type,
+    );
+    if order.is_none() {
+        (
+            String::new(),
+            0,
+            wf_market::types::Properties::default(),
+            OperationSet::from(vec!["Create"]),
         )
-        .map(|order| {
-            let mut properties = order.properties;
-            properties.set_property_value("id", order.id.clone());
-            properties
-                .set_property_value("original_update_string", format!("p:{}", order.platinum));
-            properties.set_property_value("operations", OperationSet::from(vec!["Update"]));
-            properties
-        })
-        .unwrap_or_default()
+    } else {
+        let order = order.unwrap();
+        let mut properties = order.properties;
+        properties.set_property_value("id", order.id.clone());
+        properties.set_property_value("original_update_string", format!("p:{}", order.platinum));
+        (
+            order.id.clone(),
+            i64::from(order.platinum),
+            properties,
+            OperationSet::from(vec!["Update"]),
+        )
+    }
 }
 pub fn populate_order_properties(
     properties: &mut wf_market::types::Properties,
     item: &CacheTradableItem,
     entry: &ItemEntry,
-) -> (String, OperationSet) {
+    trade_operations: &OperationSet,
+) {
     properties.set_property_value("wfm_id", item.wfm_id.clone());
     properties.set_property_value("wfm_url", item.wfm_url.clone());
     properties.set_property_value("name", item.name.clone());
     properties.set_property_value("sub_type", entry.sub_type.clone());
     properties.set_property_value("image", item.icon.clone());
     properties.set_property_value("t_type", item.sub_type.clone());
-    let order_id = properties.get_property_value("id", String::new());
-    let operations =
-        properties.get_property_value("operations", OperationSet::from(vec!["Create"]));
-    (order_id, operations)
+    let mut operations = entry.operations.clone();
+    operations.merge(trade_operations);
+    properties.set_property_value("operations", operations);
 }
 pub fn set_order_market_metrics(
     properties: &mut wf_market::types::Properties,
@@ -421,9 +421,9 @@ pub fn set_order_market_metrics(
     properties.set_property_value("spread_percent", spread_pct);
     properties.set_property_value("orders", live_orders.take_top(5, order_type));
 
-    let mut operations = properties.get_property_value("operations", OperationSet::default());
-    operations.add("MarketPopulated");
-    properties.set_property_value("operations", operations);
+    // let mut operations = properties.get_property_value("operations", OperationSet::default());
+    // operations.add("MarketPopulated");
+    // properties.set_property_value("operations", operations);
     push_price_history(properties, post_price);
 }
 pub fn push_price_history(properties: &mut wf_market::types::Properties, price: i64) {
@@ -534,9 +534,9 @@ pub async fn progress_order(
     per_trade: Option<i64>,
     log_options: &LoggerOptions,
     properties: &mut wf_market::types::Properties,
+    trade_operations: &OperationSet,
 ) -> Result<OperationSet, Error> {
     let can_create_order = wfm_client.order().can_create_order();
-    let file_name = "progress_order.log";
     let quantity = entry.get_quantity(order_type);
     // Fetch properties data
     let order_id = properties.get_property_value("id", String::new());
@@ -544,8 +544,8 @@ pub async fn progress_order(
     let update_string = properties.get_property_value("update_string", String::new());
     let original_update_string =
         properties.get_property_value("original_update_string", String::new());
-    properties.set_property_value("operations", entry.operation.clone());
-    if entry.operation.has("Create") && !entry.operation.has("Delete") && can_create_order {
+
+    if trade_operations.has("Create") && !trade_operations.has("Delete") && can_create_order {
         match wfm_client
             .order()
             .create(
@@ -580,12 +580,11 @@ pub async fn progress_order(
                     e,
                 )
                 .await
-                .with_location(get_location!())
-                .log_with_options(file_name, &log_options);
+                .with_location(get_location!());
                 return Err(err);
             }
         }
-    } else if entry.operation.has("Update") && !entry.operation.has("Delete") {
+    } else if trade_operations.has("Update") && !trade_operations.has("Delete") {
         match wfm_client
             .order()
             .update(
@@ -618,12 +617,11 @@ pub async fn progress_order(
                     e,
                 )
                 .await
-                .with_location(get_location!())
-                .log_with_options(file_name, &log_options);
+                .with_location(get_location!());
                 return Err(err);
             }
         }
-    } else if entry.operation.has("Update") && entry.operation.has("Delete") {
+    } else if trade_operations.has("Update") && trade_operations.has("Delete") {
         match wfm_client.order().delete(&order_id).await {
             Ok(_) => {
                 info(
@@ -643,8 +641,7 @@ pub async fn progress_order(
                     e,
                 )
                 .await
-                .with_location(get_location!())
-                .log_with_options(file_name, &log_options);
+                .with_location(get_location!());
                 return Err(err);
             }
         }
@@ -661,8 +658,28 @@ pub async fn progress_order(
             &log_options,
         );
     }
-    Ok(entry.operation.clone())
+    Ok(OperationSet::default())
 }
+pub async fn delete_order(
+    component: &str,
+    entry: &ItemEntry,
+    order_type: OrderType,
+    wfm_client: &wf_market::Client<wf_market::Authenticated>,
+) -> Result<OperationSet, Error> {
+    progress_order(
+        component,
+        entry,
+        wfm_client,
+        order_type,
+        1,
+        Some(1),
+        &LoggerOptions::default(),
+        &mut wf_market::types::Properties::default(),
+        &OperationSet::default(),
+    )
+    .await
+}
+
 pub fn log_summary(component: &str, message: impl AsRef<str>, options: &LoggerOptions) {
     info(format!("{}Summary", component), message.as_ref(), options);
 }
@@ -690,4 +707,66 @@ pub async fn fetch_and_cache_orders(
     }
 
     Ok(orders)
+}
+
+pub fn get_per_trade(item_info: &CacheTradableItem) -> Option<i64> {
+    if item_info.bulk_tradable {
+        Some(1)
+    } else {
+        None
+    }
+}
+
+pub fn is_blacklisted(
+    settings: &ItemSettings,
+    item_info: &CacheTradableItem,
+    entry: &ItemEntry,
+    mode: &TradeMode,
+) -> bool {
+    if settings
+        .general
+        .is_item_blacklisted(&item_info.wfm_id, &entry.sub_type, mode)
+    {
+        return true;
+    }
+    false
+}
+
+pub fn should_apply_max_price_drop(
+    max_price_drop: i64,
+    min_listings_below: i64,
+    current_order_price: i64,
+    post_price: i64,
+    prices: Vec<i64>,
+    order_type: OrderType,
+) -> Option<String> {
+    if is_disabled(max_price_drop) && is_disabled(min_listings_below) {
+        return None;
+    }
+    let (is_price_invalid, price_change, listing_count) = match order_type {
+        OrderType::Buy => (
+            current_order_price > post_price,
+            post_price - current_order_price,
+            prices.iter().filter(|&&p| p > current_order_price).count() as i64,
+        ),
+        OrderType::Sell => (
+            current_order_price < post_price,
+            current_order_price - post_price,
+            prices.iter().filter(|&&p| p < current_order_price).count() as i64,
+        ),
+    };
+
+    if is_price_invalid {
+        return None;
+    }
+
+    let should_skip = !is_disabled(max_price_drop)
+        && price_change > max_price_drop
+        && (is_disabled(min_listings_below) || listing_count <= min_listings_below);
+
+    if should_skip {
+        Some("MaxPriceDrop".to_string())
+    } else {
+        None
+    }
 }

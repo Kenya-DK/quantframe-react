@@ -203,6 +203,7 @@ export namespace TauriTypes {
     stock_id?: number | null;
     wish_list_id?: number | null;
     wfm_url: string;
+    wfm_id: string;
     sub_type?: SubType | null;
     priority: number;
     buy_quantity: number;

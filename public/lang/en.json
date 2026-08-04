@@ -1129,6 +1129,12 @@
         "buttons": {
           "add": {
             "tooltip": "Add debugging live item entry"
+          },
+          "edit": {
+            "tooltip": "Update debugging live item entry"
+          },
+          "cancel": {
+            "tooltip": "Cancel editing"
           }
         }
       },
@@ -2114,10 +2120,11 @@
               "priority": "Priority",
               "buy_quantity": "Buy Quantity",
               "sell_quantity": "Sell Quantity",
-              "operation": "Operation",
+              "operations": "Operations",
               "actions": {
                 "title": "Actions",
                 "buttons": {
+                  "edit_tooltip": "Edit Debugging Live Item Entry",
                   "delete_tooltip": "Delete Debugging Live Item Entry"
                 }
               }

@@ -30,7 +30,6 @@ export const WTSItemAccordion = ({ form }: WTSItemAccordionProps) => {
         <NumberInput
           label={useTranslateFormFields("max_standing_cost.label")}
           min={-1}
-          max={999}
           placeholder={useTranslateFormFields("max_standing_cost.placeholder")}
           rightSection={
             <TooltipIcon label={useTranslateFormFields("max_standing_cost.tooltip")} link={useTranslateFormFields("max_standing_cost.link")} />

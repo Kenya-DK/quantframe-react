@@ -1,15 +1,16 @@
-import { Box, Checkbox, Group, Tooltip } from "@mantine/core";
-import { DataTable } from "mantine-datatable";
-import { useTranslatePages } from "@hooks/useTranslate.hook";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
-import classes from "../../Debug.module.css";
-import api, { SendTauriEvent } from "@api/index";
 import { TauriTypes } from "$types";
+import api, { SendTauriEvent } from "@api/index";
+import { ItemName } from "@components/DataDisplay/ItemName";
+import { DebuggingLiveItemEntryForm } from "@components/Forms/DebuggingLiveItemEntry";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { useAppContext } from "@contexts/app.context";
-import { DebuggingLiveItemEntryForm } from "@components/Forms/DebuggingLiveItemEntry";
-import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { ItemName } from "@components/DataDisplay/ItemName";
+import { faPen, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTranslatePages } from "@hooks/useTranslate.hook";
+import { Badge, Box, Checkbox, Group, Tooltip } from "@mantine/core";
+import { useState } from "react";
+import { DataTable } from "mantine-datatable";
+import classes from "../../Debug.module.css";
 interface DebuggingPanelProps {}
 export const DebuggingPanel = ({}: DebuggingPanelProps) => {
   // Context
@@ -21,17 +22,30 @@ export const DebuggingPanel = ({}: DebuggingPanelProps) => {
   const useTranslateDataGridColumns = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabDebugging(`datatable.columns.${key}`, { ...context }, i18Key);
 
+  const [editingEntry, setEditingEntry] = useState<TauriTypes.DebuggingLiveItemEntry | null>(null);
+
   return (
     <Box>
       <Group align="center">
         <DebuggingLiveItemEntryForm
+          key={editingEntry?.wfm_url ?? "new"}
+          initialValues={editingEntry ?? undefined}
+          isEditing={!!editingEntry}
+          onCancel={() => setEditingEntry(null)}
           onSubmit={async (values) => {
             if (!settings) return;
-            let items = [...(settings?.debugging.live_scraper.entries || []), values];
+            let items = [...(settings?.debugging.live_scraper.entries || [])];
+            if (editingEntry) {
+              const index = items.findIndex((e) => e.wfm_url === editingEntry.wfm_url);
+              if (index !== -1) items[index] = values;
+            } else {
+              items.push(values);
+            }
             await api.app.updateSettings({
               ...settings,
               debugging: { ...settings.debugging, live_scraper: { ...settings.debugging.live_scraper, entries: items } },
             });
+            setEditingEntry(null);
             SendTauriEvent(TauriTypes.Events.RefreshSettings);
           }}
         />
@@ -69,13 +83,34 @@ export const DebuggingPanel = ({}: DebuggingPanelProps) => {
           { accessor: "priority", title: useTranslateDataGridColumns("priority") },
           { accessor: "buy_quantity", title: useTranslateDataGridColumns("buy_quantity") },
           { accessor: "sell_quantity", title: useTranslateDataGridColumns("sell_quantity") },
-          { accessor: "operation", title: useTranslateDataGridColumns("operation") },
+          {
+            accessor: "operations",
+            title: useTranslateDataGridColumns("operations"),
+            render: (row) => (
+              <Group gap={"sm"} justify="flex-start">
+                {row.operations.map((op: string, index: number) => (
+                  <Badge key={index}>{op}</Badge>
+                ))}
+              </Group>
+            ),
+          },
           {
             accessor: "actions",
             title: useTranslateDataGridColumns("actions.title"),
             width: 180,
             render: (row) => (
               <Group gap={"sm"} justify="flex-end">
+                <ActionWithTooltip
+                  tooltip={useTranslateDataGridColumns("actions.buttons.edit_tooltip")}
+                  color={"blue.7"}
+                  icon={faPen}
+                  actionProps={{ size: "sm" }}
+                  iconProps={{ size: "xs" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingEntry(row);
+                  }}
+                />
                 <ActionWithTooltip
                   tooltip={useTranslateDataGridColumns("actions.buttons.delete_tooltip")}
                   color={"red.7"}
