@@ -1446,6 +1446,13 @@
                     "tooltip": "Minimum profit to consider for trading",
                     "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit"
                   },
+                  "min_profit_percentage": {
+                    "label": "Minimum Profit Percentage (%)",
+                    "placeholder": "Minimum Profit Percentage",
+                    "error": "Invalid minimum profit percentage",
+                    "tooltip": "Minimum profit as a percentage of the purchase price. Both this and Minimum Profit are enforced. Set to -1 to disable.",
+                    "link": "https://quantframe.app/features/live-trading/settings/item/wts#min-profit-percentage"
+                  },
                   "max_price_drop": {
                     "label": "Max Price Drop",
                     "placeholder": "Max Price Drop",

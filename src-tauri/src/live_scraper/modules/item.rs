@@ -25,6 +25,14 @@ use crate::{
 static COMPONENT: &str = "LiveScraper:Item:";
 static LOG_FILE: &str = "live_scraper_item.log";
 
+fn minimum_profit_threshold(bought_price: i64, flat_profit: i64, percentage: i64) -> i64 {
+    if is_disabled(percentage) {
+        flat_profit
+    } else {
+        flat_profit.max(bought_price.saturating_mul(percentage).saturating_add(99) / 100)
+    }
+}
+
 #[derive(Debug)]
 pub struct ItemModule {
     client: Weak<LiveScraperState>,
@@ -745,9 +753,14 @@ impl ItemModule {
             stock_item.locked = true;
         }
 
-        // Ensure profit meets the minimum threshold by raising the price if needed
+        // Ensure profit meets the flat or percentage threshold by raising the price if needed
         let mut profit = post_price - bought_price;
-        let minimum_profit = min_profit.unwrap_or(settings.wts.min_profit);
+        let flat_minimum_profit = min_profit.unwrap_or(settings.wts.min_profit);
+        let minimum_profit = minimum_profit_threshold(
+            bought_price,
+            flat_minimum_profit,
+            settings.wts.min_profit_percentage,
+        );
 
         if !is_disabled(minimum_profit) && profit < minimum_profit {
             let adjustment = minimum_profit - profit;
@@ -1127,4 +1140,18 @@ impl ItemModule {
 }
 fn comp(suffix: &str) -> String {
     return format!("{}{}", COMPONENT, suffix);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::minimum_profit_threshold;
+
+    #[test]
+    fn combines_flat_and_percentage_profit_thresholds() {
+        assert_eq!(minimum_profit_threshold(20, -1, 25), 5);
+        assert_eq!(minimum_profit_threshold(200, -1, 25), 50);
+        assert_eq!(minimum_profit_threshold(1, -1, 1), 1);
+        assert_eq!(minimum_profit_threshold(20, 10, 25), 10);
+        assert_eq!(minimum_profit_threshold(20, 10, -1), 10);
+    }
 }
