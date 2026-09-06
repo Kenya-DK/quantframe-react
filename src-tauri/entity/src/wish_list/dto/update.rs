@@ -1,6 +1,6 @@
 use sea_orm::{ActiveValue, Set};
 use serde::{Deserialize, Serialize};
-use utils::Properties;
+use utils::{Properties, SubType};
 
 use crate::{
     dto::{PriceHistory, PriceHistoryVec},
@@ -26,6 +26,9 @@ pub struct UpdateWishList {
 
     #[serde(default)]
     pub price_history: FieldChange<Vec<PriceHistory>>,
+
+    #[serde(default)]
+    pub sub_type: FieldChange<Option<SubType>>,
 
     #[serde(default, flatten)]
     pub properties: FieldChange<Properties>,
@@ -56,6 +59,11 @@ impl UpdateWishList {
             Value(v) => item.price_history = Set(PriceHistoryVec(v)),
             _ => {}
         }
+        match self.sub_type {
+            Value(v) => item.sub_type = Set(v),
+            Null => item.sub_type = Set(None),
+            _ => {}
+        }
         match self.properties {
             Value(mut v) => {
                 v.keep_property_values(ALLOWED_PROPERTIES_FIELDS);
@@ -83,6 +91,7 @@ impl UpdateWishList {
             is_hidden: FieldChange::Ignore,
             status: FieldChange::Ignore,
             price_history: FieldChange::Ignore,
+            sub_type: FieldChange::Ignore,
             properties: FieldChange::Ignore,
         }
     }
@@ -112,6 +121,14 @@ impl UpdateWishList {
         self.price_history = FieldChange::Value(price_history);
         self
     }
+    pub fn with_sub_type(mut self, sub_type: Option<SubType>) -> Self {
+        self.sub_type = match sub_type {
+            Some(v) => FieldChange::Value(Some(v)),
+            None => FieldChange::Null,
+        };
+        self
+    }
+
     pub fn with_properties(mut self, properties: Properties) -> Self {
         self.properties = FieldChange::Value(properties);
         self
