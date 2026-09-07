@@ -57,6 +57,7 @@ pub type ClientCallback = Box<dyn Fn(&str, &Value) + Send + Sync>;
 #[derive(Clone)]
 pub struct Client {
     self_arc: OnceLock<Arc<Client>>,
+    http_client: reqwest::Client,
     pub token: String,
     app_id: String,
     platform: String,
@@ -87,6 +88,7 @@ impl Client {
             .get_or_init(|| {
                 Arc::new(Self {
                     self_arc: OnceLock::new(),
+                    http_client: self.http_client.clone(),
                     token: self.token.clone(),
                     app_id: self.app_id.clone(),
                     platform: self.platform.clone(),
@@ -148,6 +150,7 @@ impl Client {
     ) -> Self {
         Self {
             self_arc: OnceLock::new(),
+            http_client: reqwest::Client::new(),
             token: token.to_string(),
             app_id: app_id.to_string(),
             platform: platform.to_string(),
@@ -255,13 +258,10 @@ impl Client {
                 .collect(),
         );
 
-        // Create the HTTP client with the headers
-        let http_client = reqwest::Client::builder()
-            .default_headers(default_headers)
-            .build()
-            .unwrap();
-
-        let mut builder = http_client.request(method, &url);
+        let mut builder = self
+            .http_client
+            .request(method, &url)
+            .headers(default_headers);
         // If the client needs a body, serialize it
         if let Some(b) = body {
             builder = builder.json(&b);
