@@ -234,13 +234,14 @@ impl TradeDetection {
             _ => (line.to_string(), DetectionStatus::Line),
         };
 
+        // Remove any private use area characters from the player name
         let player_name = text
             .strip_prefix(&self.receive_line_first_part)
             .and_then(|s| s.strip_suffix(&self.receive_line_second_part))
             .unwrap_or("Unknown")
-            .replace('\u{e000}', "")
-            .replace('\u{e001}', "")
-            .replace('', "");
+            .chars()
+            .filter(|c| !matches!(*c, '\u{e000}'..='\u{f8ff}'))
+            .collect::<String>();
 
         (player_name.trim().to_string(), status)
     }
