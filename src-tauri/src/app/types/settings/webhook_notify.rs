@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use utils::{get_location, info, Error, LoggerOptions};
 
-use crate::APP;
+use crate::{APP, HTTP_CLIENT};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WebHookNotify {
@@ -24,7 +24,7 @@ impl WebHookNotify {
         let tauri_app = APP.get().expect("App handle not found");
         let app_info = tauri_app.package_info().clone();
         tauri::async_runtime::spawn(async move {
-            let client = reqwest::Client::new();
+            let client = HTTP_CLIENT.get_or_init(reqwest::Client::new);
             let res = client
                 .post(&url)
                 .header("Content-Type", "application/json")

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use utils::{get_location, info, Error, LoggerOptions};
 
-use crate::APP;
+use crate::{APP, HTTP_CLIENT};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DiscordNotify {
@@ -50,7 +50,7 @@ impl DiscordNotify {
         let tauri_app = APP.get().expect("App handle not found");
         let app_info = tauri_app.package_info().clone();
         tauri::async_runtime::spawn(async move {
-            let client = reqwest::Client::new();
+            let client = HTTP_CLIENT.get_or_init(reqwest::Client::new);
             let timestamp = chrono::Local::now()
                 .to_utc()
                 .format("%Y-%m-%dT%H:%M:%S%.3fZ")

@@ -42,6 +42,7 @@ mod log_parser;
 mod types;
 
 pub static APP: OnceLock<tauri::AppHandle> = OnceLock::new();
+pub(crate) static HTTP_CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
 pub static DATABASE: OnceLock<DatabaseConnection> = OnceLock::new();
 pub static HAS_STARTED: OnceLock<bool> = OnceLock::new();
 pub static APP_ERROR: OnceLock<Mutex<Option<Error>>> = OnceLock::new();
