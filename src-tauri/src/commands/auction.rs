@@ -313,7 +313,7 @@ pub async fn auction_import_by_id(
         auction.to_create()?.set_bought(bought),
         "",
         OrderType::Buy,
-        &[],
+        &OperationSet::new(),
     )
     .await?;
     add_metric!("auction_import_by_id", "manual");

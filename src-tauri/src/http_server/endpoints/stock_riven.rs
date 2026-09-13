@@ -34,7 +34,9 @@ impl StockRivenRoute {
 
     async fn handle_post(&self, body: &str, stream: &mut TcpStream) {
         match serde_json::from_str::<CreateStockRiven>(body) {
-            Ok(input) => match handle_riven_by_entity(input, "", OrderType::Buy, &[]).await {
+            Ok(input) => match handle_riven_by_entity(input, "", OrderType::Buy, &OperationSet::new())
+                .await
+            {
                 Ok((_, updated_item)) => {
                     info(
                         "HttpServer:StockRivenRoute",

@@ -576,7 +576,7 @@ async fn process_trade_item(
             platinum,
             player_name,
             order_type,
-            &[],
+            &OperationSet::new(),
         )
         .await
         .map_err(|e| e.with_location(get_location!()))?;

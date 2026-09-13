@@ -49,7 +49,7 @@ pub async fn get_stock_riven_status_counts(
 
 #[tauri::command]
 pub async fn stock_riven_create(input: CreateStockRiven) -> Result<stock_riven::Model, Error> {
-    match handle_riven_by_entity(input, "", OrderType::Buy, &[]).await {
+    match handle_riven_by_entity(input, "", OrderType::Buy, &OperationSet::new()).await {
         Ok((operations, updated_item)) => {
             info(
                 "Command::StockRivenCreate",
@@ -76,7 +76,7 @@ pub async fn stock_riven_sell(
     re_rolls: i64,
     polarity: String,
     attributes: Vec<RivenAttribute>,
-    bought: i64,
+    price: i64,
 ) -> Result<stock_riven::Model, Error> {
     match handle_riven(
         wfm_url,
@@ -86,18 +86,16 @@ pub async fn stock_riven_sell(
         re_rolls,
         polarity,
         attributes,
-        bought,
+        price,
         "",
         OrderType::Sell,
-        &[],
+        &OperationSet::new(),
     )
     .await
     {
         Ok((_, updated_item)) => return Ok(updated_item),
         Err(e) => {
-            return Err(e
-                .with_location(get_location!())
-                .log("stock_riven_create.log"));
+            return Err(e.with_location(get_location!()).log("stock_riven_sell.log"));
         }
     }
 }
