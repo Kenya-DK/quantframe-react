@@ -43,13 +43,15 @@ impl ModModule {
                     // Create upgrade entry lookups for each upgrade entry in the mod
                     if !item.upgrade_entries.is_empty() {
                         for entry in item.upgrade_entries.iter() {
-                            upgrade_entries_lookup.insert_value(
-                                entry.clone(),
-                                vec![
-                                    format!("{}|{}", item.base.unique_name, entry.wfm_url),
-                                    format!("{}|{}", item.base.unique_name, entry.unique_name),
-                                ],
-                            );
+                            let mut keys = vec![
+                                format!("{}|{}", item.base.unique_name, entry.wfm_url),
+                                format!("{}|{}", item.base.unique_name, entry.unique_name),
+                            ];
+                            let last_segment = entry.unique_name.rsplit('/').next().unwrap_or("");
+                            if !last_segment.is_empty() {
+                                keys.push(format!("{}|{}", item.base.unique_name, last_segment));
+                            }
+                            upgrade_entries_lookup.insert_value(entry.clone(), keys);
                         }
                     }
                 }

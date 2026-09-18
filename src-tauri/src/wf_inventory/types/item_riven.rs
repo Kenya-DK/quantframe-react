@@ -1,12 +1,8 @@
-use entity::stock_riven::RivenAttribute;
+use entity::{enums::RivenGrade, stock_riven::RivenAttribute};
 use serde::{Deserialize, Serialize};
 use utils::{get_location, Error, SubType};
 
-use crate::{
-    cache::{lookup_riven_multipliers, normalize_weapon_unique_name, CacheState},
-    types::ItemRivenBase,
-    wf_inventory::*,
-};
+use crate::{cache::*, types::ItemRivenBase, wf_inventory::*};
 
 static COMPONENT: &str = "WFInvItemRiven";
 
@@ -66,24 +62,24 @@ impl WFInvItemRiven {
 
     fn populate_unveiled(
         &mut self,
-        _raw: &WFInvItemRaw,
+        raw: &WFInvItemRaw,
         fingerprint: &UpgradeFingerprint,
-        _cache: &CacheState,
+        cache: &CacheState,
     ) -> Result<(), Error> {
-        let _challenge = fingerprint.challenge.clone().ok_or_else(|| {
-            Error::new(
-                format!("{}:Unveiled", COMPONENT),
-                "Unveiled riven missing challenge data",
-                get_location!(),
-            )
-        })?;
+        // let challenge = fingerprint.challenge.clone().ok_or_else(|| {
+        //     Error::new(
+        //         format!("{}:Unveiled", COMPONENT),
+        //         "Unveiled riven missing challenge data",
+        //         get_location!(),
+        //     )
+        // })?;
 
-        // let mod_data = cache.mods().get(raw.unique_name.clone())?;
+        // let mod_data = cache.mods().get_by(raw.unique_name.clone())?;
         // let challenge_data = cache
         //     .riven()
         //     .get_challenge_by(challenge.challenge_type.clone())?;
 
-        // self.base.name = mod_data.name.clone();
+        // self.base.name = mod_data.base.name.clone();
         // self.base.unique_name = raw.unique_name.clone();
         // self.base.quantity = raw.quantity;
         // self.base.sub_type = Some(SubType::variant("revealed"));
@@ -107,25 +103,21 @@ impl WFInvItemRiven {
 
         Ok(())
     }
-    fn populate_pre_veiled(
-        &mut self,
-        _raw: &WFInvItemRaw,
-        _cache: &CacheState,
-    ) -> Result<(), Error> {
-        // let mod_data = cache.mods().get(raw.unique_name.clone())?;
+    fn populate_pre_veiled(&mut self, raw: &WFInvItemRaw, cache: &CacheState) -> Result<(), Error> {
+        let mod_data = cache.mods().get_by(raw.unique_name.clone())?;
 
-        // self.base.name = mod_data.name.clone();
-        // self.base.unique_name = raw.unique_name.clone();
-        // self.base.quantity = raw.quantity;
-        // self.base.sub_type = Some(SubType::variant("unrevealed"));
+        self.base.name = mod_data.base.name.clone();
+        self.base.unique_name = raw.unique_name.clone();
+        self.base.quantity = raw.quantity;
+        self.base.sub_type = Some(SubType::variant("unrevealed"));
 
-        // const MSG: &str = "Riven is pre-veiled and has not been unveiled yet.";
-        // self.base
-        //     .properties
-        //     .set_property_value("challenge_description", MSG);
-        // self.base
-        //     .properties
-        //     .set_property_value("challenge_description_with_complication", MSG);
+        const MSG: &str = "Riven is pre-veiled and has not been unveiled yet.";
+        self.base
+            .properties
+            .set_property_value("challenge_description", MSG);
+        self.base
+            .properties
+            .set_property_value("challenge_description_with_complication", MSG);
 
         Ok(())
     }
@@ -135,60 +127,61 @@ impl WFInvItemRiven {
         fingerprint: &UpgradeFingerprint,
         cache: &CacheState,
     ) -> Result<(), Error> {
-        // let weapon_cache = cache.weapon();
+        let weapon_cache = cache.weapon();
 
-        // let weapon_key = normalize_weapon_unique_name(fingerprint.compatibility.clone());
+        let weapon_key = normalize_weapon_unique_name(fingerprint.compatibility.clone());
 
-        // let weapon = weapon_cache
-        //     .get_by(&weapon_key)
-        //     .map_err(|e| e.with_location(get_location!()))?;
+        let weapon = weapon_cache
+            .get_by(&weapon_key)
+            .map_err(|e| e.with_location(get_location!()))?;
 
-        // self.base.name = weapon.name.clone();
-        // self.base.wfm_url = weapon.wfm_riven_url.clone();
-        // self.base.unique_name = raw.unique_name.clone();
-        // self.base.sub_type = Some(SubType::rank(fingerprint.mod_rank));
-        // self.base
-        //     .properties
-        //     .set_property_value("disposition", weapon.disposition);
+        self.base.name = weapon.name.clone();
+        self.base.wfm_url = weapon.wfm_riven_url.clone();
+        self.base.unique_name = raw.unique_name.clone();
+        self.base.sub_type = Some(SubType::rank(fingerprint.mod_rank));
+        self.base
+            .properties
+            .set_property_value("disposition", weapon.disposition);
 
-        // let (buffs_total, curses_total) = fingerprint.riven_stat_totals();
-        // let multipliers = lookup_riven_multipliers(buffs_total, curses_total)?;
+        let (buffs_total, curses_total) = fingerprint.riven_stat_totals();
+        let multipliers = lookup_riven_multipliers(buffs_total, curses_total)?;
 
-        // self.base.attributes = build_riven_attributes_from_fingerprint(
-        //     &weapon_cache,
-        //     &weapon,
-        //     fingerprint,
-        //     multipliers,
-        // )?;
+        self.base.attributes = build_riven_attributes_from_fingerprint(
+            &cache.mods(),
+            &weapon,
+            fingerprint,
+            multipliers,
+        )?;
 
-        // sort_attributes_for_display(&mut self.base.attributes, "raw_value");
+        sort_attributes_for_display(&mut self.base.attributes, "raw_value");
 
-        // self.base.mod_name = build_riven_mod_name(&self.base.attributes, fingerprint.buffs.len());
+        self.base.mod_name = build_riven_mod_name(&self.base.attributes, fingerprint.buffs.len());
 
-        // sort_attributes_by_polarity(&mut self.base.attributes);
+        sort_attributes_by_polarity(&mut self.base.attributes);
 
-        // let grade = weapon
-        //     .god_roll
-        //     .as_ref()
-        //     .map(|rolls| grade_riven(rolls, &self.base.attributes, "tag").0)
-        //     .unwrap_or(RivenGrade::Unknown);
-        // self.base.properties.set_property_value("grade", grade);
-        // self.base.polarity = normalize_polarity(fingerprint.polarity.clone());
+        let grade = cache
+            .riven_good_roll()
+            .get_by(&weapon.unique_name)
+            .ok()
+            .and_then(|god_roll| Some(grade_riven(&god_roll, &self.base.attributes, "tag").0))
+            .unwrap_or(RivenGrade::Unknown);
+        self.base.properties.set_property_value("grade", grade);
+        self.base.polarity = normalize_polarity(fingerprint.polarity.clone());
 
-        // self.base.mastery_rank = fingerprint.mastery_rank;
-        // self.base.re_rolls = fingerprint.rerolls;
+        self.base.mastery_rank = fingerprint.mastery_rank;
+        self.base.re_rolls = fingerprint.rerolls;
 
-        // let endo = compute_riven_endo_cost(
-        //     fingerprint.mastery_rank,
-        //     fingerprint.rerolls,
-        //     fingerprint.mod_rank as i32,
-        // );
-        // self.base.properties.set_property_value("endo_cost", endo);
+        let endo = compute_riven_endo_cost(
+            fingerprint.mastery_rank,
+            fingerprint.rerolls,
+            fingerprint.mod_rank as i32,
+        );
+        self.base.properties.set_property_value("endo_cost", endo);
 
-        // let kuva = compute_riven_kuva_cost(fingerprint.rerolls);
-        // self.base.properties.set_property_value("kuva_cost", kuva);
+        let kuva = compute_riven_kuva_cost(fingerprint.rerolls);
+        self.base.properties.set_property_value("kuva_cost", kuva);
 
-        // self.base.update_uuid();
+        self.base.update_uuid();
         Ok(())
     }
 }
