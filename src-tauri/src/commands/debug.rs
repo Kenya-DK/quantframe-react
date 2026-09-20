@@ -4,6 +4,7 @@ use entity::{
     dto::{PaginatedResult, PaginationQueryDto},
     enums::FieldChange,
 };
+use qf_api::enums::ApplicationEvent;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tauri_plugin_dialog::DialogExt;
@@ -11,8 +12,8 @@ use utils::*;
 use wf_market::enums::OrderType;
 
 use crate::{
-    add_metric, app::AppState, enums::TradeMode, helper::paginate,
-    log_parser::LogParserState, utils::SubTypeExt, APP,
+    app::AppState, enums::TradeMode, helper::paginate, log_parser::LogParserState, track_event,
+    utils::SubTypeExt, APP,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -41,22 +42,40 @@ pub struct LineEntryPaginationQueryDto {
 
 #[tauri::command]
 pub fn debug_get_wfm_state(app: tauri::State<'_, Mutex<AppState>>) -> Result<Value, Error> {
-    let app = app.lock()?.clone();
-    let orders = app.wfm_client.order().cache_orders();
-    let user_auctions = app.wfm_client.auction().cache_auctions();
-    let tracking = app.wfm_client.get_tracking().clone();
-    let mut payload = json!({
-      "user_orders": json!(orders),
-      "user_auctions": json!(user_auctions),
-      "order_limit": app.wfm_client.order().get_order_limit(),
-      "tracking": json!(tracking),
-      "limiters": {}
-    });
-    let per_rate_limit = app.wfm_client.get_per_route_limiter().clone();
-    for (key, route) in per_rate_limit.lock()?.iter() {
-        payload["limiters"][key] = json!({"limit": route.quota_type.current_limit(), "wait_time_sec": route.wait_time_sec, "quota_type": route.quota_type.quota_type()});
+    let result = (|| {
+        let app = app.lock()?.clone();
+        let orders = app.wfm_client.order().cache_orders();
+        let user_auctions = app.wfm_client.auction().cache_auctions();
+        let tracking = app.wfm_client.get_tracking().clone();
+        let mut payload = json!({
+          "user_orders": json!(orders),
+          "user_auctions": json!(user_auctions),
+          "order_limit": app.wfm_client.order().get_order_limit(),
+          "tracking": json!(tracking),
+          "limiters": {}
+        });
+        let per_rate_limit = app.wfm_client.get_per_route_limiter().clone();
+        for (key, route) in per_rate_limit.lock()?.iter() {
+            payload["limiters"][key] = json!({"limit": route.quota_type.current_limit(), "wait_time_sec": route.wait_time_sec, "quota_type": route.quota_type.quota_type()});
+        }
+        Ok::<Value, Error>(payload)
+    })();
+
+    match &result {
+        Ok(_) => track_event!(
+            ApplicationEvent::DebugGetWfmState,
+            [("success", "true".to_string())]
+        ),
+        Err(_) => track_event!(
+            ApplicationEvent::DebugGetWfmState,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "state_read_failed".to_string()),
+            ]
+        ),
     }
-    Ok(payload)
+
+    result
 }
 
 #[tauri::command]
@@ -106,48 +125,66 @@ pub async fn debug_export_ee_logs(
     log_parser: tauri::State<'_, Mutex<Arc<LogParserState>>>,
 ) -> Result<String, Error> {
     let app = APP.get().unwrap();
-    query.pagination.limit = -1; // fetch all
+    query.pagination.limit = -1;
+    let trace_event_error = |error_type: &str| {
+        track_event!(
+            ApplicationEvent::DebugExportEeLogs,
+            [
+                ("success", "false".to_string()),
+                ("error_type", error_type.to_string()),
+            ]
+        );
+    };
     let items = debug_get_ee_logs(query, log_parser)?;
-
-    let file_path = app
+    let Some(file_path) = app
         .dialog()
         .file()
         .add_filter("Quantframe_EE_Logs", &["json"])
-        .blocking_save_file();
-    if let Some(file_path) = file_path {
-        let json = serde_json::to_string_pretty(&items.results).map_err(|e| {
-            Error::new(
-                "Command::ExportEELogs",
-                format!("Failed to serialize EE logs to JSON: {}", e),
-                get_location!(),
-            )
-        })?;
-        std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-            Error::new(
-                "Command::ExportEELogs",
-                format!("Failed to write EE logs to file: {}", e),
-                get_location!(),
-            )
-        })?;
-        info(
+        .blocking_save_file()
+    else {
+        trace_event_error("cancelled");
+        return Ok(String::new());
+    };
+
+    let json = serde_json::to_string_pretty(&items.results).map_err(|e| {
+        trace_event_error("serialization_error");
+        Error::new(
             "Command::ExportEELogs",
-            format!("Exported EE logs to JSON file: {}", file_path),
-            &LoggerOptions::default(),
-        );
-        add_metric!("export_ee_logs", "success");
-        return Ok(file_path.to_string());
-    }
-    Ok("".to_string())
+            format!("Failed to serialize EE logs: {e}"),
+            get_location!(),
+        )
+    })?;
+
+    std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
+        trace_event_error("file_write_error");
+        Error::new(
+            "Command::ExportEELogs",
+            format!("Failed to write EE logs: {e}"),
+            get_location!(),
+        )
+    })?;
+
+    track_event!(
+        ApplicationEvent::DebugExportEeLogs,
+        [
+            ("success", "true".to_string()),
+            ("count", items.results.len().to_string()),
+        ]
+    );
+
+    Ok(file_path.to_string())
 }
 #[tauri::command]
 pub async fn debug_test(app: tauri::State<'_, Mutex<AppState>>) -> Result<Properties, Error> {
     let mut properties = Properties::default();
     let app = app.lock()?.clone();
+
     for item in app.wfm_client.order().cache_orders().to_vec() {
         let mode = match item.order_type {
             OrderType::Buy => TradeMode::Buy,
             OrderType::Sell => TradeMode::Sell,
         };
+
         if !app.settings.live_scraper.items.general.is_item_blacklisted(
             &item.item_id,
             &SubTypeExt::to_entity(&item.subtype),
@@ -158,5 +195,11 @@ pub async fn debug_test(app: tauri::State<'_, Mutex<AppState>>) -> Result<Proper
             });
         }
     }
+
+    track_event!(
+        ApplicationEvent::DebugTest,
+        [("success", "true".to_string())]
+    );
+
     Ok(properties)
 }

@@ -1,10 +1,12 @@
 use std::{process::Command, sync::Mutex};
 
+use qf_api::enums::ApplicationEvent;
 use serde_json::Value;
-use utils::Error;
+use utils::{get_location, Error};
 
 use crate::{
     cache::{client::CacheState, types::*},
+    track_event,
     types::ChatLink,
 };
 
@@ -110,27 +112,67 @@ pub async fn cache_create_theme(
     cache: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<(), Error> {
     let cache = cache.lock()?;
-    match cache.theme().create_theme(name, author, properties) {
-        Ok(_) => {
-            cache.theme().load()?;
-            return Ok(());
-        }
-        Err(e) => {
-            e.log("cache_create_theme.log");
-            return Err(e);
+
+    let result = cache
+        .theme()
+        .create_theme(name, author, properties)
+        .and_then(|_| cache.theme().load());
+
+    match &result {
+        Ok(_) => track_event!(
+            ApplicationEvent::ThemeCreate,
+            [("success", "true".to_string())]
+        ),
+        Err(err) => {
+            track_event!(
+                ApplicationEvent::ThemeCreate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "create_failed".to_string()),
+                ]
+            );
+            err.log("cache_create_theme.log");
         }
     }
+
+    result
 }
+
 #[tauri::command]
-pub fn cache_open_theme_folder(cache: tauri::State<'_, Mutex<CacheState>>) {
-    let cache = cache.lock().expect("Failed to lock cache state");
-    Command::new("explorer")
-        .args([
-            "/select,",
-            &cache.theme().get_theme_folder().to_str().unwrap(),
-        ])
+pub fn cache_open_theme_folder(cache: tauri::State<'_, Mutex<CacheState>>) -> Result<(), Error> {
+    let cache = cache.lock()?;
+    let folder = cache.theme().get_theme_folder();
+
+    let result = Command::new("explorer")
+        .args(["/select,", &folder.to_string_lossy()])
         .spawn()
-        .unwrap();
+        .map(|_| ())
+        .map_err(|e| {
+            Error::new(
+                "Commands:CacheOpenThemeFolder",
+                &format!("Failed to open theme folder: {e}"),
+                get_location!(),
+            )
+        });
+
+    match &result {
+        Ok(_) => track_event!(
+            ApplicationEvent::ThemeOpenFolder,
+            [("success", "true".to_string())]
+        ),
+        Err(err) => {
+            track_event!(
+                ApplicationEvent::ThemeOpenFolder,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "open_folder_failed".to_string()),
+                ]
+            );
+            err.log("cache_open_theme_folder.log");
+        }
+    }
+
+    result
 }
 
 #[tauri::command]

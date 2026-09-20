@@ -14,6 +14,7 @@ use std::{
     num::{NonZero, NonZeroU32},
     sync::{Arc, Mutex, OnceLock},
 };
+use utils::{LoggerOptions, error as log_error};
 
 trait InsertAt {
     fn insert_at(&mut self, line: usize, column: usize, text: &str);
@@ -73,7 +74,6 @@ pub struct Client {
     callbacks: Arc<Mutex<HashMap<String, Vec<ClientCallback>>>>,
     // Routes
     authentication_route: OnceLock<Arc<AuthenticationRoute>>,
-    analytics_route: OnceLock<Arc<AnalyticsRoute>>,
     alert_route: OnceLock<Arc<AlertRoute>>,
     cache_route: OnceLock<Arc<CacheRoute>>,
     item_route: OnceLock<Arc<ItemRoute>>,
@@ -81,6 +81,7 @@ pub struct Client {
     market_route: OnceLock<Arc<MarketRoute>>,
     alecaframe_route: OnceLock<Arc<AlecaframeRoute>>,
     syndicate_route: OnceLock<Arc<SyndicateRoute>>,
+    events_route: OnceLock<Arc<EventsRoute>>,
 }
 impl Client {
     fn arc(&self) -> Arc<Self> {
@@ -104,7 +105,6 @@ impl Client {
                     callbacks: self.callbacks.clone(),
                     // Initialize the routes with the new client
                     authentication_route: self.authentication_route.clone(),
-                    analytics_route: self.analytics_route.clone(),
                     alert_route: self.alert_route.clone(),
                     cache_route: self.cache_route.clone(),
                     item_route: self.item_route.clone(),
@@ -112,6 +112,7 @@ impl Client {
                     market_route: self.market_route.clone(),
                     alecaframe_route: self.alecaframe_route.clone(),
                     syndicate_route: self.syndicate_route.clone(),
+                    events_route: self.events_route.clone(),
                 })
             })
             .clone()
@@ -166,7 +167,6 @@ impl Client {
             callbacks: Arc::new(Mutex::new(HashMap::new())),
             // Initialize the routes with the new client
             authentication_route: OnceLock::new(),
-            analytics_route: OnceLock::new(),
             alert_route: OnceLock::new(),
             cache_route: OnceLock::new(),
             item_route: OnceLock::new(),
@@ -174,6 +174,7 @@ impl Client {
             market_route: OnceLock::new(),
             alecaframe_route: OnceLock::new(),
             syndicate_route: OnceLock::new(),
+            events_route: OnceLock::new(),
         }
     }
     pub async fn call_api<T: serde::de::DeserializeOwned>(
@@ -310,6 +311,11 @@ impl Client {
                         } else if status == reqwest::StatusCode::UNAUTHORIZED {
                             return Err(ApiError::Unauthorized(error));
                         } else {
+                            log_error(
+                                "QF:BadRequest",
+                                error.error_sentence(),
+                                &LoggerOptions::default().set_file("qf_api.log"),
+                            );
                             return Err(ApiError::BadRequest(error));
                         }
                     }
@@ -385,11 +391,6 @@ impl Client {
             .get_or_init(|| AuthenticationRoute::new(self.arc()))
             .clone()
     }
-    pub fn analytics(&self) -> Arc<AnalyticsRoute> {
-        self.analytics_route
-            .get_or_init(|| AnalyticsRoute::new(self.arc()))
-            .clone()
-    }
     pub fn alert(&self) -> Arc<AlertRoute> {
         self.alert_route
             .get_or_init(|| AlertRoute::new(self.arc()))
@@ -423,6 +424,11 @@ impl Client {
     pub fn syndicate(&self) -> Arc<SyndicateRoute> {
         self.syndicate_route
             .get_or_init(|| SyndicateRoute::new(self.arc()))
+            .clone()
+    }
+    pub fn events(&self) -> Arc<EventsRoute> {
+        self.events_route
+            .get_or_init(|| EventsRoute::new(self.arc()))
             .clone()
     }
 }
@@ -483,17 +489,13 @@ impl Client {
         self.self_arc = OnceLock::new();
 
         // If routes existed, recreate them with preserved data and new client reference
+
         if let Some(old_auth) = self.authentication_route.get().cloned() {
             let new_auth = AuthenticationRoute::from_existing(&old_auth, self.arc());
             self.authentication_route = OnceLock::new();
             let _ = self.authentication_route.set(new_auth);
         }
 
-        if let Some(old_analytics) = self.analytics_route.get().cloned() {
-            let new_analytics = AnalyticsRoute::from_existing(&old_analytics, self.arc());
-            self.analytics_route = OnceLock::new();
-            let _ = self.analytics_route.set(new_analytics);
-        }
         if let Some(old_alert) = self.alert_route.get().cloned() {
             let new_alert = AlertRoute::from_existing(&old_alert, self.arc());
             self.alert_route = OnceLock::new();
@@ -528,6 +530,11 @@ impl Client {
             let new_syndicate = SyndicateRoute::from_existing(&old_syndicate, self.arc());
             self.syndicate_route = OnceLock::new();
             let _ = self.syndicate_route.set(new_syndicate);
+        }
+        if let Some(old_events) = self.events_route.get().cloned() {
+            let new_events = EventsRoute::from_existing(&old_events, self.arc());
+            self.events_route = OnceLock::new();
+            let _ = self.events_route.set(new_events);
         }
     }
 }

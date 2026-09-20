@@ -1,6 +1,7 @@
 use std::{collections::HashMap, os::raw, sync::Mutex};
 
 use entity::{dto::*, syndicate_item::*};
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use qf_api::{
     enums::FieldChange,
     types::{SyndicateItemPrice, SyndicateItemPricePaginationQueryDto},
@@ -11,12 +12,12 @@ use utils::{get_location, group_by, info, Error, LoggerOptions, OperationSet, Su
 use wf_market::enums::OrderType;
 
 use crate::{
-    add_metric,
     app::AppState,
     cache::CacheState,
     handlers::{handle_syndicate_item, handle_syndicate_item_by_entity, handle_wfm_item},
     helper::{self},
     live_scraper::is_disabled,
+    track_event,
     types::PermissionsFlags,
     utils::ErrorFromExt,
     APP, DATABASE,
@@ -31,11 +32,19 @@ pub async fn syndicate_item_import_items(
         .user
         .has_permission(PermissionsFlags::SyndicatePricesSearch)?
     {
-        return Err(Error::new(
+        let err = Error::new(
             "Command::SyndicateItemImportItems",
             "User does not have permission to search syndicate prices",
             get_location!(),
-        ));
+        );
+        track_event!(
+            EventType::SyndicateItemImport,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "permission_denied".to_string()),
+            ]
+        );
+        return Err(err);
     }
     let settings = &app.settings.live_scraper.syndicate.wts;
     let mut query = SyndicateItemPricePaginationQueryDto::new(1, -1);
@@ -50,12 +59,21 @@ pub async fn syndicate_item_import_items(
     let items = match app.qf_client.syndicate().get_prices(query).await {
         Ok(items) => items.results,
         Err(e) => {
-            return Err(Error::from_qf(
+            let error_type = e.error_type().to_string();
+            let err = Error::from_qf(
                 "SyndicateModule:InterestingItems",
                 "Failed to get syndicate items",
                 e,
                 get_location!(),
-            ));
+            );
+            track_event!(
+                EventType::SyndicateItemImport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", error_type),
+                ]
+            );
+            return Err(err);
         }
     };
     let types = |item: &SyndicateItemPrice| {
@@ -86,7 +104,17 @@ pub async fn syndicate_item_import_items(
             OrderType::Buy,
             &OperationSet::new(),
         )
-        .await?;
+        .await
+        .map_err(|e| {
+            track_event!(
+                EventType::SyndicateItemImport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "import_failed".to_string()),
+                ]
+            );
+            e.with_location(get_location!())
+        })?;
     }
     info(
         "Command::SyndicateItemImportItems",
@@ -95,6 +123,13 @@ pub async fn syndicate_item_import_items(
             filtered_items.len()
         ),
         &LoggerOptions::default(),
+    );
+    track_event!(
+        EventType::SyndicateItemImport,
+        [
+            ("success", "true".to_string()),
+            ("count", filtered_items.len().to_string()),
+        ]
     );
     Ok(filtered_items.len() as i64)
 }
@@ -147,8 +182,21 @@ pub async fn syndicate_item_create(
 ) -> Result<syndicate_item::Model, Error> {
     match handle_syndicate_item_by_entity(input, 0, "", OrderType::Buy, &OperationSet::new()).await
     {
-        Ok((_, updated_item)) => return Ok(updated_item),
+        Ok((_, updated_item)) => {
+            track_event!(
+                EventType::SyndicateItemCreate,
+                [("success", "true".to_string())]
+            );
+            return Ok(updated_item);
+        }
         Err(e) => {
+            track_event!(
+                EventType::SyndicateItemCreate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "create_failed".to_string()),
+                ]
+            );
             return Err(e
                 .with_location(get_location!())
                 .log("syndicate_item_create.log"));
@@ -174,8 +222,21 @@ pub async fn syndicate_item_sell(
     )
     .await
     {
-        Ok((_, updated_item)) => return Ok(updated_item),
+        Ok((_, updated_item)) => {
+            track_event!(
+                EventType::SyndicateItemSell,
+                [("success", "true".to_string())]
+            );
+            return Ok(updated_item);
+        }
         Err(e) => {
+            track_event!(
+                EventType::SyndicateItemSell,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "sell_failed".to_string()),
+                ]
+            );
             return Err(e
                 .with_location(get_location!())
                 .log("syndicate_item_sell.log"));
@@ -189,13 +250,30 @@ pub async fn syndicate_item_delete(id: i64) -> Result<syndicate_item::Model, Err
 
     let item = SyndicateItemQuery::find_by_id(conn, id)
         .await
-        .map_err(|e| e.with_location(get_location!()))?;
+        .map_err(|e| {
+            track_event!(
+                EventType::SyndicateItemDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            e.with_location(get_location!())
+        })?;
     if item.is_none() {
-        return Err(Error::new(
+        let err = Error::new(
             "Command::SyndicateItemDelete",
             format!("Syndicate item with ID {} not found", id),
             get_location!(),
-        ));
+        );
+        track_event!(
+            EventType::SyndicateItemDelete,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "item_not_found".to_string()),
+            ]
+        );
+        return Err(err);
     }
     let item = item.unwrap();
 
@@ -208,15 +286,34 @@ pub async fn syndicate_item_delete(id: i64) -> Result<syndicate_item::Model, Err
     )
     .await
     .map_err(|e| {
+        track_event!(
+            EventType::SyndicateItemDelete,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "delete_failed".to_string()),
+            ]
+        );
         e.with_location(get_location!())
             .log("syndicate_item_delete.log")
     })?;
-    add_metric!("syndicate_item_delete", "manual");
     match SyndicateItemMutation::delete_by_id(conn, id).await {
         Ok(_) => {}
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::SyndicateItemDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "delete_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 
+    track_event!(
+        EventType::SyndicateItemDelete,
+        [("success", "true".to_string())]
+    );
     Ok(item)
 }
 
@@ -228,9 +325,25 @@ pub async fn syndicate_item_delete_multiple(ids: Vec<i64>) -> Result<i64, Error>
     for id in ids {
         match SyndicateItemMutation::delete_by_id(conn, id).await {
             Ok(_) => deleted_count += 1,
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::SyndicateItemDelete,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "delete_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
+    track_event!(
+        EventType::SyndicateItemDelete,
+        [
+            ("success", "true".to_string()),
+            ("count", deleted_count.to_string()),
+        ]
+    );
     Ok(deleted_count)
 }
 
@@ -240,8 +353,23 @@ pub async fn syndicate_item_update(
 ) -> Result<syndicate_item::Model, Error> {
     let conn = DATABASE.get().unwrap();
     match SyndicateItemMutation::update_by_id(conn, input).await {
-        Ok(syndicate_item) => Ok(syndicate_item),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Ok(syndicate_item) => {
+            track_event!(
+                EventType::SyndicateItemUpdate,
+                [("success", "true".to_string())]
+            );
+            Ok(syndicate_item)
+        }
+        Err(e) => {
+            track_event!(
+                EventType::SyndicateItemUpdate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "update_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }
 
@@ -258,9 +386,25 @@ pub async fn syndicate_item_update_multiple(
         update_input.id = id;
         match SyndicateItemMutation::update_by_id(conn, update_input).await {
             Ok(syndicate_item) => updated_items.push(syndicate_item),
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::SyndicateItemUpdate,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "update_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
+    track_event!(
+        EventType::SyndicateItemUpdate,
+        [
+            ("success", "true".to_string()),
+            ("count", updated_items.len().to_string()),
+        ]
+    );
     Ok(updated_items)
 }
 
@@ -320,6 +464,13 @@ pub async fn export_syndicate_item_json(
     let app_state = app_state.lock()?.clone();
     let app = APP.get().unwrap();
     if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        track_event!(
+            EventType::SyndicateItemExport,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "permission_denied".to_string()),
+            ]
+        );
         e.log("export_syndicate_item_json.log");
         return Err(e);
     }
@@ -335,29 +486,67 @@ pub async fn export_syndicate_item_json(
                 .blocking_save_file();
             if let Some(file_path) = file_path {
                 let json = serde_json::to_string_pretty(&syndicate_items.results).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportSyndicateItemJson",
                         format!("Failed to serialize syndicate item to JSON: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::SyndicateItemExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "serialization_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportSyndicateItemJson",
                         format!("Failed to write syndicate item to file: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::SyndicateItemExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "file_write_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 info(
                     "Command::ExportSyndicateItemJson",
                     format!("Exported syndicate item to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
-                add_metric!("export_syndicate_item_json", "success");
+                track_event!(
+                    EventType::SyndicateItemExport,
+                    [
+                        ("success", "true".to_string()),
+                        ("count", syndicate_items.results.len().to_string()),
+                    ]
+                );
                 return Ok(file_path.to_string());
             }
+            track_event!(
+                EventType::SyndicateItemExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "cancelled".to_string()),
+                ]
+            );
             return Ok("".to_string());
         }
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::SyndicateItemExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }

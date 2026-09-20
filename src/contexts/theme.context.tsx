@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useCallback } from "react";
 import { createTheme, CSSVariablesResolver } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import { defaultTheme, generateCSSVariables, ThemeContextType } from "./static";
 import { notifications } from "@mantine/notifications";
+import React, { createContext, useCallback, useContext } from "react";
+import { defaultTheme, generateCSSVariables, ThemeContextType } from "./static";
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
@@ -31,7 +31,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     async (properties: Record<string, any>) => {
       setCurrentTheme(properties);
     },
-    [setCurrentTheme]
+    [setCurrentTheme],
   );
 
   const updateThemeProperty = useCallback(
@@ -57,7 +57,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         return newTheme;
       });
     },
-    [setCurrentTheme]
+    [setCurrentTheme],
   );
 
   const resetTheme = useCallback(() => {
@@ -82,7 +82,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         console.error("Failed to import theme:", error);
       }
     },
-    [setCurrentTheme]
+    [setCurrentTheme],
   );
 
   const resolver: CSSVariablesResolver = (theme) => ({

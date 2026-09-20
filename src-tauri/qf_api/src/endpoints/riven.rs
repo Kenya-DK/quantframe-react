@@ -46,6 +46,28 @@ impl RivenPriceRoute {
             _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }
     }
+    pub async fn get_price_by_id(
+        &self,
+        id: impl Into<String>,
+    ) -> Result<RivenPriceDetails, ApiError> {
+        let id = id.into();
+        let client = self.client.upgrade().expect("Client should not be dropped");
+        match client
+            .as_ref()
+            .call_api::<RivenPriceDetails>(
+                Method::GET,
+                &format!("/market/rivens/{}", id),
+                None,
+                None,
+                ResponseFormat::Json,
+            )
+            .await
+        {
+            Ok((ApiResponse::Json(details), _, _)) => Ok(details),
+            Err(e) => return Err(e),
+            _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
+        }
+    }
     /**
      * Creates a new `RivenPriceRoute` from an existing one, sharing the client.
      * This is useful for cloning routes when the client state changes.

@@ -2,24 +2,26 @@ use crate::{
     emit_error,
     enums::*,
     live_scraper::modules::*,
-    notify_gui, play_sound, send_event,
+    notify_gui, play_sound, send_event, track_event,
     types::UIEvent,
     utils::{modules::states, OrderListExt},
 };
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::json;
 use std::{
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc, OnceLock,
+        Arc, Mutex, OnceLock,
     },
     time::{Duration, Instant},
 };
-use utils::{get_location, warning, LogLevel, LoggerOptions};
+use utils::{get_location, info, warning, LogLevel, LoggerOptions};
 
 #[derive(Debug)]
 pub struct LiveScraperState {
     pub is_running: Arc<AtomicBool>,
     pub just_started: Arc<AtomicBool>,
+    started_at: Mutex<Option<Instant>>,
     item_module: OnceLock<Arc<ItemModule>>,
     riven_module: OnceLock<Arc<RivenModule>>,
 }
@@ -29,6 +31,7 @@ impl LiveScraperState {
         Arc::new(Self {
             is_running: Arc::new(AtomicBool::new(false)),
             just_started: Arc::new(AtomicBool::new(true)),
+            started_at: Mutex::new(None),
             item_module: OnceLock::new(),
             riven_module: OnceLock::new(),
         })
@@ -54,6 +57,12 @@ impl LiveScraperState {
             return;
         }
         self.just_started.store(true, Ordering::SeqCst);
+        *self.started_at.lock().unwrap() = Some(Instant::now());
+        info(
+            "LiveScraper:Start",
+            format!("Live Scraper started. Elapsed: {}", self.elapsed()),
+            &LoggerOptions::default(),
+        );
         if settings.live_scraper.general.stock_mode == StockMode::All
             || settings.live_scraper.general.stock_mode == StockMode::Item
         {
@@ -91,12 +100,33 @@ impl LiveScraperState {
                             match this.riven().check().await {
                                 Ok(_) => {}
                                 Err(e) => {
+                                    let err_type = e
+                                        .properties
+                                        .get_property_value("type", "Unknown".to_string());
                                     e.clone()
                                         .with_location(get_location!())
                                         .log("live_scraper_riven.log");
                                     match e.log_level {
                                         LogLevel::Critical | LogLevel::Error => {
                                             // Stop the live scraper
+                                            info(
+                                                "LiveScraper:Stop",
+                                                format!(
+                                                    "Live Scraper stopped due to error. Elapsed: {}",
+                                                    this.elapsed()
+                                                ),
+                                                &LoggerOptions::default(),
+                                            );
+                                            track_event!(
+                                                EventType::LiveScraperError,
+                                                [
+                                                    ("success", "false".to_string()),
+                                                    ("error_type", err_type),
+                                                    ("type", "riven".to_string()),
+                                                    ("log_level", format!("{:?}", e.log_level)),
+                                                    ("elapsed_seconds", this.elapsed().to_string()),
+                                                ]
+                                            );
                                             is_running.store(false, Ordering::SeqCst);
                                             play_sound!("windows_xp_error.mp3", 1.0);
                                             emit_error!(e);
@@ -144,6 +174,24 @@ impl LiveScraperState {
                                         json!(e),
                                         json!({ "autoClose": false })
                                     );
+                                    info(
+                                        "LiveScraper:Stop",
+                                        format!(
+                                            "Live Scraper stopped due to error. Elapsed: {}",
+                                            this.elapsed()
+                                        ),
+                                        &LoggerOptions::default(),
+                                    );
+                                    track_event!(
+                                        EventType::LiveScraperError,
+                                        [
+                                            ("success", "false".to_string()),
+                                            ("error_type", err_type),
+                                            ("type", "item".to_string()),
+                                            ("log_level", format!("{:?}", e.log_level)),
+                                            ("elapsed_seconds", this.elapsed().to_string()),
+                                        ]
+                                    );
                                     is_running.store(false, Ordering::SeqCst);
                                     play_sound!("windows_xp_error.mp3", 1.0);
                                     emit_error!(e);
@@ -159,6 +207,19 @@ impl LiveScraperState {
     }
 
     pub fn stop(&self) {
+        info(
+            "LiveScraper:Stop",
+            format!("Live Scraper stopped. Elapsed: {}", self.elapsed()),
+            &LoggerOptions::default(),
+        );
+        track_event!(
+            EventType::LiveScraperStop,
+            [
+                ("success", "true".to_string()),
+                ("elapsed_seconds", self.elapsed().to_string()),
+            ]
+        );
+        *self.started_at.lock().unwrap() = None;
         self.is_running.store(false, Ordering::SeqCst);
     }
 
@@ -168,6 +229,15 @@ impl LiveScraperState {
 
     pub fn just_started(&self) -> bool {
         self.just_started.load(Ordering::SeqCst)
+    }
+
+    pub fn elapsed(&self) -> u64 {
+        let started_at = self.started_at.lock().map(|g| *g).unwrap_or(None);
+        let total_secs = match started_at {
+            Some(start) => start.elapsed().as_secs(),
+            None => 0,
+        };
+        total_secs
     }
 
     pub fn item(&self) -> Arc<ItemModule> {

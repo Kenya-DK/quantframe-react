@@ -1,3 +1,5 @@
+use qf_api::enums::ApplicationEvent;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum TradeResult {
     Success,
@@ -29,6 +31,15 @@ impl TradeResult {
             TradeResult::Cancelled => "trade_cancelled",
             TradeResult::OnTradeAcceptedFailed => "trade_accepted_failed",
             TradeResult::Unknown => "trade_unknown",
+        }
+    }
+    pub fn event_name(&self) -> ApplicationEvent {
+        match self {
+            TradeResult::Success => ApplicationEvent::TradeAccepted,
+            TradeResult::Failed => ApplicationEvent::TradeFailed,
+            TradeResult::Cancelled => ApplicationEvent::TradeCancelled,
+            TradeResult::OnTradeAcceptedFailed => ApplicationEvent::TradeAcceptedFailed,
+            TradeResult::Unknown => ApplicationEvent::TradeUnknown,
         }
     }
 }

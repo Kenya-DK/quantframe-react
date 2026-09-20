@@ -1,17 +1,17 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use entity::{dto::*, stock_riven::*};
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use service::{StockRivenMutation, StockRivenQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, Error, LoggerOptions, OperationSet};
 use wf_market::enums::OrderType;
 
 use crate::{
-    add_metric,
     app::AppState,
     cache::CacheState,
     handlers::{handle_riven, handle_riven_by_entity},
-    helper,
+    helper, track_event,
     types::PermissionsFlags,
     utils::ErrorFromExt,
     APP, DATABASE,
@@ -56,10 +56,20 @@ pub async fn stock_riven_create(input: CreateStockRiven) -> Result<stock_riven::
                 &format!("Operations: {:?}", operations.operations),
                 &utils::LoggerOptions::default(),
             );
-            add_metric!("stock_riven_create", "success");
+            track_event!(
+                EventType::StockRivenCreate,
+                [("success", "true".to_string())]
+            );
             return Ok(updated_item);
         }
         Err(e) => {
+            track_event!(
+                EventType::StockRivenCreate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "create_failed".to_string()),
+                ]
+            );
             return Err(e
                 .with_location(get_location!())
                 .log("stock_riven_create.log"));
@@ -93,8 +103,21 @@ pub async fn stock_riven_sell(
     )
     .await
     {
-        Ok((_, updated_item)) => return Ok(updated_item),
+        Ok((_, updated_item)) => {
+            track_event!(
+                EventType::StockRivenSell,
+                [("success", "true".to_string())]
+            );
+            return Ok(updated_item);
+        }
         Err(e) => {
+            track_event!(
+                EventType::StockRivenSell,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "sell_failed".to_string()),
+                ]
+            );
             return Err(e.with_location(get_location!()).log("stock_riven_sell.log"));
         }
     }
@@ -110,13 +133,30 @@ pub async fn stock_riven_delete(
 
     let item = StockRivenQuery::get_by_id(conn, id)
         .await
-        .map_err(|e| e.with_location(get_location!()))?;
+        .map_err(|e| {
+            track_event!(
+                EventType::StockRivenDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            e.with_location(get_location!())
+        })?;
     if item.is_none() {
-        return Err(Error::new(
+        let err = Error::new(
             "Command::StockRivenDelete",
             format!("Stock riven with ID {} not found", id),
             get_location!(),
-        ));
+        );
+        track_event!(
+            EventType::StockRivenDelete,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "item_not_found".to_string()),
+            ]
+        );
+        return Err(err);
     }
     let item = item.unwrap();
 
@@ -132,22 +172,43 @@ pub async fn stock_riven_delete(
                 .delete(&auction.id)
                 .await
                 .map_err(|e| {
-                    Error::from_wfm(
+                    let error_type = e.error_type().to_string();
+                    let err = Error::from_wfm(
                         "Command::StockRivenDelete",
                         "Failed to delete auction associated with stock riven",
                         e,
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::StockRivenDelete,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", error_type),
+                        ]
+                    );
+                    err
                 })?;
         }
         None => {}
     }
-    add_metric!("stock_riven_delete", "manual");
     match StockRivenMutation::delete(conn, id).await {
         Ok(_) => {}
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::StockRivenDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "delete_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 
+    track_event!(
+        EventType::StockRivenDelete,
+        [("success", "true".to_string())]
+    );
     Ok(item)
 }
 #[tauri::command]
@@ -155,8 +216,23 @@ pub async fn stock_riven_update(input: UpdateStockRiven) -> Result<stock_riven::
     let conn = DATABASE.get().unwrap();
 
     match StockRivenMutation::update_by_id(conn, input).await {
-        Ok(stock_riven) => Ok(stock_riven),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Ok(stock_riven) => {
+            track_event!(
+                EventType::StockRivenUpdate,
+                [("success", "true".to_string())]
+            );
+            Ok(stock_riven)
+        }
+        Err(e) => {
+            track_event!(
+                EventType::StockRivenUpdate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "update_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }
 #[tauri::command]
@@ -166,9 +242,25 @@ pub async fn stock_riven_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
     for id in ids {
         match StockRivenMutation::delete(conn, id).await {
             Ok(_) => deleted_count += 1,
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::StockRivenDelete,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "delete_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
+    track_event!(
+        EventType::StockRivenDelete,
+        [
+            ("success", "true".to_string()),
+            ("count", deleted_count.to_string()),
+        ]
+    );
     Ok(deleted_count)
 }
 #[tauri::command]
@@ -184,9 +276,25 @@ pub async fn stock_riven_update_multiple(
         update_input.id = id;
         match StockRivenMutation::update_by_id(conn, update_input).await {
             Ok(stock_riven) => updated_items.push(stock_riven),
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::StockRivenUpdate,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "update_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
+    track_event!(
+        EventType::StockRivenUpdate,
+        [
+            ("success", "true".to_string()),
+            ("count", updated_items.len().to_string()),
+        ]
+    );
     Ok(updated_items)
 }
 #[tauri::command]
@@ -254,6 +362,13 @@ pub async fn export_stock_riven_json(
     let app_state = app_state.lock()?.clone();
     let app = APP.get().unwrap();
     if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        track_event!(
+            EventType::StockRivenExport,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "permission_denied".to_string()),
+            ]
+        );
         e.log("export_stock_riven_json.log");
         return Err(e);
     }
@@ -268,30 +383,69 @@ pub async fn export_stock_riven_json(
                 .blocking_save_file();
             if let Some(file_path) = file_path {
                 let json = serde_json::to_string_pretty(&stock_riven.results).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportStockRivenJson",
                         format!("Failed to serialize stock riven to JSON: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::StockRivenExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "serialization_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportStockRivenJson",
                         format!("Failed to write stock riven to file: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::StockRivenExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "file_write_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 info(
                     "Command::ExportStockRivenJson",
                     format!("Exported stock riven to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
+                track_event!(
+                    EventType::StockRivenExport,
+                    [
+                        ("success", "true".to_string()),
+                        ("count", stock_riven.results.len().to_string()),
+                    ]
+                );
                 return Ok(file_path.to_string());
             }
             // do something with the optional file path here
             // the file path is `None` if the user closed the dialog
+            track_event!(
+                EventType::StockRivenExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "cancelled".to_string()),
+                ]
+            );
             return Ok("".to_string());
         }
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::StockRivenExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }

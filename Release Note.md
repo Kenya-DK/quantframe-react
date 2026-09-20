@@ -16,6 +16,7 @@
 
 ## Refactors
 
+- ♻️ Reworked analytics from a single `add_metric` call into a structured, batched event system. Events are now named (`ApplicationEvent`, e.g. `app_start`, `stock_item_create`, `page_view`, `switch_theme`) and carry structured string properties such as `success`, `error_type`, and `count`. Events are queued in memory and flushed to the backend every 10 seconds in batches of up to 50, and `track_event` instrumentation was added across commands, the live scraper, the log parser, and theme switching.
 - ♻️ Reworked the live scraper's selling, wishlist, and syndicate pipelines so the order summary is only logged after a successful Warframe Market order update, and moved the "mark as live" persistence to run only on success.
 - ♻️ Items are now marked as Live before the order update is attempted (so a cooldown-skipped update no longer flips them to Error), and cooldown state is tracked per item via a new `cooldown` property.
 - ♻️ Reworked wishlist change tracking to use a list of changed fields (`Vec<String>`) instead of a single value.

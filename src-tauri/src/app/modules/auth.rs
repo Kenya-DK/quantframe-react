@@ -1,16 +1,14 @@
-use utils::{
-    get_location, info, log_json, Error, LogLevel, LoggerOptions,
-};
-use wf_market::client::Authenticated as WFAuthenticated;
-use wf_market::types::UserPrivate as WFUserPrivate;
-use wf_market::types::websocket::WsClient;
-use wf_market::Client as WFClient;
-use qf_api::Client as QFClient;
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
+use qf_api::Client as QFClient;
+use utils::{get_location, info, log_json, Error, LogLevel, LoggerOptions};
+use wf_market::client::Authenticated as WFAuthenticated;
+use wf_market::types::websocket::WsClient;
+use wf_market::types::UserPrivate as WFUserPrivate;
+use wf_market::Client as WFClient;
 
-use crate::app::{AppState, User};
 use crate::app::modules::ws::setup_socket;
+use crate::app::{AppState, User};
 use crate::utils::ErrorFromExt;
 use crate::{emit_startup, SENSITIVE_FIELDS};
 
@@ -179,18 +177,9 @@ impl AppState {
         self.wfm_socket = Some(ws);
         self.wfm_chat_socket = Some(ws_chat);
         if !qf_user.banned {
-            match self.qf_client.analytics().start() {
-                Ok(_) => {}
-                Err(e) => {
-                    return Err(Error::from_qf(
-                        "AppState:Validate",
-                        "Failed to start QF analytics",
-                        e,
-                        get_location!(),
-                    ));
-                }
-            }
+            self.analytics.start()
         }
+        self.analytics.set_client(self.qf_client.clone());
         self.wfm_client = wfm_client;
         Ok((wfm_user, qf_user))
     }

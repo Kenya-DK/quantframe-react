@@ -1,4 +1,5 @@
 use entity::{dto::*, wish_list::*};
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use service::{WishListMutation, WishListQuery};
 use std::{collections::HashMap, sync::Mutex};
 use tauri_plugin_dialog::DialogExt;
@@ -7,11 +8,10 @@ use utils::{get_location, group_by, info, Error, LoggerOptions, OperationSet};
 use wf_market::enums::OrderType;
 
 use crate::{
-    add_metric,
     app::AppState,
     cache::CacheState,
     handlers::{handle_wfm_item, handle_wish_list, handle_wish_list_by_entity},
-    helper,
+    helper, track_event,
     types::PermissionsFlags,
     APP, DATABASE,
 };
@@ -49,8 +49,21 @@ pub async fn get_wish_list_status_counts(
 #[tauri::command]
 pub async fn wish_list_create(input: CreateWishListItem) -> Result<Model, Error> {
     match handle_wish_list_by_entity(input, "", OrderType::Sell, &OperationSet::new()).await {
-        Ok((_, item)) => return Ok(item),
+        Ok((_, item)) => {
+            track_event!(
+                EventType::WishListCreate,
+                [("success", "true".to_string())]
+            );
+            return Ok(item);
+        }
         Err(e) => {
+            track_event!(
+                EventType::WishListCreate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "create_failed".to_string()),
+                ]
+            );
             return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
         }
     }
@@ -74,8 +87,21 @@ pub async fn wish_list_bought(
     )
     .await
     {
-        Ok((_, updated_item)) => return Ok(updated_item),
+        Ok((_, updated_item)) => {
+            track_event!(
+                EventType::WishListBought,
+                [("success", "true".to_string())]
+            );
+            return Ok(updated_item);
+        }
         Err(e) => {
+            track_event!(
+                EventType::WishListBought,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "bought_failed".to_string()),
+                ]
+            );
             return Err(e.with_location(get_location!()).log("wish_list_buy.log"));
         }
     }
@@ -87,13 +113,30 @@ pub async fn wish_list_delete(id: i64) -> Result<Model, Error> {
 
     let item = WishListQuery::get_by_id(conn, id)
         .await
-        .map_err(|e| e.with_location(get_location!()))?;
+        .map_err(|e| {
+            track_event!(
+                EventType::WishListDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            e.with_location(get_location!())
+        })?;
     if item.is_none() {
-        return Err(Error::new(
+        let err = Error::new(
             "Command::WishListDelete",
             format!("Wish list item with ID {} not found", id),
             get_location!(),
-        ));
+        );
+        track_event!(
+            EventType::WishListDelete,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "item_not_found".to_string()),
+            ]
+        );
+        return Err(err);
     }
     let item = item.unwrap();
 
@@ -105,13 +148,34 @@ pub async fn wish_list_delete(id: i64) -> Result<Model, Error> {
         OperationSet::from(vec!["ShouldDelete"]),
     )
     .await
-    .map_err(|e| e.with_location(get_location!()).log("wish_list_delete.log"))?;
-    add_metric!("wish_list_delete", "manual");
+    .map_err(|e| {
+        track_event!(
+            EventType::WishListDelete,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "delete_failed".to_string()),
+            ]
+        );
+        e.with_location(get_location!()).log("wish_list_delete.log")
+    })?;
     match WishListMutation::delete_by_id(conn, id).await {
         Ok(_) => {}
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::WishListDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "delete_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 
+    track_event!(
+        EventType::WishListDelete,
+        [("success", "true".to_string())]
+    );
     Ok(item)
 }
 #[tauri::command]
@@ -122,9 +186,25 @@ pub async fn wish_list_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
     for id in ids {
         match WishListMutation::delete_by_id(conn, id).await {
             Ok(_) => deleted_count += 1,
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::WishListDelete,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "delete_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
+    track_event!(
+        EventType::WishListDelete,
+        [
+            ("success", "true".to_string()),
+            ("count", deleted_count.to_string()),
+        ]
+    );
     Ok(deleted_count)
 }
 #[tauri::command]
@@ -132,8 +212,23 @@ pub async fn wish_list_update(input: UpdateWishList) -> Result<Model, Error> {
     let conn = DATABASE.get().unwrap();
 
     match WishListMutation::update_by_id(conn, input).await {
-        Ok(item) => Ok(item),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Ok(item) => {
+            track_event!(
+                EventType::WishListUpdate,
+                [("success", "true".to_string())]
+            );
+            Ok(item)
+        }
+        Err(e) => {
+            track_event!(
+                EventType::WishListUpdate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "update_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }
 #[tauri::command]
@@ -149,9 +244,25 @@ pub async fn wish_list_update_multiple(
         update_input.id = id;
         match WishListMutation::update_by_id(conn, update_input).await {
             Ok(wish_list) => updated_items.push(wish_list),
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::WishListUpdate,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "update_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
+    track_event!(
+        EventType::WishListUpdate,
+        [
+            ("success", "true".to_string()),
+            ("count", updated_items.len().to_string()),
+        ]
+    );
     Ok(updated_items)
 }
 #[tauri::command]
@@ -210,6 +321,13 @@ pub async fn export_wish_list_json(
     let app_state = app_state.lock()?.clone();
     let app = APP.get().unwrap();
     if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        track_event!(
+            EventType::WishListExport,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "permission_denied".to_string()),
+            ]
+        );
         e.log("export_wish_list_json.log");
         return Err(e);
     }
@@ -224,31 +342,69 @@ pub async fn export_wish_list_json(
                 .blocking_save_file();
             if let Some(file_path) = file_path {
                 let json = serde_json::to_string_pretty(&wish_list.results).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportWishListJson",
                         format!("Failed to serialize wish list to JSON: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::WishListExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "serialization_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportWishListJson",
                         format!("Failed to write wish list to file: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::WishListExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "file_write_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 info(
                     "Command::ExportWishListJson",
                     format!("Exported wish list to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
-                add_metric!("export_wish_list_json", "success");
+                track_event!(
+                    EventType::WishListExport,
+                    [
+                        ("success", "true".to_string()),
+                        ("count", wish_list.results.len().to_string()),
+                    ]
+                );
                 return Ok(file_path.to_string());
             }
             // do something with the optional file path here
             // the file path is `None` if the user closed the dialog
+            track_event!(
+                EventType::WishListExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "cancelled".to_string()),
+                ]
+            );
             return Ok("".to_string());
         }
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::WishListExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }

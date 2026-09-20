@@ -159,6 +159,35 @@ impl AuthenticationRoute {
         let count_lock = self.count.lock().unwrap();
         *count_lock
     }
+
+    /**
+     * Logs out the current user.
+     * # Returns
+     * - `Ok(())` if the logout was successful.
+     * - `Err(ApiError)` if there was an error during logout.
+     */
+    pub async fn logout(&self) -> Result<(), ApiError> {
+        let client = self.client.upgrade().expect("Client should not be dropped");
+
+        match client
+            .as_ref()
+            .call_api::<String>(
+                Method::POST,
+                "/auth/logout",
+                None,
+                None,
+                ResponseFormat::String,
+            )
+            .await
+        {
+            Ok((_, _, _)) => {
+                let mut user_lock = self.user.lock().unwrap();
+                *user_lock = None;
+                Ok(())
+            }
+            Err(e) => Err(e),
+        }
+    }
     /**
      * Creates a new `AuthenticationRoute` from an existing one, sharing the client.
      * This is useful for cloning routes when the client state changes.

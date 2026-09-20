@@ -1,14 +1,15 @@
 use entity::wish_list::CreateWishListItem;
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::json;
 use std::{net::TcpStream, sync::Arc};
 use utils::*;
 use wf_market::enums::OrderType;
 
 use crate::{
-    add_metric,
     handlers::handle_wish_list_by_entity,
     http_server::{respond_json, respond_text},
     send_event,
+    track_event,
     types::UIEvent,
 };
 
@@ -44,7 +45,7 @@ impl WishListRoute {
                             format!("Created Wish List Item: {}", updated_item.item_name),
                             &LoggerOptions::default(),
                         );
-                        add_metric!("http_server_wish_list_create", "success");
+                        track_event!(EventType::WishListCreate, [("success", "true")]);
                         send_event!(
                             UIEvent::RefreshWishListItems,
                             json!({"id": updated_item.id, "source": "HttpServer"})

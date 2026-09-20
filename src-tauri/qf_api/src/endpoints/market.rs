@@ -1,7 +1,6 @@
 use std::sync::{Arc, Weak};
 
 use reqwest::Method;
-use serde_json::Value;
 
 use crate::{
     client::Client,
@@ -25,11 +24,14 @@ impl MarketRoute {
             client: Arc::downgrade(&client),
         })
     }
-    pub async fn get_user_activity(&self, query: UserActivityQueryDto) -> Result<Value, ApiError> {
+    pub async fn get_user_activity(
+        &self,
+        query: UserActiveHistoryQueryDto,
+    ) -> Result<UserActivityDto, ApiError> {
         let client = self.client.upgrade().expect("Client should not be dropped");
         match client
             .as_ref()
-            .call_api::<Value>(
+            .call_api::<UserActivityDto>(
                 Method::GET,
                 &format!("/market/users/activity?{}", query.get_query()),
                 None,
@@ -38,7 +40,7 @@ impl MarketRoute {
             )
             .await
         {
-            Ok((ApiResponse::Json(alerts), _, _)) => Ok(alerts),
+            Ok((ApiResponse::Json(activity), _, _)) => Ok(activity),
             Err(e) => return Err(e),
             _ => Err(ApiError::Unknown("Unexpected response format".to_string())),
         }

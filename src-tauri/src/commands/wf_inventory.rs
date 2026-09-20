@@ -1,4 +1,5 @@
 use entity::stock_riven::StockRivenPaginationQueryDto;
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::{json, Value};
 use service::StockRivenQuery;
 use std::sync::{Arc, Mutex};
@@ -6,7 +7,7 @@ use utils::Error;
 
 use crate::wf_inventory::WFInventoryState;
 use crate::wf_inventory::WFItemPaginationDto;
-use crate::DATABASE;
+use crate::{track_event, DATABASE};
 
 #[tauri::command]
 pub async fn wf_inventory_get_rivens(
@@ -40,6 +41,16 @@ pub async fn wf_inventory_update(
     wf_inventory: tauri::State<'_, Mutex<Arc<WFInventoryState>>>,
 ) -> Result<(), Error> {
     let wf_inventory = wf_inventory.lock()?.clone();
-    wf_inventory.update()?;
+    wf_inventory.update().map_err(|e| {
+        track_event!(
+            EventType::WFInventoryUpdate,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "update_failed".to_string()),
+            ]
+        );
+        e
+    })?;
+    track_event!(EventType::WFInventoryUpdate, [("success", "true".to_string())]);
     Ok(())
 }

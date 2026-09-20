@@ -1,14 +1,14 @@
 pub mod authentication;
 pub use authentication::*;
 
-pub mod analytics;
-pub use analytics::*;
-
 pub mod alert;
 pub use alert::*;
 
 pub mod alecaframe;
 pub use alecaframe::*;
+
+pub mod events;
+pub use events::*;
 
 pub mod cache;
 pub use cache::*;

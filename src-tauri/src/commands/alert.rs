@@ -10,7 +10,8 @@ pub async fn alert_get_alerts(
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<Paginated<Alert>, Error> {
     let app = app.lock()?.clone();
-    match app.qf_client.alert().get_alerts().await {
+    let query = AlertPaginationQueryDto::new(1, 25).set_enabled(true);
+    match app.qf_client.alert().get_alerts(query).await {
         Ok(alerts) => Ok(alerts),
         Err(e) => {
             let err = Error::from_qf(

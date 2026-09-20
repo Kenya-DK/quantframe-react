@@ -1,14 +1,15 @@
 use entity::stock_riven::CreateStockRiven;
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::json;
 use std::{net::TcpStream, sync::Arc};
 use utils::*;
 use wf_market::enums::OrderType;
 
 use crate::{
-    add_metric,
     handlers::handle_riven_by_entity,
     http_server::{respond_json, respond_text},
     send_event,
+    track_event,
     types::UIEvent,
 };
 
@@ -46,7 +47,7 @@ impl StockRivenRoute {
                         ),
                         &LoggerOptions::default(),
                     );
-                    add_metric!("http_server_stock_riven_create", "success");
+                    track_event!(EventType::StockRivenCreate, [("success", "true")]);
                     send_event!(
                         UIEvent::RefreshStockRivens,
                         json!({"id": updated_item.id, "source": "HttpServer"})

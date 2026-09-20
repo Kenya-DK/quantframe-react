@@ -24,14 +24,17 @@ impl AlertRoute {
             client: Arc::downgrade(&client),
         })
     }
-    pub async fn get_alerts(&self) -> Result<Paginated<Alert>, ApiError> {
+    pub async fn get_alerts(
+        &self,
+        query: AlertPaginationQueryDto,
+    ) -> Result<Paginated<Alert>, ApiError> {
         let client = self.client.upgrade().expect("Client should not be dropped");
 
         match client
             .as_ref()
             .call_api::<Paginated<Alert>>(
                 Method::GET,
-                "/alert?page=1&limit=25&enabled=true",
+                &format!("/alert?{}", query.get_query()),
                 None,
                 None,
                 ResponseFormat::Json,

@@ -5,12 +5,13 @@ use entity::{
     enums::TransactionItemType,
     transaction::{dto::TransactionPaginationQueryDto, *},
 };
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::json;
 use service::{TransactionMutation, TransactionQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, warning, Error, LoggerOptions};
 
-use crate::{add_metric, app::AppState, types::PermissionsFlags, APP, DATABASE};
+use crate::{app::AppState, track_event, types::PermissionsFlags, APP, DATABASE};
 
 #[tauri::command]
 pub async fn get_transaction_pagination(
@@ -62,21 +63,51 @@ pub async fn transaction_delete(id: i64) -> Result<transaction::Model, Error> {
 
     let item = TransactionQuery::find_by_id(conn, id)
         .await
-        .map_err(|e| e.with_location(get_location!()))?;
+        .map_err(|e| {
+            track_event!(
+                EventType::TransactionDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            e.with_location(get_location!())
+        })?;
     if item.is_none() {
-        return Err(Error::new(
+        let err = Error::new(
             "Command::TransactionDelete",
             format!("Transaction with ID {} not found", id),
             get_location!(),
-        ));
+        );
+        track_event!(
+            EventType::TransactionDelete,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "transaction_not_found".to_string()),
+            ]
+        );
+        return Err(err);
     }
     let item = item.unwrap();
 
     match TransactionMutation::delete_by_id(conn, id).await {
         Ok(_) => {}
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::TransactionDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "delete_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 
+    track_event!(
+        EventType::TransactionDelete,
+        [("success", "true".to_string())]
+    );
     Ok(item)
 }
 #[tauri::command]
@@ -93,10 +124,26 @@ pub async fn transaction_delete_bulk(ids: Vec<i64>) -> Result<u64, Error> {
                 );
                 deleted_count += e.rows_affected;
             }
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::TransactionDelete,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "delete_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
 
+    track_event!(
+        EventType::TransactionDelete,
+        [
+            ("success", "true".to_string()),
+            ("count", deleted_count.to_string()),
+        ]
+    );
     Ok(deleted_count)
 }
 
@@ -104,8 +151,23 @@ pub async fn transaction_delete_bulk(ids: Vec<i64>) -> Result<u64, Error> {
 pub async fn transaction_update(input: UpdateTransaction) -> Result<transaction::Model, Error> {
     let conn = DATABASE.get().unwrap();
     match TransactionMutation::update_by_id(conn, input).await {
-        Ok(transaction) => Ok(transaction),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Ok(transaction) => {
+            track_event!(
+                EventType::TransactionUpdate,
+                [("success", "true".to_string())]
+            );
+            Ok(transaction)
+        }
+        Err(e) => {
+            track_event!(
+                EventType::TransactionUpdate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "update_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }
 #[tauri::command]
@@ -116,6 +178,13 @@ pub async fn export_transaction_json(
     let app_state = app_state.lock()?.clone();
     let app = APP.get().unwrap();
     if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        track_event!(
+            EventType::TransactionExport,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "permission_denied".to_string()),
+            ]
+        );
         e.log("export_transaction_json.log");
         return Err(e);
     }
@@ -130,32 +199,70 @@ pub async fn export_transaction_json(
                 .blocking_save_file();
             if let Some(file_path) = file_path {
                 let json = serde_json::to_string_pretty(&transaction.results).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportTransactionJson",
                         format!("Failed to serialize transactions to JSON: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::TransactionExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "serialization_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportTransactionJson",
                         format!("Failed to write transactions to file: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::TransactionExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "file_write_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 info(
                     "Command::ExportTransactionJson",
                     format!("Exported transactions to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
-                add_metric!("export_transaction_json", "success");
+                track_event!(
+                    EventType::TransactionExport,
+                    [
+                        ("success", "true".to_string()),
+                        ("count", transaction.results.len().to_string()),
+                    ]
+                );
                 return Ok(file_path.to_string());
             }
             // do something with the optional file path here
             // the file path is `None` if the user closed the dialog
+            track_event!(
+                EventType::TransactionExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "cancelled".to_string()),
+                ]
+            );
             return Ok("".to_string());
         }
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::TransactionExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }
 
@@ -168,6 +275,7 @@ pub async fn transaction_calculate_tax(
     let items = get_transaction_pagination(TransactionPaginationQueryDto::new(1, -1))
         .await?
         .results;
+    let count = items.len();
     for item in items {
         let mut update_data = UpdateTransaction::new(item.id);
         match item.transaction_type {
@@ -220,5 +328,12 @@ pub async fn transaction_calculate_tax(
             );
         }
     }
+    track_event!(
+        EventType::TransactionCalculateTax,
+        [
+            ("success", "true".to_string()),
+            ("count", count.to_string()),
+        ]
+    );
     Ok(())
 }

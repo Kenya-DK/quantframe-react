@@ -1,7 +1,9 @@
-use std::sync::{LazyLock, Mutex};
+use std::{
+    collections::HashMap,
+    sync::{LazyLock, Mutex},
+};
 
 use crate::{
-    add_metric,
     app::Settings,
     enums::TradeItemType,
     handlers::{
@@ -9,12 +11,13 @@ use crate::{
     },
     helper::get_or_create_window,
     log_parser::*,
-    notify_gui, send_event,
+    notify_gui, send_event, track_event,
     types::*,
     utils::{modules::states, SubTypeExt},
     APP,
 };
 use entity::enums::TransactionType;
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::json;
 use tauri::{Emitter, Listener, Manager};
 use utils::*;
@@ -145,7 +148,6 @@ impl OnTradeEvent {
 
         self.spawn_trade_processor(settings, trade_type, order_type);
 
-        add_metric!("on_trade_event", "trade_accepted");
         Ok(())
     }
 }
@@ -241,9 +243,13 @@ impl OnTradeEvent {
         let logger = self.logger.clone();
 
         tauri::async_runtime::spawn(async move {
+            let mut events = HashMap::new();
             logger.add_log("Trade processor started");
 
             let items = trade.get_valid_items(&trade_type, vec![]);
+            events.insert("items", items.len().to_string());
+            events.insert("trade_type", trade_type.to_string());
+            events.insert("platinum", trade.platinum.to_string());
             let mut operations = OperationSet::new();
 
             logger.add_log(format!(
@@ -251,22 +257,27 @@ impl OnTradeEvent {
                 items.len(),
                 trade.player_name
             ));
-
             if settings.live_scraper.general.auto_trade {
                 operations.add("AutoTrade");
                 logger.add_log("AutoTrade enabled");
+                events.insert("auto_trade", "enabled".to_string());
             }
 
             let Some(item) = items.first().cloned() else {
+                events.insert("missing_items", "true".to_string());
+                events.insert("success", "false".to_string());
                 handle_missing_items(&trade, &logger);
+                track_event!(EventType::TradeAccepted, events);
                 return;
             };
             logger.add_log(format!("Primary item: {}", item));
             if needs_multi_processing(&items, &item) {
                 handle_multi_items(&trade, trade_type, order_type, &mut operations, &logger).await;
+                events.insert("multi_item_processing", "true".to_string());
             } else {
                 operations.add("Found");
                 logger.add_log("Single item found, skipping multi-item processing");
+                events.insert("single_item_processing", "true".to_string());
             }
 
             execute_auto_trade_if_needed(&trade, order_type, item, &mut operations, &logger).await;
@@ -275,6 +286,9 @@ impl OnTradeEvent {
                 "Trade completed with operations: {}",
                 operations.operations.join(", ")
             ));
+
+            events.insert("success", "true".to_string());
+            track_event!(EventType::TradeAccepted, events);
 
             process_operations(&trade, operations);
         });
@@ -682,8 +696,6 @@ impl LineHandler for OnTradeEvent {
             self.logger
                 .add_log("Switching to mode: Collecting Trade Message");
 
-            add_metric!("on_trade_event", "trade_started");
-
             return Ok((true, trade_start));
         }
 
@@ -707,7 +719,6 @@ impl LineHandler for OnTradeEvent {
             .add_log(format!("Trade {} With:", result.display()));
         self.logger
             .add_log(format!("       {entry} | Detection: {:?}", status));
-        add_metric!("on_trade_event", result.metric_name());
         self.logger.add_log(format!(
             "Switching to mode: Processing Trade Logs {} message lines collected",
             self.logs.len()
@@ -715,6 +726,14 @@ impl LineHandler for OnTradeEvent {
         self.start_process_logs();
         match result {
             TradeResult::Failed | TradeResult::Cancelled | TradeResult::OnTradeAcceptedFailed => {
+                track_event!(
+                    result.event_name(),
+                    [
+                        ("success", "false".to_string()),
+                        ("trade_result", result.metric_name().to_string()),
+                        ("message_line_count", self.logs.len().to_string()),
+                    ]
+                );
                 self.logger
                     .add_log("Trade Failed or Cancelled, resetting state");
                 info(

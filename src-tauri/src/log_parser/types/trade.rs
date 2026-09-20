@@ -44,13 +44,6 @@ impl Default for PlayerTrade {
 }
 
 impl PlayerTrade {
-    pub fn is_purchase(&self) -> bool {
-        self.trade_type == TradeClassification::Purchase
-    }
-
-    pub fn is_sale(&self) -> bool {
-        self.trade_type == TradeClassification::Sale
-    }
     pub fn get_received_plat(&self) -> i64 {
         self.received_items
             .iter()

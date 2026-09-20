@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::sync::{Mutex, OnceLock};
 
+use crate::app::modules::analytics::Analytics;
 use crate::app::{Settings, User};
 use crate::http_server::HttpServer;
 use qf_api::Client as QFClient;
@@ -28,6 +29,7 @@ pub struct AppState {
     pub settings: Settings,
     pub wfm_client: WFClient<WFAuthenticated>,
     pub qf_client: QFClient,
+    pub analytics: Arc<Analytics>,
     pub is_development: bool,
     pub is_pre_release: bool,
     pub use_temp_db: bool,

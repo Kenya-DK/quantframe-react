@@ -21,8 +21,8 @@ import { RivenModule } from "./riven";
 import { SoundModule } from "./sound";
 import { StockItemModule } from "./stack_item";
 import { StockRivenModule } from "./stack_riven";
-import { SyndicateItemModule } from "./syndicate_item";
 import { SyndicateModule } from "./syndicate";
+import { SyndicateItemModule } from "./syndicate_item";
 import { TradeEntryModule } from "./trade_entry";
 import { TransactionModule } from "./transaction";
 import { UserModule } from "./user";
@@ -232,7 +232,7 @@ const SendTauriEvent = async (event: string, data?: any) => window.api.events.Fi
 const SendTauriDataEvent = async (event: string, operation: TauriTypes.EventOperations, data: any) =>
   window.api.events.FireEvent(event, { operation, data });
 const WFMThumbnail = (thumb: string) => `https://warframe.market/static/assets/${thumb}`;
-const AddMetric = (metric: string, value: number | string) => {
+const AddMetric = (metric: string, value: Record<string, string>) => {
   window.api.analytics.add_metric(metric, value);
 };
 const HasPermission = async (flag: TauriTypes.PermissionsFlags): Promise<boolean> => {

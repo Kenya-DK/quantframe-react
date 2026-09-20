@@ -9,13 +9,14 @@ use utils::{
 };
 use wf_market::{enums::OrderType, types::Order};
 
+use qf_api::enums::app_events::ApplicationEvent as EventType;
+
 use crate::{
-    add_metric,
     app::AppState,
     cache::client::CacheState,
     helper::{self, paginate},
     live_scraper::LiveScraperState,
-    send_event,
+    send_event, track_event,
     types::*,
     utils::*,
 };
@@ -32,11 +33,19 @@ pub async fn order_refresh(
         .my_orders()
         .await
         .map_err(|e| {
+            let error_type = e.error_type().to_string();
             let err = Error::from_wfm(
                 "OrderRefresh",
                 "Failed to refresh orders",
                 e,
                 get_location!(),
+            );
+            track_event!(
+                EventType::OrderRefresh,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", error_type),
+                ]
             );
             err.log("order_refresh.log");
             err
@@ -46,6 +55,8 @@ pub async fn order_refresh(
         .order()
         .cache_orders_mut()
         .apply_item_info(&cache_state)?;
+
+    track_event!(EventType::OrderRefresh, [("success", "true".to_string())]);
     Ok(())
 }
 
@@ -179,7 +190,16 @@ pub async fn order_delete_all(
     cache_state: tauri::State<'_, Mutex<CacheState>>,
 ) -> Result<(), Error> {
     let app = app_state.lock()?.clone();
-    order_refresh(app_state, cache_state).await?;
+    order_refresh(app_state, cache_state).await.map_err(|e| {
+        track_event!(
+            EventType::OrderDeleteAll,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "refresh_failed".to_string()),
+            ]
+        );
+        e
+    })?;
     live_scraper.stop();
 
     let orders = match order_type {
@@ -190,11 +210,19 @@ pub async fn order_delete_all(
     let mut current = orders.len();
     for order in orders.iter() {
         if let Err(e) = app.wfm_client.order().delete(&order.id).await {
+            let error_type = e.error_type().to_string();
             let err = Error::from_wfm(
                 "OrderDeleteAll",
                 "Failed to delete order",
                 e,
                 get_location!(),
+            );
+            track_event!(
+                EventType::OrderDeleteAll,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", error_type),
+                ]
             );
             err.log("order_delete_all.log");
             return Err(err);
@@ -205,7 +233,14 @@ pub async fn order_delete_all(
             json!({"source": "order_delete_all", "current": current, "total": orders.len()})
         );
     }
-    add_metric!("order_delete_all", "manual");
+
+    track_event!(
+        EventType::OrderDeleteAll,
+        [
+            ("success", "true".to_string()),
+            ("count", orders.len().to_string()),
+        ]
+    );
     Ok(())
 }
 #[tauri::command]
@@ -216,27 +251,44 @@ pub async fn order_delete_by_id(
     let app = app.lock()?.clone();
     let order = app.wfm_client.order().cache_orders().get_by_id(&id);
     if order.is_none() {
-        return Err(Error::new(
+        let err = Error::new(
             "Command::OrderDeleteById",
             "Order not found",
             get_location!(),
-        ));
+        );
+        track_event!(
+            EventType::OrderDeleteById,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "order_not_found".to_string()),
+            ]
+        );
+        return Err(err);
     }
     let order = order.unwrap();
     match app.wfm_client.order().delete(&order.id).await {
         Ok(_) => {}
         Err(e) => {
+            let error_type = e.error_type().to_string();
             let err = Error::from_wfm(
                 "Command::OrderDeleteById",
                 "Failed to delete order",
                 e,
                 get_location!(),
             );
+            track_event!(
+                EventType::OrderDeleteById,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", error_type),
+                ]
+            );
             err.log("order_delete_by_id.log");
             return Err(err);
         }
     }
-    add_metric!("order_delete_by_id", "manual");
+
+    track_event!(EventType::OrderDeleteById, [("success", "true".to_string())]);
     Ok(())
 }
 #[tauri::command]

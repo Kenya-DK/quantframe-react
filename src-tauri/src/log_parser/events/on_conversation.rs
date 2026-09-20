@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::json;
 use utils::{info, DetectionStatus, Error, LineEntry, LineHandler, LoggerOptions};
 
-use crate::{add_metric, utils::modules::states};
+use crate::{track_event, utils::modules::states};
 
 #[derive(Clone, Debug)]
 pub struct OnConversationEvent {}
@@ -44,7 +45,6 @@ impl LineHandler for OnConversationEvent {
                     if !player_name.is_empty() {
                         player_name = player_name.chars().skip(1).collect();
                     }
-                    add_metric!("on_conversation_event", "new_conversation");
                     notify(&player_name);
                 }
             }
@@ -59,6 +59,10 @@ fn notify(player_name: &str) {
         "OnConversationEvent",
         format!("OnConversationEvent: New conversation from {}", player_name,),
         &LoggerOptions::default(),
+    );
+    track_event!(
+        EventType::ChatConversationDetected,
+        [("success", "true".to_string())]
     );
     let mut variables = HashMap::new();
     variables.insert("<PLAYER_NAME>".to_string(), player_name.to_string());

@@ -17,7 +17,7 @@ While using our Service, we may ask you to provide us with certain personally id
 - Warframe Market User ID
 - Device ID (collected in a fully anonymous way used for tracking/securing purposes)
 - Quantframe Version
-- Metrics
+- Event data (feature usage events)
 - Operating System example: windows, macOS, linux, etc.
 - Stock item/riven details relevant to the user's activity (e.g., adding/deleting/updating a stock item/
   riven)
@@ -31,18 +31,32 @@ You can turn off the collection of this data by disabling the Analytics tag in t
 
 ### Metrics Data
 
-We may also collect information on how the Service is accessed and used. This includes tracking user
-interactions, such as the specific links or buttons you click on while using our Service.
-example:
+We collect event data on how the Service is used. Each event has a name (for
+example `app_start`, `stock_item_create`, or `page_view`) and a set of
+properties that describe the action without revealing its contents. Events are
+queued locally and sent to our servers in batches.
+
+For example, a `page_view` event only records which section of the app was
+opened:
 
 ```
 {
-  "active_page": "warframe_market",
+  "event": "page_view",
+  "properties": {
+    "page": "warframe_market"
+  }
 }
 ```
 
+Actions that can fail include a `success` property (`"true"` or `"false"`), and a
+non-sensitive `error_type` when `success` is `"false"`. Bulk actions include a
+`count`. Event properties never include item names, prices, trading partners,
+usernames, or chat message contents.
+
+You can turn off the collection of this data by disabling the Analytics tag in the settings.
+
 ### Last Updated
 
-This document was last updated on April 18, 2025.
+This document was last updated on September 20, 2026.
 
-<!-- <ID>0.0.1</ID>. -->
+<!-- <ID>0.0.2</ID>. -->

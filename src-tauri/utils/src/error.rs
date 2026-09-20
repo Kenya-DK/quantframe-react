@@ -173,7 +173,6 @@ impl Error {
         }
         self
     }
-
     /// Mask sensitive data in the context JSON
     ///
     /// # Arguments

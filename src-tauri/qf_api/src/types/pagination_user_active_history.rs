@@ -1,14 +1,16 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
+use crate::enums::*;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UserActivityQueryDto {
+pub struct UserActiveHistoryQueryDto {
     from_date: String,
     to_date: String,
-    group_by: String,
+    group_by: TimeGroup,
 }
-impl UserActivityQueryDto {
-    pub fn new(from_date: String, to_date: String, group_by: String) -> Self {
+impl UserActiveHistoryQueryDto {
+    pub fn new(from_date: String, to_date: String, group_by: TimeGroup) -> Self {
         Self {
             from_date,
             to_date,
@@ -19,7 +21,7 @@ impl UserActivityQueryDto {
         let mut query: Vec<String> = Vec::new();
         query.push(format!("from_date={}", self.from_date));
         query.push(format!("to_date={}", self.to_date));
-        query.push(format!("group_by={}", self.group_by));
+        query.push(format!("group_by={}", self.group_by.to_string()));
 
         query.join("&")
     }
@@ -29,17 +31,17 @@ impl UserActivityQueryDto {
     pub fn set_to_date(&mut self, to_date: String) {
         self.to_date = to_date;
     }
-    pub fn set_group_by(&mut self, group_by: String) {
+    pub fn set_group_by(&mut self, group_by: TimeGroup) {
         self.group_by = group_by;
     }
 }
 
-impl Display for UserActivityQueryDto {
+impl Display for UserActiveHistoryQueryDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "From Date: {}, To Date: {}, Group By: {}",
-            self.from_date, self.to_date, self.group_by
+            self.from_date, self.to_date, self.group_by.to_string()
         )
     }
 }

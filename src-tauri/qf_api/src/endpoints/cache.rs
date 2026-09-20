@@ -6,6 +6,7 @@ use crate::{
     client::Client,
     enums::{ApiResponse, ResponseFormat},
     errors::ApiError,
+    types::OkMessageResponse,
 };
 
 #[derive(Debug)]

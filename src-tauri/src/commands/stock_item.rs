@@ -1,17 +1,18 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use entity::{dto::*, stock_item::*};
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use service::{StockItemMutation, StockItemQuery};
 use tauri_plugin_dialog::DialogExt;
 use utils::{get_location, group_by, info, Error, LoggerOptions, OperationSet, SubType};
 use wf_market::enums::OrderType;
 
 use crate::{
-    add_metric,
     app::AppState,
     cache::CacheState,
     handlers::{handle_item_by_entity, handle_wfm_item, stock_item::handle_item},
     helper::{self},
+    track_event,
     types::PermissionsFlags,
     APP, DATABASE,
 };
@@ -49,8 +50,21 @@ pub async fn get_stock_item_status_counts(
 #[tauri::command]
 pub async fn stock_item_create(input: CreateStockItem) -> Result<stock_item::Model, Error> {
     match handle_item_by_entity(input, "", OrderType::Buy, &OperationSet::new()).await {
-        Ok((_, updated_item)) => return Ok(updated_item),
+        Ok((_, updated_item)) => {
+            track_event!(
+                EventType::StockItemCreate,
+                [("success", "true".to_string())]
+            );
+            return Ok(updated_item);
+        }
         Err(e) => {
+            track_event!(
+                EventType::StockItemCreate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "create_failed".to_string()),
+                ]
+            );
             return Err(e
                 .with_location(get_location!())
                 .log("stock_item_create.log"));
@@ -76,8 +90,21 @@ pub async fn stock_item_sell(
     )
     .await
     {
-        Ok((_, updated_item)) => return Ok(updated_item),
+        Ok((_, updated_item)) => {
+            track_event!(
+                EventType::StockItemSell,
+                [("success", "true".to_string())]
+            );
+            return Ok(updated_item);
+        }
         Err(e) => {
+            track_event!(
+                EventType::StockItemSell,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "sell_failed".to_string()),
+                ]
+            );
             return Err(e.with_location(get_location!()).log("stock_item_sell.log"));
         }
     }
@@ -89,13 +116,30 @@ pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
 
     let item = StockItemQuery::find_by_id(conn, id)
         .await
-        .map_err(|e| e.with_location(get_location!()))?;
+        .map_err(|e| {
+            track_event!(
+                EventType::StockItemDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            e.with_location(get_location!())
+        })?;
     if item.is_none() {
-        return Err(Error::new(
+        let err = Error::new(
             "Command::StockItemDelete",
             format!("Stock item with ID {} not found", id),
             get_location!(),
-        ));
+        );
+        track_event!(
+            EventType::StockItemDelete,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "item_not_found".to_string()),
+            ]
+        );
+        return Err(err);
     }
     let item = item.unwrap();
 
@@ -108,15 +152,34 @@ pub async fn stock_item_delete(id: i64) -> Result<stock_item::Model, Error> {
     )
     .await
     .map_err(|e| {
+        track_event!(
+            EventType::StockItemDelete,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "delete_failed".to_string()),
+            ]
+        );
         e.with_location(get_location!())
             .log("stock_item_delete.log")
     })?;
-    add_metric!("stock_item_delete", "manual");
     match StockItemMutation::delete_by_id(conn, id).await {
         Ok(_) => {}
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::StockItemDelete,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "delete_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 
+    track_event!(
+        EventType::StockItemDelete,
+        [("success", "true".to_string())]
+    );
     Ok(item)
 }
 
@@ -128,9 +191,25 @@ pub async fn stock_item_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
     for id in ids {
         match StockItemMutation::delete_by_id(conn, id).await {
             Ok(_) => deleted_count += 1,
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::StockItemDelete,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "delete_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
+    track_event!(
+        EventType::StockItemDelete,
+        [
+            ("success", "true".to_string()),
+            ("count", deleted_count.to_string()),
+        ]
+    );
     Ok(deleted_count)
 }
 
@@ -138,8 +217,23 @@ pub async fn stock_item_delete_multiple(ids: Vec<i64>) -> Result<i64, Error> {
 pub async fn stock_item_update(input: UpdateStockItem) -> Result<stock_item::Model, Error> {
     let conn = DATABASE.get().unwrap();
     match StockItemMutation::update_by_id(conn, input).await {
-        Ok(stock_item) => Ok(stock_item),
-        Err(e) => return Err(e.with_location(get_location!())),
+        Ok(stock_item) => {
+            track_event!(
+                EventType::StockItemUpdate,
+                [("success", "true".to_string())]
+            );
+            Ok(stock_item)
+        }
+        Err(e) => {
+            track_event!(
+                EventType::StockItemUpdate,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "update_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }
 
@@ -156,9 +250,25 @@ pub async fn stock_item_update_multiple(
         update_input.id = id;
         match StockItemMutation::update_by_id(conn, update_input).await {
             Ok(stock_item) => updated_items.push(stock_item),
-            Err(e) => return Err(e.with_location(get_location!())),
+            Err(e) => {
+                track_event!(
+                    EventType::StockItemUpdate,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "update_failed".to_string()),
+                    ]
+                );
+                return Err(e.with_location(get_location!()));
+            }
         }
     }
+    track_event!(
+        EventType::StockItemUpdate,
+        [
+            ("success", "true".to_string()),
+            ("count", updated_items.len().to_string()),
+        ]
+    );
     Ok(updated_items)
 }
 
@@ -217,6 +327,13 @@ pub async fn export_stock_item_json(
     let app_state = app_state.lock()?.clone();
     let app = APP.get().unwrap();
     if let Err(e) = app_state.user.has_permission(PermissionsFlags::ExportData) {
+        track_event!(
+            EventType::StockItemExport,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "permission_denied".to_string()),
+            ]
+        );
         e.log("export_stock_item_json.log");
         return Err(e);
     }
@@ -232,31 +349,69 @@ pub async fn export_stock_item_json(
                 .blocking_save_file();
             if let Some(file_path) = file_path {
                 let json = serde_json::to_string_pretty(&stock_items.results).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportStockItemJson",
                         format!("Failed to serialize stock item to JSON: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::StockItemExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "serialization_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 std::fs::write(file_path.as_path().unwrap(), json).map_err(|e| {
-                    Error::new(
+                    let err = Error::new(
                         "Command::ExportStockItemJson",
                         format!("Failed to write stock item to file: {}", e),
                         get_location!(),
-                    )
+                    );
+                    track_event!(
+                        EventType::StockItemExport,
+                        [
+                            ("success", "false".to_string()),
+                            ("error_type", "file_write_error".to_string()),
+                        ]
+                    );
+                    err
                 })?;
                 info(
                     "Command::ExportStockItemJson",
                     format!("Exported stock item to JSON file: {}", file_path),
                     &LoggerOptions::default(),
                 );
-                add_metric!("export_stock_item_json", "success");
+                track_event!(
+                    EventType::StockItemExport,
+                    [
+                        ("success", "true".to_string()),
+                        ("count", stock_items.results.len().to_string()),
+                    ]
+                );
                 return Ok(file_path.to_string());
             }
             // do something with the optional file path here
             // the file path is `None` if the user closed the dialog
+            track_event!(
+                EventType::StockItemExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "cancelled".to_string()),
+                ]
+            );
             return Ok("".to_string());
         }
-        Err(e) => return Err(e.with_location(get_location!())),
+        Err(e) => {
+            track_event!(
+                EventType::StockItemExport,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "query_failed".to_string()),
+                ]
+            );
+            return Err(e.with_location(get_location!()));
+        }
     }
 }

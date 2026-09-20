@@ -1,19 +1,15 @@
 use std::sync::Mutex;
 
 use qf_api::types::*;
-use serde_json::Value;
 use utils::{get_location, Error};
 
-use crate::{
-    app::AppState,
-    utils::ErrorFromExt,
-};
+use crate::{app::AppState, utils::ErrorFromExt};
 
 #[tauri::command]
 pub async fn get_user_activity(
-    query: UserActivityQueryDto,
+    query: UserActiveHistoryQueryDto,
     app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<Value, Error> {
+) -> Result<UserActivityDto, Error> {
     let app_state = app.lock().unwrap().clone();
     match app_state.qf_client.market().get_user_activity(query).await {
         Ok(data) => return Ok(data),

@@ -104,7 +104,10 @@ pub static MIN_LOG_LEVEL: OnceLock<crate::core::LogLevel> = OnceLock::new();
 pub fn init_logger() {
     START_TIME.get_or_init(Instant::now);
 }
-
+pub fn get_duration_since_start() -> std::time::Duration {
+    let start_time = START_TIME.get().cloned().unwrap_or_else(Instant::now);
+    start_time.elapsed()
+}
 /// Set the base path for all log files
 ///
 /// # Arguments

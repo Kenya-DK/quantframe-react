@@ -238,8 +238,7 @@ pub fn run() {
             // User commands
             commands::user::user_set_status,
             // Analytics commands
-            commands::analytics::analytics_add_metric,
-            commands::analytics::analytics_set_last_user_activity,
+            commands::analytics::track_event,
             // Alert commands
             commands::alert::alert_get_alerts,
             // Cache commands

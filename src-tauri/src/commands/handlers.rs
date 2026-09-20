@@ -1,4 +1,5 @@
-use crate::{commands::item, handlers::*};
+use crate::{commands::item, handlers::*, track_event};
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use utils::{get_location, Error};
 
 #[tauri::command]
@@ -17,7 +18,16 @@ pub async fn handles_handle_items(items: Vec<ItemEntity>) -> Result<i32, Error> 
                 &item.operations,
             )
             .await
-            .map_err(|e| e.with_location(get_location!()))?;
+            .map_err(|e| {
+                track_event!(
+                    EventType::HandledItems,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "handle_items_failed".to_string()),
+                    ]
+                );
+                e.with_location(get_location!())
+            })?;
 
             total += 1;
             processed_items.push((o, updated_item.item_name));
@@ -29,7 +39,16 @@ pub async fn handles_handle_items(items: Vec<ItemEntity>) -> Result<i32, Error> 
                 &item.operations,
             )
             .await
-            .map_err(|e| e.with_location(get_location!()))?;
+            .map_err(|e| {
+                track_event!(
+                    EventType::HandledItems,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "handle_items_failed".to_string()),
+                    ]
+                );
+                e.with_location(get_location!())
+            })?;
 
             total += 1;
             processed_items.push((o, updated_item.item_name));
@@ -51,9 +70,20 @@ pub async fn handles_handle_items(items: Vec<ItemEntity>) -> Result<i32, Error> 
                 processed_items.push((o, updated_item.item_name));
             }
             Err(e) => {
+                track_event!(
+                    EventType::HandledItems,
+                    [
+                        ("success", "false".to_string()),
+                        ("error_type", "handle_items_failed".to_string()),
+                    ]
+                );
                 return Err(e.with_location(get_location!()));
             }
         }
     }
+    track_event!(
+        EventType::HandledItems,
+        [("success", "true".to_string()), ("count", total.to_string())]
+    );
     Ok(total)
 }

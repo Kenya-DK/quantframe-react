@@ -8,9 +8,12 @@ use crate::{
     helper,
     live_scraper::LiveScraperState,
     log_parser::LogParserState,
+    track_event,
     utils::modules::states::get_app_error,
     APP, SENSITIVE_FIELDS,
 };
+
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 
 #[tauri::command]
 pub async fn log_export(
@@ -30,7 +33,16 @@ pub async fn log_export(
     let version = info.version.to_string();
     let app_path = helper::get_app_storage_path();
 
-    utils::export_cached_logs(&app_path)?;
+    utils::export_cached_logs(&app_path).map_err(|e| {
+        track_event!(
+            EventType::LogExport,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "cache_export_failed".to_string()),
+            ]
+        );
+        e
+    })?;
 
     let zip_path =
         helper::get_desktop_path().join(format!("{} v{} {} Logs.zip", info.name, version, date));
@@ -104,7 +116,20 @@ pub async fn log_export(
         "WfmInfo.json",
         json!(wfm_info.properties).to_string().as_bytes(),
     );
-    Ok(zip.create_zip(app_path, zip_path)?)
+    let result = zip.create_zip(app_path, zip_path);
+
+    match &result {
+        Ok(_) => track_event!(EventType::LogExport, [("success", "true".to_string())]),
+        Err(_e) => track_event!(
+            EventType::LogExport,
+            [
+                ("success", "false".to_string()),
+                ("error_type", "zip_failed".to_string()),
+            ]
+        ),
+    }
+
+    result
 }
 
 #[tauri::command]

@@ -5,6 +5,7 @@ use tauri::AppHandle;
 use utils::{get_location, Error, LogLevel};
 use wf_market::Client as WFClient;
 
+use crate::app::modules::analytics::Analytics;
 use crate::app::modules::auth::update_user;
 use crate::app::{AppState, Settings, User};
 use crate::http_server::HttpServer;
@@ -28,23 +29,26 @@ impl AppState {
             Settings::default()
         });
         let http_settings = settings.advanced_settings.http_server.clone();
+        let qf_client = QFClient::new(
+            &user.qf_token,
+            "rqf6ahg*RFY3wkn4neq",
+            &tauri_plugin_os::platform().to_string(),
+            &digest(format!("hashStart-{}-hashEnd", helper::get_device_id()).as_bytes()),
+            is_development,
+            &info.name,
+            &info.version.to_string(),
+            "N/A",
+            "N/A",
+            "N/A",
+            is_pre_release,
+        );
+        let analytics = Analytics::new(qf_client.clone());
         let mut state = AppState {
             wfm_client: WFClient::new_default(&user.wfm_token, "N/A")
                 .await
                 .expect("Failed to create WFM client"),
-            qf_client: QFClient::new(
-                &user.qf_token,
-                "rqf6ahg*RFY3wkn4neq",
-                &tauri_plugin_os::platform().to_string(),
-                &digest(format!("hashStart-{}-hashEnd", helper::get_device_id()).as_bytes()),
-                is_development,
-                &info.name,
-                &info.version.to_string(),
-                "N/A",
-                "N/A",
-                "N/A",
-                is_pre_release,
-            ),
+            qf_client,
+            analytics,
             user,
             is_development,
             use_temp_db,
@@ -54,10 +58,10 @@ impl AppState {
             wfm_chat_socket: None,
             http_server: HttpServer::new(&http_settings.host, http_settings.port),
         };
-        state
-            .qf_client
-            .analytics()
-            .add_metric("app_start", info.version.to_string());
+        state.analytics.track_event(
+            qf_api::enums::app_events::ApplicationEvent::AppStart,
+            [("version", info.version.to_string())],
+        );
         state.qf_client.on("user_banned", move |_, data| {
             emit_update_user!(json!({
                 "qf_banned": true,
@@ -87,5 +91,10 @@ impl AppState {
         self.settings = settings;
         self.settings.save()?;
         Ok(())
+    }
+
+    pub fn set_qf_client(&mut self, qf_client: QFClient) {
+        self.qf_client = qf_client.clone();
+        self.analytics.set_client(qf_client);
     }
 }

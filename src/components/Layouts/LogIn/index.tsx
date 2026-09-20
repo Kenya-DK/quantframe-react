@@ -1,17 +1,17 @@
-import { AppShell, Box, Indicator } from "@mantine/core";
-import classes from "./LogInLayout.module.css";
-import { Outlet, useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxes, faBug, faEnvelope, faGlobe, faHome, faInfoCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
-import { useTranslateComponent } from "@hooks/useTranslate.hook";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
-import { Header } from "@components/Layouts/Shared/Header";
-import { useAuthContext } from "@contexts/auth.context";
-import { open } from "@tauri-apps/plugin-shell";
 import { AddMetric } from "@api/index";
+import { Header } from "@components/Layouts/Shared/Header";
+import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
+import { useAuthContext } from "@contexts/auth.context";
+import { faBoxes, faBug, faEnvelope, faGlobe, faHome, faInfoCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useTranslateComponent } from "@hooks/useTranslate.hook";
 import { faWarframeMarket, facTradingAnalytics } from "@icons";
+import { AppShell, Box, Indicator } from "@mantine/core";
+import { open } from "@tauri-apps/plugin-shell";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
 import { prefetchRoute } from "../routeLoaders";
+import classes from "./LogInLayout.module.css";
 
 export function LogInLayout() {
   // States
@@ -33,7 +33,7 @@ export function LogInLayout() {
 
       if (link.id == lastPage || !link.id) return;
       setLastPage(link.id || "");
-      AddMetric("active_page", link.id);
+      AddMetric("page_view", { page: link.id });
     },
     [navigate, lastPage],
   );
@@ -180,4 +180,3 @@ export function LogInLayout() {
     </AppShell>
   );
 }
-

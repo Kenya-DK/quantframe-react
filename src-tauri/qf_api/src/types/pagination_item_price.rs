@@ -22,6 +22,11 @@ pub struct ItemPricePaginationQueryDto {
     tags: FieldChange<Vec<String>>,
 
     #[serde(default)]
+    pub wfm_id: FieldChange<String>,
+    #[serde(default)]
+    pub lasted: FieldChange<bool>,
+
+    #[serde(default)]
     pub volume_gt: FieldChange<i64>,
     #[serde(default)]
     pub volume_lt: FieldChange<i64>,
@@ -52,6 +57,8 @@ impl ItemPricePaginationQueryDto {
             from_date,
             to_date,
             tags: FieldChange::Ignore,
+            wfm_id: FieldChange::Ignore,
+            lasted: FieldChange::Ignore,
             volume_gt: FieldChange::Ignore,
             volume_lt: FieldChange::Ignore,
             supply_gt: FieldChange::Ignore,
@@ -121,6 +128,14 @@ impl ItemPricePaginationQueryDto {
             Value(v) => query.push(format!("maxPriceLt={}", v)),
             _ => {}
         }
+        match &self.wfm_id {
+            Value(v) => query.push(format!("wfm_id={}", v)),
+            _ => {}
+        }
+        match &self.lasted {
+            Value(v) => query.push(format!("lasted={}", v)),
+            _ => {}
+        }
         query.push(format!("from_date={}", self.from_date));
         query.push(format!("to_date={}", self.to_date));
 
@@ -151,6 +166,16 @@ impl ItemPricePaginationQueryDto {
 
     pub fn set_sort_direction(mut self, sort_direction: SortDirection) -> Self {
         self.sort_direction = FieldChange::Value(sort_direction);
+        self
+    }
+
+    pub fn set_wfm_id(mut self, wfm_id: impl Into<String>) -> Self {
+        self.wfm_id = FieldChange::Value(wfm_id.into());
+        self
+    }
+
+    pub fn set_lasted(mut self, lasted: bool) -> Self {
+        self.lasted = FieldChange::Value(lasted);
         self
     }
 }

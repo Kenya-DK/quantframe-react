@@ -1,9 +1,10 @@
 use std::sync::{Arc, Mutex};
 
+use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::{json, Value};
-use utils::Error;
+use utils::{get_location, Error};
 
-use crate::log_parser::LogParserState;
+use crate::{log_parser::LogParserState, track_event};
 
 #[tauri::command]
 pub async fn wfgdpr_get_state(
@@ -23,7 +24,20 @@ pub async fn wfgdpr_load(
 ) -> Result<(), Error> {
     // Read the file content
     let log_parser = log_parser.lock()?;
-    log_parser.warframe_gdpr().load(&file_path)?;
+    log_parser
+        .warframe_gdpr()
+        .load(&file_path)
+        .map_err(|e| {
+            track_event!(
+                EventType::WarframeGdprLoad,
+                [
+                    ("success", "false".to_string()),
+                    ("error_type", "load_failed".to_string()),
+                ]
+            );
+            e.with_location(get_location!())
+        })?;
+    track_event!(EventType::WarframeGdprLoad, [("success", "true".to_string())]);
     Ok(())
 }
 

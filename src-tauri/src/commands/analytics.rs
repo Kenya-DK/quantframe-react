@@ -1,27 +1,27 @@
 use std::sync::Mutex;
 
-use utils::Error;
+use qf_api::enums::app_events::ApplicationEvent as EventType;
+use serde_json::Value;
+use std::collections::HashMap;
+use utils::{get_location, Error};
 
-use crate::{app::AppState, HAS_STARTED};
-
-#[tauri::command]
-pub fn analytics_set_last_user_activity(
-    app: tauri::State<'_, Mutex<AppState>>,
-) -> Result<(), Error> {
-    if HAS_STARTED.get().cloned().unwrap_or(false) {
-        let app = app.lock()?;
-        app.qf_client.analytics().set_last_user_activity();
-    }
-    Ok(())
-}
+use crate::app::AppState;
 
 #[tauri::command]
-pub fn analytics_add_metric(
+pub fn track_event(
     key: String,
-    value: String,
+    value: HashMap<String, String>,
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<(), Error> {
+    let event_type: EventType =
+        serde_json::from_value(Value::String(key.clone())).map_err(|_| {
+            Error::new(
+                "Command::TrackEvent",
+                format!("Unknown event type: {}", key),
+                get_location!(),
+            )
+        })?;
     let app = app.lock()?.clone();
-    app.qf_client.analytics().add_metric(&key, &value);
+    app.analytics.track_event(event_type, value);
     Ok(())
 }

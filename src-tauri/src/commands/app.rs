@@ -3,11 +3,13 @@ use std::sync::{Arc, Mutex};
 use crate::{
     app::{AppState, Settings},
     log_parser::LogParserState,
+    track_event,
     wf_inventory::{InventorySource, WFInventoryState},
     APP, HAS_STARTED,
 };
+use qf_api::enums::ApplicationEvent;
 use serde_json::{json, Value};
-use utils::Error;
+use utils::{get_duration_since_start, Error};
 
 #[tauri::command]
 pub async fn initialized() -> Result<bool, Error> {
@@ -85,6 +87,16 @@ pub async fn app_update_settings(
 
 #[tauri::command]
 pub async fn app_exit() -> Result<Settings, Error> {
+    track_event!(
+        ApplicationEvent::AppExit,
+        [
+            ("success", "true".to_string()),
+            (
+                "session_duration",
+                get_duration_since_start().as_secs().to_string()
+            ),
+        ]
+    );
     std::process::exit(0);
 }
 #[tauri::command]
