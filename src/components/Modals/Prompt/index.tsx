@@ -1,16 +1,16 @@
-import { Button, Checkbox, Container, Group, NumberInput, Select, Textarea, TextInput } from "@mantine/core";
-import { useForm } from "@mantine/form";
+import { DynamicForm, DynamicFormItem } from "@components/Forms/DynamicForm";
+import { Container, FocusTrap } from "@mantine/core";
 import { ContextModalProps } from "@mantine/modals";
 import i18next from "i18next";
-import { NumberInputNullable } from "../../Forms/NumberInputNullable";
+import { useMemo } from "react";
 
 export type PromptField = {
   type:
     | "text"
     | "number"
-    | "number_nullable"
     | "select"
     | "textarea"
+    | "datepicker"
     | "checkbox"
     | "radio"
     | "switch"
@@ -24,6 +24,9 @@ export type PromptField = {
   value?: any;
   attributes?: any;
   required?: boolean;
+  autoFocus?: boolean;
+  description?: string;
+  placeholder?: string;
   options?: PromptFieldOption[];
 };
 
@@ -41,9 +44,7 @@ export type PromptModalProps = {
   onCancel: (id: string) => void;
 };
 
-export function PromptModal({ context, id, innerProps }: ContextModalProps<PromptModalProps>) {
-  const { height, confirmLabel, cancelLabel, fields, onConfirm, onCancel } = innerProps;
-
+const BuildFormValues = (fields: PromptField[]): { [key: string]: any } => {
   const formValues: { [key: string]: any } = {};
 
   for (let index = 0; index < fields.length; index++) {
@@ -58,9 +59,6 @@ export function PromptModal({ context, id, innerProps }: ContextModalProps<Promp
       case "slider":
         formValues[field.name] = field.value || 0;
         break;
-      case "number_nullable":
-        formValues[field.name] = field.value ?? undefined;
-        break;
       case "select":
         formValues[field.name] = field.options ? field.value || field.options[0].value : "";
         break;
@@ -74,123 +72,59 @@ export function PromptModal({ context, id, innerProps }: ContextModalProps<Promp
       case "multiselect":
         formValues[field.name] = field.options ? [field.options[0].value] : [];
         break;
+      case "file":
+        formValues[field.name] = field.value || null;
+        break;
       default:
         break;
     }
   }
 
-  const form = useForm({
-    initialValues: formValues,
-    validate: {},
-  });
+  return formValues;
+};
+
+const FormatField = (field: PromptField): DynamicFormItem<Record<string, any>> | null => {
+  if (field.type === "group") return null;
+
+  return {
+    type: field.type,
+    field: field.name,
+    label: field.label,
+    description: field.description,
+    placeholder: field.placeholder,
+    options: field.options,
+    required: field.required,
+    props: {
+      ...field.attributes,
+      ...(field.autoFocus ? { autoFocus: true } : {}),
+    },
+  } as DynamicFormItem<Record<string, any>>;
+};
+
+export function PromptModal({ context, id, innerProps }: ContextModalProps<PromptModalProps>) {
+  const { height, confirmLabel, cancelLabel, fields, onConfirm, onCancel } = innerProps;
+
+  const formValues = useMemo<{ [key: string]: any }>(() => BuildFormValues(fields), [fields]);
+  const items = useMemo(() => fields.map(FormatField).filter((item): item is DynamicFormItem<Record<string, any>> => item !== null), [fields]);
+
   return (
-    <form
-      method="post"
-      onSubmit={form.onSubmit(async (data) => {
-        context.closeModal(id);
-        onConfirm(data);
-      })}
-    >
-      <Container size="auto" h={height} pt={25}>
-        {fields.map((field, index) => {
-          switch (field.type) {
-            case "text":
-              return (
-                <Group grow key={index}>
-                  <TextInput
-                    {...form.getInputProps(field.name)}
-                    required={field.required}
-                    label={field.label}
-                    value={form.values[field.name]}
-                    onChange={(event) => form.setFieldValue(field.name, event.currentTarget.value)}
-                  />
-                </Group>
-              );
-            case "textarea":
-              return (
-                <Group grow key={index}>
-                  <Textarea
-                    {...form.getInputProps(field.name)}
-                    required={field.required}
-                    label={field.label}
-                    value={form.values[field.name]}
-                    onChange={(event) => form.setFieldValue(field.name, event.currentTarget.value)}
-                  />
-                </Group>
-              );
-            case "select":
-              return (
-                <Group grow key={index}>
-                  <Select
-                    {...form.getInputProps(field.name)}
-                    required={field.required}
-                    label={field.label}
-                    value={form.values[field.name]}
-                    data={field.options || []}
-                  />
-                </Group>
-              );
-            case "number":
-              return (
-                <Group grow key={index}>
-                  <NumberInput
-                    {...form.getInputProps(field.name)}
-                    {...field.attributes}
-                    required={field.required}
-                    label={field.label}
-                    value={form.values[field.name]}
-                    onChange={(value) => {
-                      let numValue = Number(value) || 0;
-                      form.setFieldValue(field.name, numValue);
-                    }}
-                  />
-                </Group>
-              );
-            case "number_nullable":
-              return (
-                <Group grow key={index}>
-                  <NumberInputNullable
-                    {...form.getInputProps(field.name)}
-                    {...field.attributes}
-                    required={field.required}
-                    label={field.label}
-                    value={form.values[field.name]}
-                    onChange={(value) => form.setFieldValue(field.name, value)}
-                  />
-                </Group>
-              );
-            case "checkbox":
-              return (
-                <Group grow key={index}>
-                  <Checkbox
-                    {...form.getInputProps(field.name)}
-                    label={field.label}
-                    value={form.values[field.name]}
-                    checked={form.values[field.name]}
-                    onChange={(event) => form.setFieldValue(field.name, event.currentTarget.checked)}
-                  />
-                </Group>
-              );
-            default:
-              return <></>;
-          }
-        })}
-      </Container>
-      <Group justify="flex-end" mt="xl">
-        <Button
-          color="red"
-          onClick={() => {
+    <Container size="auto" h={height} pt={25}>
+      <FocusTrap active={true}>
+        <DynamicForm
+          value={formValues}
+          items={items}
+          onSubmit={(data) => {
+            context.closeModal(id);
+            onConfirm(data);
+          }}
+          onCancel={() => {
             context.closeModal(id);
             onCancel(id);
           }}
-          radius="xl"
-        >
-          {cancelLabel || i18next.t("components.modals.base.buttons.cancel")}
-        </Button>
-        <Button type="submit" color="green" radius="xl">
-          {confirmLabel || i18next.t("components.modals.base.buttons.confirm")}
-        </Button>
-      </Group>
-    </form>
+          cancelLabel={cancelLabel || i18next.t("components.modals.base.buttons.cancel")}
+          confirmLabel={confirmLabel || i18next.t("components.modals.base.buttons.confirm")}
+        />
+      </FocusTrap>
+    </Container>
   );
 }

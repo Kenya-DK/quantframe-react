@@ -1,9 +1,9 @@
-import { Box, Button, Group, TagsInput, TextInput } from "@mantine/core";
+import { Box } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { useForm } from "@mantine/form";
 import { TauriTypes } from "$types";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
 import { SelectItemTags } from "../SelectItemTags";
+import { DynamicForm } from "../DynamicForm";
 
 export type CreateCategorySummaryProps = {
   value?: TauriTypes.SummaryCategorySetting;
@@ -18,58 +18,39 @@ export function CreateCategorySummary({ value, onSubmit }: CreateCategorySummary
     useTranslateForm(`fields.${key}`, { ...context }, i18Key);
   const useTranslateButton = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
-  // User form
-  const form = useForm({
-    initialValues: value || {
-      icon: "",
-      name: "",
-      tags: [],
-      types: [],
-    },
-    validate: {},
-  });
+
   return (
     <Box w={"100%"}>
-      <form
-        onSubmit={form.onSubmit((data) => {
-          onSubmit(data as TauriTypes.SummaryCategorySetting);
-        })}
-      >
-        <Group mt="xs">
-          <TextInput
-            label={useTranslateFormFields("icon.label")}
-            placeholder={useTranslateFormFields("icon.placeholder")}
-            description={useTranslateFormFields("icon.description")}
-            rightSection={<TooltipIcon label={useTranslateFormFields("icon.tooltip")} />}
-            value={form.values.icon}
-            onChange={(event) => form.setFieldValue("icon", event.currentTarget.value)}
-            radius="md"
-          />
-          <TextInput
-            label={useTranslateFormFields("name.label")}
-            placeholder={useTranslateFormFields("name.placeholder")}
-            description={useTranslateFormFields("name.description")}
-            rightSection={<TooltipIcon label={useTranslateFormFields("name.tooltip")} />}
-            value={form.values.name}
-            onChange={(event) => form.setFieldValue("name", event.currentTarget.value)}
-            radius="md"
-          />
-          <SelectItemTags value={form.values.tags} onChange={(tags) => form.setFieldValue("tags", tags)} />
-          <TagsInput
-            label={useTranslateFormFields("types.label")}
-            description={useTranslateFormFields("types.description")}
-            data={[]}
-            value={form.values.types}
-            onChange={(types) => form.setFieldValue("types", types)}
-          />
-        </Group>
-        <Group mt={"xs"} justify="flex-end">
-          <Button type="submit" variant="light" color="blue">
-            {useTranslateButton("submit.label")}
-          </Button>
-        </Group>
-      </form>
+      <DynamicForm<TauriTypes.SummaryCategorySetting>
+        value={value ?? { icon: "", name: "", tags: [], types: [] }}
+        i18n_key="components.forms.create_category_summary.fields"
+        items={[
+          {
+            type: "group",
+            props: { mt: "xs" },
+            fields: [
+              {
+                field: "icon",
+                type: "text",
+                props: { rightSection: <TooltipIcon label={useTranslateFormFields("icon.tooltip")} /> },
+              },
+              {
+                field: "name",
+                type: "text",
+                props: { rightSection: <TooltipIcon label={useTranslateFormFields("name.tooltip")} /> },
+              },
+              {
+                field: "tags",
+                type: "custom",
+                render: ({ value, onChange }) => <SelectItemTags value={value} onChange={onChange} />,
+              },
+              { field: "types", type: "tagsinput" },
+            ],
+          },
+        ]}
+        onSubmit={onSubmit}
+        confirmLabel={useTranslateButton("submit.label")}
+      />
     </Box>
   );
 }
-

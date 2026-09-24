@@ -1,6 +1,6 @@
-import { Anchor, PaperProps, Button, Divider, Group, Paper, PasswordInput, Stack, TextInput, Text } from "@mantine/core";
-import { useForm } from "@mantine/form";
+import { Anchor, PaperProps, Divider, Group, Paper, Text } from "@mantine/core";
 import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { DynamicForm } from "../DynamicForm";
 
 export type LogInFormProps = {
   onSubmit: (values: { email: string; password: string }) => void;
@@ -19,18 +19,6 @@ export function LogInForm(props: LogInFormProps) {
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
 
-  // User form
-  const form = useForm({
-    initialValues: {
-      email: "",
-      name: "",
-      password: "",
-      terms: true,
-    },
-    validate: {
-      email: (val: string) => (/^\S+@\S+$/.test(val) ? null : "Invalid email"),
-    },
-  });
   return (
     <Paper radius="md" p="xl" withBorder {...props.paperProps}>
       <Text size="lg" fw={500}>
@@ -39,42 +27,28 @@ export function LogInForm(props: LogInFormProps) {
 
       <Divider my="lg" />
 
-      <form
-        onSubmit={form.onSubmit(() => {
-          props.onSubmit({ email: form.values.email, password: form.values.password });
-        })}
-      >
-        <Stack>
-          <TextInput
-            required
-            label={useTranslateFormFields("email.label")}
-            placeholder={useTranslateFormFields("email.placeholder")}
-            value={form.values.email}
-            onChange={(event) => form.setFieldValue("email", event.currentTarget.value)}
-            error={form.errors.email && useTranslateFormFields("email.error")}
-            radius="md"
-          />
+      <DynamicForm<{ email: string; password: string }>
+        value={{ email: "", password: "" }}
+        i18n_key="components.forms.log_in.fields"
+        items={[
+          {
+            field: "email",
+            type: "text",
+            required: true,
+            validate: (value) => (/^\S+@\S+$/.test(value) ? null : useTranslateFormFields("email.error")),
+          },
+          { field: "password", type: "password", required: true, props: { mt: "md" } },
+        ]}
+        onSubmit={(values) => props.onSubmit({ email: values.email, password: values.password })}
+        confirmLabel={useTranslateButtons("submit")}
+        loading={props.is_loading}
+        disabled={props.hide_submit}
+      />
 
-          <PasswordInput
-            required
-            label={useTranslateFormFields("password.label")}
-            placeholder={useTranslateFormFields("password.placeholder")}
-            value={form.values.password}
-            onChange={(event) => form.setFieldValue("password", event.currentTarget.value)}
-            error={form.errors.password && useTranslateFormFields("password.error")}
-            radius="md"
-          />
-        </Stack>
+      <Anchor component="button" type="button" c="dimmed" size="xs" mt="md" display="block">
+        {useTranslateForm("register")}
+      </Anchor>
 
-        <Group justify="space-between" mt="xl">
-          <Anchor component="button" type="button" c="dimmed" size="xs">
-            {useTranslateForm("register")}
-          </Anchor>
-          <Button disabled={props.hide_submit} loading={props.is_loading} type="submit" radius="xl">
-            {useTranslateButtons("submit")}
-          </Button>
-        </Group>
-      </form>
       {props.footerContent && (
         <Group mt={15} grow>
           {props.footerContent}
@@ -83,4 +57,3 @@ export function LogInForm(props: LogInFormProps) {
     </Paper>
   );
 }
-
