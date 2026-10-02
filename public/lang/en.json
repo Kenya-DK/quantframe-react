@@ -1457,7 +1457,7 @@
                     "label": "Quantity Per Trade",
                     "placeholder": "Quantity Per Trade",
                     "error": "Invalid quantity per trade",
-                    "tooltip": "The quantity of goods to trade per transaction: NOTE this is only valid for some items like arcanes",
+                    "tooltip": "The quantity of goods to trade per transaction",
                     "link": "https://quantframe.app/features/live-trading/settings/item/wtb#quantity-per-trade"
                   },
                   "max_stock_quantity": {

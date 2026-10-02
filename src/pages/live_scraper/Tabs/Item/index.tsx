@@ -18,6 +18,7 @@ import { getSafePage } from "@utils/helper";
 import { DataTable } from "mantine-datatable";
 import { useEffect, useState } from "react";
 import { ColumnActions } from "../../Columns/ColumnActions";
+import { ColumnListPrice } from "../../Columns/ColumnListPrice";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import classes from "../../LiveScraper.module.css";
 import { useModals } from "./modals";
@@ -261,6 +262,7 @@ export const ItemPanel = ({ isActive }: ItemPanelProps = {}) => {
             accessor: "list_price",
             sortable: true,
             title: useTranslateCommon("datatable_columns.list_price"),
+            render: ({ properties, owned, list_price }) => <ColumnListPrice list_price={list_price} quantity={owned} properties={properties} />,
           },
           {
             accessor: "owned",

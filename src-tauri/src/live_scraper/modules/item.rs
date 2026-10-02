@@ -644,13 +644,6 @@ impl ItemModule {
         // Get the Warframe Market client from the application state
         let wfm_client = states::app_state()?.wfm_client;
 
-        // Get the per-trade quantity for this item, based on its type and settings
-        let per_trade = get_per_trade(
-            item_info.bulk_tradable,
-            entry.get_quantity(OrderType::Sell),
-            false,
-        );
-
         // Use the moving average as the baseline closed-average price
         let closed_avg = price.moving_avg.unwrap_or(0.0) as i64;
         let mut stock_item = entry.get_stock_item_or_error(conn).await?;
@@ -662,7 +655,7 @@ impl ItemModule {
             get_order_info(&entry, OrderType::Sell, &wfm_client);
 
         // Per-item overrides stored on the stock item (optional)
-        let (min_price, min_profit, min_sma) = (
+        let (min_price, min_profit, min_sma, is_bulk) = (
             stock_item
                 .properties
                 .get_property_value("min_price", None::<i64>),
@@ -672,11 +665,19 @@ impl ItemModule {
             stock_item
                 .properties
                 .get_property_value("min_sma", None::<i64>),
+            stock_item.properties.get_property_value("is_bulk", false),
+        );
+
+        // Get the per-trade quantity for this item, based on its type and settings
+        let per_trade = get_per_trade(
+            item_info.bulk_tradable,
+            entry.get_quantity(OrderType::Sell),
+            is_bulk,
         );
 
         log(&format!(
-            "Item {}: Overrides — min_price={:?}, min_profit={:?}, min_sma={:?}",
-            item_info.name, min_price, min_profit, min_sma
+            "Item {}: Overrides — min_price={:?}, min_profit={:?}, min_sma={:?}, is_bulk={:?}",
+            item_info.name, min_price, min_profit, min_sma, is_bulk
         ));
 
         // Hidden + inactive → nothing to do; hidden + active → deactivate and delete order

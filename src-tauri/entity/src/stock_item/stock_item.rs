@@ -6,7 +6,8 @@ use serde::{Deserialize, Serialize};
 use utils::Properties;
 use utils::SubType;
 
-pub static ALLOWED_PROPERTIES_FIELDS: &[&str] = &["min_sma", "min_profit", "min_price", "cooldown"];
+pub static ALLOWED_PROPERTIES_FIELDS: &[&str] =
+    &["min_sma", "min_profit", "min_price", "cooldown", "is_bulk"];
 
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_item")]
