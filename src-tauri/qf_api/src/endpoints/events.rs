@@ -8,7 +8,7 @@ use tokio::runtime::Runtime;
 use tokio::sync::Mutex as AsyncMutex;
 use utils::{LoggerOptions, error, info, warning};
 
-use crate::{client::Client, enums::ResponseFormat, errors::ApiError, types::*};
+use crate::{SENSITIVE_FIELDS, client::Client, enums::ResponseFormat, errors::ApiError, types::*};
 
 const EVENT_BATCH_SIZE: usize = 50;
 const EVENT_FLUSH_INTERVAL: Duration = Duration::from_secs(10);
@@ -140,7 +140,8 @@ impl EventsRoute {
             loop {
                 interval.tick().await;
 
-                if let Err(e) = route.flush().await {
+                if let Err(mut e) = route.flush().await {
+                    e.mask_sensitive_data(SENSITIVE_FIELDS);
                     error(
                         "Events:Flush",
                         format!("Flush failed: {:?}", e),

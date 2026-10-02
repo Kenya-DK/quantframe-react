@@ -53,6 +53,16 @@ impl InsertAt for String {
 const REQUESTS_PER_SECOND: NonZeroU32 = NonZero::new(3).unwrap();
 const DEVELOPMENT_URL: &str = "http://localhost:6969";
 const PRODUCTION_URL: &str = "https://api.quantframe.app";
+pub static SENSITIVE_FIELDS: &[&str] = &[
+    "email",
+    "password",
+    "authorization",
+    "check_code",
+    "qf_token",
+    "wfm_token",
+    "webhook",
+    "slug",
+];
 // Callback types
 pub type ClientCallback = Box<dyn Fn(&str, &Value) + Send + Sync>;
 #[derive(Clone)]
