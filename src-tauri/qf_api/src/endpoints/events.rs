@@ -120,15 +120,9 @@ impl EventsRoute {
                     }
                 }
                 Err(e) => {
-                    error(
-                        "Events:Flush",
-                        format!("Failed to send batch of {} events: {:?}", batch.len(), e),
-                        &log_options(),
-                    );
                     let mut queue = self.queue.lock().unwrap();
                     queue.extend(batch.iter().cloned());
                     queue.extend(rest.iter().cloned());
-
                     return Err(e);
                 }
             }
