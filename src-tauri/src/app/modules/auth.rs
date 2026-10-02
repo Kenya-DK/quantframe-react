@@ -178,6 +178,8 @@ impl AppState {
         self.wfm_chat_socket = Some(ws_chat);
         if !qf_user.banned {
             self.analytics.start()
+        } else {
+            self.analytics.stop()
         }
         self.analytics.set_client(self.qf_client.clone());
         self.wfm_client = wfm_client;

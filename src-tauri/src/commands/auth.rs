@@ -54,7 +54,9 @@ pub async fn auth_login(
             &LoggerOptions::default(),
         );
 
-        app_state.analytics.start();
+        if !updated_user.is_banned() {
+            app_state.analytics.start();
+        }
 
         let (cache_version_id, price_version_id) = cache_state
             .load(&qf_client, app_state.settings.lang.clone())
