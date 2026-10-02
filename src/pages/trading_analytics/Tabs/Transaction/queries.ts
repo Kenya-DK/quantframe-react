@@ -4,11 +4,19 @@ import api from "@api/index";
 
 interface QueriesHooks {
   queryData: TauriTypes.TransactionControllerGetListParams;
+  chartParams?: TauriTypes.TransactionControllerGetListParams;
   isActive?: boolean;
   loadFinancialReport?: boolean;
+  loadChart?: boolean;
 }
 
-export const useQueries = ({ queryData, isActive, loadFinancialReport = false }: QueriesHooks) => {
+export const useQueries = ({
+  queryData,
+  chartParams,
+  isActive,
+  loadFinancialReport = false,
+  loadChart = false,
+}: QueriesHooks) => {
   const getPaginationQuery = useQuery({
     queryKey: ["get_transaction_pagination", queryData],
     queryFn: () => api.transaction.getPagination(queryData),
@@ -21,15 +29,23 @@ export const useQueries = ({ queryData, isActive, loadFinancialReport = false }:
     retry: false,
     enabled: isActive && loadFinancialReport,
   });
+  const getChartQuery = useQuery({
+    queryKey: ["get_transaction_chart", chartParams],
+    queryFn: () => api.transaction.getPagination({ ...(chartParams as TauriTypes.TransactionControllerGetListParams) }),
+    retry: false,
+    enabled: isActive && loadChart && !!chartParams,
+  });
   const refetchQueries = () => {
     getPaginationQuery.refetch();
     getFinancialReportQuery.refetch();
+    getChartQuery.refetch();
   };
 
   // Return the queries
   return {
     paginationQuery: getPaginationQuery,
     financialReportQuery: getFinancialReportQuery,
+    chartQuery: getChartQuery,
     refetchQueries,
   };
 };

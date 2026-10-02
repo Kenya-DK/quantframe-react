@@ -2452,6 +2452,27 @@
           "date_range_label": "Date Range",
           "date_range_description": "Range of dates to filter transactions",
           "date_range_placeholder": "Select date range",
+          "view": {
+            "list": "List",
+            "chart": "Chart"
+          },
+          "chart": {
+            "revenue": "Revenue",
+            "expenses": "Expenses",
+            "amount": "Amount",
+            "cumulative_profit": "Cumulative Profit",
+            "no_data": "No transactions found for the selected filters",
+            "range": {
+              "label": "Date Range",
+              "options": {
+                "7": "Last 7 days",
+                "30": "Last 30 days",
+                "90": "Last 90 days",
+                "365": "Last 365 days",
+                "all": "All time"
+              }
+            }
+          },
           "prompts": {
             "update_title": "Update Transaction"
           },

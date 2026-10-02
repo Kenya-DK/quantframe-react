@@ -1,26 +1,29 @@
-import { Box, Grid, Group, NumberFormatter, Paper, Table, Text, Title } from "@mantine/core";
-import { useLocalStorage } from "@mantine/hooks";
-import { useEffect, useState, useTransition } from "react";
 import { TauriTypes } from "$types";
-import { useQueries } from "./queries";
-import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { HasPermission } from "@api/index";
+import { ItemName } from "@components/DataDisplay/ItemName";
 import { SearchField } from "@components/Forms/SearchField";
-import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import classes from "../../TradingAnalytics.module.css";
-import { DataTable } from "mantine-datatable";
-import { getSafePage } from "@utils/helper";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
-import { ColorInfo } from "@components/Shared/ColorInfo";
 import { SelectItemTags } from "@components/Forms/SelectItemTags";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
-import { faCalculator, faCoins, faDownload, faHammer, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useMutations } from "./mutations";
-import { useModals } from "./modals";
-import { HasPermission } from "@api/index";
-import { DatePickerInput } from "@mantine/dates";
-import dayjs from "dayjs";
-import { ItemName } from "@components/DataDisplay/ItemName";
+import { ColorInfo } from "@components/Shared/ColorInfo";
 import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
+import { Loading } from "@components/Shared/Loading";
+import { faCalculator, faChartLine, faCoins, faDownload, faHammer, faList, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useTauriEvent } from "@hooks/useTauriEvent.hook";
+import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { Box, Grid, Group, NumberFormatter, Paper, SegmentedControl, Select, Table, Text, Title } from "@mantine/core";
+import { DatePickerInput } from "@mantine/dates";
+import { useLocalStorage } from "@mantine/hooks";
+import { getSafePage } from "@utils/helper";
+import dayjs from "dayjs";
+import { DataTable } from "mantine-datatable";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import classes from "../../TradingAnalytics.module.css";
+import { useModals } from "./modals";
+import { useMutations } from "./mutations";
+import { ChartView } from "./views";
+import { useQueries } from "./queries";
 interface TransactionPanelProps {
   isActive?: boolean;
 }
@@ -46,6 +49,10 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
     useTranslateEnums(`item_type.${key}`, { ...context }, i18Key);
   const useTranslateButtons = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`buttons.${key}`, { ...context }, i18Key);
+  const useTranslateView = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateTabItem(`view.${key}`, { ...context }, i18Key);
+  const useTranslateChart = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
+    useTranslateTabItem(`chart.${key}`, { ...context }, i18Key);
   const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`prompts.${key}`, { ...context }, i18Key);
   const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -57,6 +64,16 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   const [showReport, setShowReport] = useState<boolean>(false);
   const [filterOpened, setFilterOpened] = useState<boolean>(false);
   const [canExport, setCanExport] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useLocalStorage<string>({
+    key: "transaction_view_mode",
+    getInitialValueInEffect: false,
+    defaultValue: "list",
+  });
+  const [chartRange, setChartRange] = useLocalStorage<string>({
+    key: "transaction_chart_range",
+    getInitialValueInEffect: false,
+    defaultValue: "90",
+  });
 
   // Progressive rendering === allows navigation during table render (without it ui freezes until table loads)
   const [isPending, startTransition] = useTransition();
@@ -67,8 +84,23 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
     HasPermission(TauriTypes.PermissionsFlags.EXPORT_DATA).then((res) => setCanExport(res));
   }, []);
 
+  // Chart range is independent of the list filter; it defaults to the last 90 days.
+  const chartParams = useMemo<TauriTypes.TransactionControllerGetListParams>(() => {
+    const base = { ...queryData, page: 1, limit: -1 };
+    if (chartRange === "all") return { ...base, from_date: undefined, to_date: undefined };
+    const to = dayjs();
+    const from = to.subtract(Number(chartRange), "day");
+    return { ...base, from_date: from.format("YYYY-MM-DD"), to_date: to.format("YYYY-MM-DD") };
+  }, [queryData, chartRange]);
+
   // Queries
-  const { paginationQuery, financialReportQuery, refetchQueries } = useQueries({ queryData, isActive, loadFinancialReport: showReport });
+  const { paginationQuery, financialReportQuery, chartQuery, refetchQueries } = useQueries({
+    queryData,
+    chartParams,
+    isActive,
+    loadFinancialReport: showReport,
+    loadChart: viewMode === "chart",
+  });
   const handleRefresh = () => {
     console.log("Refreshing transactions due to Tauri event");
     refetchQueries();
@@ -98,7 +130,7 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
   // Use the custom hook for Tauri events
   useTauriEvent(TauriTypes.Events.RefreshTransactions, handleRefresh, []);
 
-  // Progressive rendering 
+  // Progressive rendering
   useEffect(() => {
     if (paginationQuery.isFetching) {
       setDisplayedRecords([]);
@@ -194,6 +226,34 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
                 />
               ))}
             </Group>
+            <Group justify="center">
+              <SegmentedControl
+                size="xs"
+                radius="md"
+                value={viewMode}
+                onChange={setViewMode}
+                data={[
+                  {
+                    value: "list",
+                    label: (
+                      <Group gap={6} wrap="nowrap">
+                        <FontAwesomeIcon icon={faList} />
+                        <span>{useTranslateView("list")}</span>
+                      </Group>
+                    ),
+                  },
+                  {
+                    value: "chart",
+                    label: (
+                      <Group gap={6} wrap="nowrap">
+                        <FontAwesomeIcon icon={faChartLine} />
+                        <span>{useTranslateView("chart")}</span>
+                      </Group>
+                    ),
+                  },
+                ]}
+              />
+            </Group>
             <Group justify="flex-end">
               {Object.values(TauriTypes.TransactionItemType).map((type) => (
                 <ColorInfo
@@ -210,122 +270,146 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
               ))}
             </Group>
           </Group>
-          <DataTable
-            className={`${classes.databaseTransactions} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
-            mt={"md"}
-            striped
-            fetching={paginationQuery.isFetching || isPending || calculateTaxMutation.isPending}
-            records={displayedRecords}
-            page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
-            onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
-            totalRecords={paginationQuery.data?.total || 0}
-            recordsPerPage={queryData.limit || 10}
-            recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
-            onRecordsPerPageChange={(limit) => setQueryData((prev) => ({ ...prev, limit }))}
-            customRowAttributes={(record) => {
-              return {
-                "data-color-mode": "box-shadow",
-                "data-transaction-type": record.transaction_type,
-              };
-            }}
-            selectedRecords={selectedRecords}
-            onSelectedRecordsChange={setSelectedRecords}
-            sortStatus={{
-              columnAccessor: queryData.sort_by || "name",
-              direction: queryData.sort_direction || "desc",
-            }}
-            onSortStatusChange={(sort) => {
-              if (!sort || !sort.columnAccessor) return;
-              setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
-            }}
-            // define columns
-            columns={[
-              {
-                accessor: "item_name",
-                title: useTranslateCommon("item_name.title"),
-                sortable: true,
-                width: 250,
-                render: (row) => <ItemName color="gray.4" size="md" value={row} />,
-              },
-              {
-                accessor: "item_type",
-                title: useTranslateDataGridColumns("item_type"),
-                sortable: true,
-                render: ({ item_type }) => (
-                  <Text data-color-mode="text" data-item-type={item_type}>
-                    {useTranslateTransactionItemType(item_type)}
-                  </Text>
-                ),
-              },
-              {
-                accessor: "user_name",
-                title: useTranslateDataGridColumns("user_name"),
-                sortable: true,
-              },
-              {
-                accessor: "quantity",
-                title: useTranslateCommon("datatable_columns.quantity.title"),
-                sortable: true,
-              },
-              {
-                accessor: "price",
-                title: useTranslateDataGridColumns("price"),
-                sortable: true,
-              },
-              {
-                accessor: "profit",
-                title: useTranslateDataGridColumns("profit"),
-                sortable: true,
-                render: ({ profit }) => (profit ? <Text c={profit >= 0 ? "green.7" : "red.7"}>{profit.toFixed(2)}</Text> : <Text>N/A</Text>),
-              },
-              {
-                accessor: "credits",
-                title: useTranslateDataGridColumns("credits"),
-                sortable: true,
-                render: ({ credits }) => <NumberFormatter value={credits} thousandSeparator="," thousandsGroupStyle="thousand" />,
-              },
-              {
-                accessor: "created_at",
-                title: useTranslateDataGridColumns("created_at"),
-                sortable: true,
-                render: ({ created_at }) => {
-                  return <Text>{dayjs(created_at).format("DD.MM.YYYY HH:mm")}</Text>;
+          {viewMode === "chart" && (
+            <Box mt={"md"}>
+              <Group justify="flex-end" mb={"sm"}>
+                <Select
+                  allowDeselect={false}
+                  label={useTranslateChart("range.label")}
+                  data={[
+                    { value: "7", label: useTranslateChart("range.options.7") },
+                    { value: "30", label: useTranslateChart("range.options.30") },
+                    { value: "90", label: useTranslateChart("range.options.90") },
+                    { value: "365", label: useTranslateChart("range.options.365") },
+                    { value: "all", label: useTranslateChart("range.options.all") },
+                  ]}
+                  value={chartRange}
+                  onChange={(value) => value && setChartRange(value)}
+                  w={200}
+                  radius="md"
+                />
+              </Group>
+              {chartQuery.isFetching ? <Loading /> : <ChartView transactions={chartQuery.data?.results || []} />}
+            </Box>
+          )}
+          {viewMode === "list" && (
+            <DataTable
+              className={`${classes.databaseTransactions} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
+              mt={"md"}
+              striped
+              fetching={paginationQuery.isFetching || isPending || calculateTaxMutation.isPending}
+              records={displayedRecords}
+              page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
+              onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
+              totalRecords={paginationQuery.data?.total || 0}
+              recordsPerPage={queryData.limit || 10}
+              recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
+              onRecordsPerPageChange={(limit) => setQueryData((prev) => ({ ...prev, limit }))}
+              customRowAttributes={(record) => {
+                return {
+                  "data-color-mode": "box-shadow",
+                  "data-transaction-type": record.transaction_type,
+                };
+              }}
+              selectedRecords={selectedRecords}
+              onSelectedRecordsChange={setSelectedRecords}
+              sortStatus={{
+                columnAccessor: queryData.sort_by || "name",
+                direction: queryData.sort_direction || "desc",
+              }}
+              onSortStatusChange={(sort) => {
+                if (!sort || !sort.columnAccessor) return;
+                setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
+              }}
+              // define columns
+              columns={[
+                {
+                  accessor: "item_name",
+                  title: useTranslateCommon("item_name.title"),
+                  sortable: true,
+                  width: 250,
+                  render: (row) => <ItemName color="gray.4" size="md" value={row} />,
                 },
-              },
-              {
-                accessor: "actions",
-                title: useTranslateCommon("datatable_columns.actions.title"),
-                width: 75,
-                render: (row) => (
-                  <Group gap={3}>
-                    <ActionWithTooltip
-                      tooltip={useTranslateCommon("datatable_columns.actions.buttons.edit_tooltip")}
-                      icon={faHammer}
-                      loading={loadingRows.includes(`${row.id}`)}
-                      iconProps={{ size: "xs" }}
-                      actionProps={{ size: "sm" }}
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        OpenUpdateModal(row);
-                      }}
-                    />
-                    <ActionWithTooltip
-                      tooltip={useTranslateCommon("datatable_columns.actions.buttons.delete_tooltip")}
-                      icon={faTrash}
-                      color="red"
-                      loading={loadingRows.includes(`${row.id}`)}
-                      iconProps={{ size: "xs" }}
-                      actionProps={{ size: "sm" }}
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        OpenDeleteModal(row.id);
-                      }}
-                    />
-                  </Group>
-                ),
-              },
-            ]}
-          />
+                {
+                  accessor: "item_type",
+                  title: useTranslateDataGridColumns("item_type"),
+                  sortable: true,
+                  render: ({ item_type }) => (
+                    <Text data-color-mode="text" data-item-type={item_type}>
+                      {useTranslateTransactionItemType(item_type)}
+                    </Text>
+                  ),
+                },
+                {
+                  accessor: "user_name",
+                  title: useTranslateDataGridColumns("user_name"),
+                  sortable: true,
+                },
+                {
+                  accessor: "quantity",
+                  title: useTranslateCommon("datatable_columns.quantity.title"),
+                  sortable: true,
+                },
+                {
+                  accessor: "price",
+                  title: useTranslateDataGridColumns("price"),
+                  sortable: true,
+                },
+                {
+                  accessor: "profit",
+                  title: useTranslateDataGridColumns("profit"),
+                  sortable: true,
+                  render: ({ profit }) => (profit ? <Text c={profit >= 0 ? "green.7" : "red.7"}>{profit.toFixed(2)}</Text> : <Text>N/A</Text>),
+                },
+                {
+                  accessor: "credits",
+                  title: useTranslateDataGridColumns("credits"),
+                  sortable: true,
+                  render: ({ credits }) => <NumberFormatter value={credits} thousandSeparator="," thousandsGroupStyle="thousand" />,
+                },
+                {
+                  accessor: "created_at",
+                  title: useTranslateDataGridColumns("created_at"),
+                  sortable: true,
+                  render: ({ created_at }) => {
+                    return <Text>{dayjs(created_at).format("DD.MM.YYYY HH:mm")}</Text>;
+                  },
+                },
+                {
+                  accessor: "actions",
+                  title: useTranslateCommon("datatable_columns.actions.title"),
+                  width: 75,
+                  render: (row) => (
+                    <Group gap={3}>
+                      <ActionWithTooltip
+                        tooltip={useTranslateCommon("datatable_columns.actions.buttons.edit_tooltip")}
+                        icon={faHammer}
+                        loading={loadingRows.includes(`${row.id}`)}
+                        iconProps={{ size: "xs" }}
+                        actionProps={{ size: "sm" }}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          OpenUpdateModal(row);
+                        }}
+                      />
+                      <ActionWithTooltip
+                        tooltip={useTranslateCommon("datatable_columns.actions.buttons.delete_tooltip")}
+                        icon={faTrash}
+                        color="red"
+                        loading={loadingRows.includes(`${row.id}`)}
+                        iconProps={{ size: "xs" }}
+                        actionProps={{ size: "sm" }}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          OpenDeleteModal(row.id);
+                        }}
+                      />
+                    </Group>
+                  ),
+                },
+              ]}
+            />
+          )}
         </Box>
       )}
       {showReport && (
