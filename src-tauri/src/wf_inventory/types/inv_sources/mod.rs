@@ -1,6 +1,9 @@
 pub mod alecaframe;
 pub use alecaframe::*;
 
+pub mod file;
+pub use file::*;
+
 pub mod helpers;
 pub use helpers::*;
 
@@ -24,6 +27,7 @@ pub enum WFInventorySource {
     None,
     Profile(WFInvProfileSource),
     Alecaframe(WFInvAlecaframeSource),
+    File(WFInvFileSource),
 }
 
 impl InventorySource for WFInventorySource {
@@ -32,6 +36,7 @@ impl InventorySource for WFInventorySource {
             WFInventorySource::None => Ok(()),
             WFInventorySource::Profile(source) => source.update(root),
             WFInventorySource::Alecaframe(source) => source.update(root),
+            WFInventorySource::File(source) => source.update(root),
         }
     }
 
@@ -40,6 +45,7 @@ impl InventorySource for WFInventorySource {
             WFInventorySource::None => {}
             WFInventorySource::Profile(source) => source.start(root),
             WFInventorySource::Alecaframe(source) => source.start(root),
+            WFInventorySource::File(source) => source.start(root),
         }
     }
 
@@ -48,6 +54,7 @@ impl InventorySource for WFInventorySource {
             WFInventorySource::None => {}
             WFInventorySource::Profile(source) => source.stop(),
             WFInventorySource::Alecaframe(source) => source.stop(),
+            WFInventorySource::File(source) => source.stop(),
         }
     }
 
@@ -56,6 +63,7 @@ impl InventorySource for WFInventorySource {
             WFInventorySource::None => Ok(()),
             WFInventorySource::Profile(source) => source.validate(),
             WFInventorySource::Alecaframe(source) => source.validate(),
+            WFInventorySource::File(source) => source.validate(),
         }
     }
 }
@@ -66,6 +74,7 @@ impl Display for WFInventorySource {
             WFInventorySource::None => write!(f, "None"),
             WFInventorySource::Profile(_) => write!(f, "Profile"),
             WFInventorySource::Alecaframe(_) => write!(f, "Alecaframe"),
+            WFInventorySource::File(_) => write!(f, "File"),
         }
     }
 }

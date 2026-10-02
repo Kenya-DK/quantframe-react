@@ -5,6 +5,7 @@
 - ✨ Added a full Syndicate trading pipeline: a new `syndicate_item` database table and API, a redesigned WTS settings panel with per-syndicate standing tracking and an "ignore standing" toggle, importing syndicate items from Warframe Market, and a live scraper Syndicate tab with sell/edit/delete/export operations.
 - ✨ Reworked WF Inventory to support pluggable sources — Warframe profile or AlecaFrame (`lastData.dat` watcher) — selectable in Settings → Advanced → WF Inventory, with a manual refresh button and syndicate standing import.
 - ✨ Extended bulk trading to stock items: `is_bulk` is now a valid stock item property, the selling pipeline uses it when computing the per-trade quantity, and the live scraper's item table shows the list price with a per-trade badge.
+- ✨ Added a `File` inventory source to WF Inventory that reads a plain JSON inventory file (lastData/InventoryJson format) from a configurable path and watches it for changes, selectable alongside Profile and AlecaFrame in Settings → Advanced → WF Inventory.
 
 ## Fixes
 

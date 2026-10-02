@@ -1731,7 +1731,8 @@
                   "options": {
                     "none": "None",
                     "profile": "Profile",
-                    "alecaframe": "Alecaframe"
+                    "alecaframe": "Alecaframe",
+                    "file": "File"
                   }
                 },
                 "player_id": {
@@ -1743,6 +1744,11 @@
                   "label": "Path",
                   "placeholder": "Path to the AlecaFrame lastData.dat file",
                   "tooltip": "Leave empty to use the default AlecaFrame data file path"
+                },
+                "file_path": {
+                  "label": "File Path",
+                  "placeholder": "Path to a JSON inventory file",
+                  "tooltip": "Path to a plain JSON inventory file in the lastData/InventoryJson format. The file is watched and reloaded when it changes."
                 }
               },
               "buttons": {

@@ -32,6 +32,9 @@ export const WFInventoryPanel = ({ form }: WFInventoryPanelProps) => {
     } else if (value === "Alecaframe") {
       const prev = source !== "None" && "Alecaframe" in source ? source.Alecaframe : undefined;
       form.setFieldValue(getFieldPath("source"), { Alecaframe: { path: prev?.path || "" } });
+    } else if (value === "File") {
+      const prev = source !== "None" && "File" in source ? source.File : undefined;
+      form.setFieldValue(getFieldPath("source"), { File: { path: prev?.path || "" } });
     }
   };
 
@@ -48,6 +51,7 @@ export const WFInventoryPanel = ({ form }: WFInventoryPanelProps) => {
             { value: "None", label: useTranslateFormFields("source.options.none") },
             { value: "Profile", label: useTranslateFormFields("source.options.profile") },
             { value: "Alecaframe", label: useTranslateFormFields("source.options.alecaframe") },
+            { value: "File", label: useTranslateFormFields("source.options.file") },
           ]}
           radius="md"
         />
@@ -75,6 +79,20 @@ export const WFInventoryPanel = ({ form }: WFInventoryPanelProps) => {
             onChange={(event) =>
               form.setFieldValue(getFieldPath("source"), {
                 Alecaframe: { path: event.currentTarget.value },
+              })
+            }
+          />
+        )}
+        {sourceType === "File" && (
+          <TextInput
+            label={useTranslateFormFields("file_path.label")}
+            placeholder={useTranslateFormFields("file_path.placeholder")}
+            rightSection={<TooltipIcon label={useTranslateFormFields("file_path.tooltip")} />}
+            radius="md"
+            value={source !== "None" && "File" in source ? source.File.path : ""}
+            onChange={(event) =>
+              form.setFieldValue(getFieldPath("source"), {
+                File: { path: event.currentTarget.value },
               })
             }
           />
