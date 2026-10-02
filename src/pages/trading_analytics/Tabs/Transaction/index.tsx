@@ -1,28 +1,27 @@
 import { TauriTypes } from "$types";
 import { HasPermission } from "@api/index";
-import { ItemName } from "@components/DataDisplay/ItemName";
 import { SearchField } from "@components/Forms/SearchField";
 import { SelectItemTags } from "@components/Forms/SelectItemTags";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { FinancialReportCard } from "@components/Shared/FinancialReportCard";
 import { Loading } from "@components/Shared/Loading";
-import { faCalculator, faChartLine, faCoins, faDownload, faHammer, faList, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { DateRangeSelect } from "@components/Shared/DateRangeSelect";
+import { faCalculator, faChartLine, faCoins, faDownload, faList, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
-import { useTranslateCommon, useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
-import { Box, Grid, Group, NumberFormatter, Paper, SegmentedControl, Select, Table, Text, Title } from "@mantine/core";
+import { useTranslateEnums, useTranslatePages } from "@hooks/useTranslate.hook";
+import { Box, Grid, Group, Paper, SegmentedControl, Table, Title } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { useLocalStorage } from "@mantine/hooks";
-import { getSafePage } from "@utils/helper";
 import dayjs from "dayjs";
 import { DataTable } from "mantine-datatable";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import classes from "../../TradingAnalytics.module.css";
 import { useModals } from "./modals";
 import { useMutations } from "./mutations";
-import { ChartView } from "./views";
+import { ChartView, ListView } from "./views";
 import { useQueries } from "./queries";
 interface TransactionPanelProps {
   isActive?: boolean;
@@ -51,8 +50,6 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
     useTranslateTabItem(`buttons.${key}`, { ...context }, i18Key);
   const useTranslateView = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslateTabItem(`view.${key}`, { ...context }, i18Key);
-  const useTranslateChart = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslateTabItem(`chart.${key}`, { ...context }, i18Key);
   const useTranslateBasePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
     useTranslate(`prompts.${key}`, { ...context }, i18Key);
   const useTranslatePrompt = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -273,141 +270,35 @@ export const TransactionPanel = ({ isActive }: TransactionPanelProps = {}) => {
           {viewMode === "chart" && (
             <Box mt={"md"}>
               <Group justify="flex-end" mb={"sm"}>
-                <Select
-                  allowDeselect={false}
-                  label={useTranslateChart("range.label")}
-                  data={[
-                    { value: "7", label: useTranslateChart("range.options.7") },
-                    { value: "30", label: useTranslateChart("range.options.30") },
-                    { value: "90", label: useTranslateChart("range.options.90") },
-                    { value: "365", label: useTranslateChart("range.options.365") },
-                    { value: "all", label: useTranslateChart("range.options.all") },
-                  ]}
-                  value={chartRange}
-                  onChange={(value) => value && setChartRange(value)}
-                  w={200}
-                  radius="md"
-                />
+                <DateRangeSelect value={chartRange} onChange={setChartRange} />
               </Group>
               {chartQuery.isFetching ? <Loading /> : <ChartView transactions={chartQuery.data?.results || []} />}
             </Box>
           )}
           {viewMode === "list" && (
-            <DataTable
-              className={`${classes.databaseTransactions} ${useHasAlert() ? classes.alert : ""} ${filterOpened ? classes.filterOpened : ""}`}
-              mt={"md"}
-              striped
-              fetching={paginationQuery.isFetching || isPending || calculateTaxMutation.isPending}
+            <ListView
               records={displayedRecords}
-              page={getSafePage(queryData.page, paginationQuery.data?.total_pages)}
-              onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
+              fetching={paginationQuery.isFetching || isPending || calculateTaxMutation.isPending}
+              page={queryData.page}
+              totalPages={paginationQuery.data?.total_pages}
               totalRecords={paginationQuery.data?.total || 0}
               recordsPerPage={queryData.limit || 10}
-              recordsPerPageOptions={[5, 10, 15, 20, 25, 50, 100]}
-              onRecordsPerPageChange={(limit) => setQueryData((prev) => ({ ...prev, limit }))}
-              customRowAttributes={(record) => {
-                return {
-                  "data-color-mode": "box-shadow",
-                  "data-transaction-type": record.transaction_type,
-                };
-              }}
+              filterOpened={filterOpened}
+              loadingRows={loadingRows}
               selectedRecords={selectedRecords}
-              onSelectedRecordsChange={setSelectedRecords}
               sortStatus={{
                 columnAccessor: queryData.sort_by || "name",
                 direction: queryData.sort_direction || "desc",
               }}
+              onPageChange={(page) => setQueryData((prev) => ({ ...prev, page }))}
+              onRecordsPerPageChange={(limit) => setQueryData((prev) => ({ ...prev, limit }))}
+              onSelectedRecordsChange={setSelectedRecords}
               onSortStatusChange={(sort) => {
                 if (!sort || !sort.columnAccessor) return;
                 setQueryData((prev) => ({ ...prev, sort_by: sort.columnAccessor as string, sort_direction: sort.direction }));
               }}
-              // define columns
-              columns={[
-                {
-                  accessor: "item_name",
-                  title: useTranslateCommon("item_name.title"),
-                  sortable: true,
-                  width: 250,
-                  render: (row) => <ItemName color="gray.4" size="md" value={row} />,
-                },
-                {
-                  accessor: "item_type",
-                  title: useTranslateDataGridColumns("item_type"),
-                  sortable: true,
-                  render: ({ item_type }) => (
-                    <Text data-color-mode="text" data-item-type={item_type}>
-                      {useTranslateTransactionItemType(item_type)}
-                    </Text>
-                  ),
-                },
-                {
-                  accessor: "user_name",
-                  title: useTranslateDataGridColumns("user_name"),
-                  sortable: true,
-                },
-                {
-                  accessor: "quantity",
-                  title: useTranslateCommon("datatable_columns.quantity.title"),
-                  sortable: true,
-                },
-                {
-                  accessor: "price",
-                  title: useTranslateDataGridColumns("price"),
-                  sortable: true,
-                },
-                {
-                  accessor: "profit",
-                  title: useTranslateDataGridColumns("profit"),
-                  sortable: true,
-                  render: ({ profit }) => (profit ? <Text c={profit >= 0 ? "green.7" : "red.7"}>{profit.toFixed(2)}</Text> : <Text>N/A</Text>),
-                },
-                {
-                  accessor: "credits",
-                  title: useTranslateDataGridColumns("credits"),
-                  sortable: true,
-                  render: ({ credits }) => <NumberFormatter value={credits} thousandSeparator="," thousandsGroupStyle="thousand" />,
-                },
-                {
-                  accessor: "created_at",
-                  title: useTranslateDataGridColumns("created_at"),
-                  sortable: true,
-                  render: ({ created_at }) => {
-                    return <Text>{dayjs(created_at).format("DD.MM.YYYY HH:mm")}</Text>;
-                  },
-                },
-                {
-                  accessor: "actions",
-                  title: useTranslateCommon("datatable_columns.actions.title"),
-                  width: 75,
-                  render: (row) => (
-                    <Group gap={3}>
-                      <ActionWithTooltip
-                        tooltip={useTranslateCommon("datatable_columns.actions.buttons.edit_tooltip")}
-                        icon={faHammer}
-                        loading={loadingRows.includes(`${row.id}`)}
-                        iconProps={{ size: "xs" }}
-                        actionProps={{ size: "sm" }}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          OpenUpdateModal(row);
-                        }}
-                      />
-                      <ActionWithTooltip
-                        tooltip={useTranslateCommon("datatable_columns.actions.buttons.delete_tooltip")}
-                        icon={faTrash}
-                        color="red"
-                        loading={loadingRows.includes(`${row.id}`)}
-                        iconProps={{ size: "xs" }}
-                        actionProps={{ size: "sm" }}
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          OpenDeleteModal(row.id);
-                        }}
-                      />
-                    </Group>
-                  ),
-                },
-              ]}
+              onEdit={(row) => OpenUpdateModal(row)}
+              onDelete={(id) => OpenDeleteModal(id)}
             />
           )}
         </Box>
