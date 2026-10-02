@@ -16,6 +16,7 @@
 - 🛠️ Fixed the users activity linking to to thw wrong endpoint
 - 🛠️ Fixed `stock_riven_sell` logging to the wrong file (`stock_riven_create.log`).
 - 🛠️ Fixed the live scraper's global knapsack budget pass deleting wish-list buy orders; wish-list items are now excluded from the knapsack check.
+- 🛠️ Fixed the ban screen never showing: the banned route was unreachable because `IsUserBanned()` required a `clean` URL while its render condition required the opposite, so QF/WFM bans detected by the backend were not surfaced in the UI. The ban screen now also takes precedence over the generic error page.
 
 ## Refactors
 

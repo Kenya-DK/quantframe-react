@@ -63,7 +63,6 @@ export function AppRoutes() {
   };
 
   const IsUserBanned = () => {
-    if (!window.location.href.includes("clean")) return false;
     if (!user) return false;
     if (user.anonymous) return false;
     if (user.qf_banned || user.wfm_banned) return true;
@@ -108,7 +107,7 @@ export function AppRoutes() {
             </Route>
           </>
         )}
-        {ShowErrorPage() && !ShowCleanLayout() && (
+        {ShowErrorPage() && !IsUserBanned() && !ShowCleanLayout() && (
           <Route path="*" element={<LogOutLayout />}>
             <Route path="*" element={<PError />} />
           </Route>
