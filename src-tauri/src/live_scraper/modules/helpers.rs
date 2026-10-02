@@ -730,12 +730,19 @@ pub async fn fetch_and_cache_orders(
     Ok(orders)
 }
 
-pub fn get_per_trade(item_info: &CacheTradableItem) -> Option<i64> {
-    if item_info.bulk_tradable {
-        Some(1)
-    } else {
-        None
+pub fn get_per_trade(bulk_tradable: bool, quantity: i64, is_bulk: bool) -> Option<i64> {
+    if !bulk_tradable {
+        return None;
     }
+
+    if !is_bulk {
+        return Some(1);
+    }
+
+    let max_per_trade = quantity.clamp(1, 6);
+    (1..=max_per_trade)
+        .rev()
+        .find(|per_trade| quantity % per_trade == 0)
 }
 
 pub fn is_blacklisted(

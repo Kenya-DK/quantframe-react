@@ -18,6 +18,7 @@ import { getSafePage } from "@utils/helper";
 import { DataTable } from "mantine-datatable";
 import { useEffect, useState } from "react";
 import { ColumnActions } from "../../Columns/ColumnActions";
+import { ColumnListPrice } from "../../Columns/ColumnListPrice";
 import { ColumnMinMaxPrice } from "../../Columns/ColumnMinMaxPrice";
 import classes from "../../LiveScraper.module.css";
 import { useStockModals } from "./modals";
@@ -237,6 +238,9 @@ export const WishListPanel = ({ isActive }: WishListPanelProps = {}) => {
           {
             accessor: "list_price",
             title: useTranslateCommon("datatable_columns.list_price"),
+            render: ({ properties, quantity, list_price }) => (
+              <ColumnListPrice list_price={list_price} quantity={quantity} properties={properties} />
+            ),
           },
           {
             accessor: "actions",

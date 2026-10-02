@@ -13,6 +13,7 @@
 - 🛠️ Fixed syndicate items failing to post when the standing check errored; the check now degrades gracefully instead of aborting the pipeline.
 - 🛠️ Fixed the users activity linking to to thw wrong endpoint
 - 🛠️ Fixed `stock_riven_sell` logging to the wrong file (`stock_riven_create.log`).
+- 🛠️ Fixed the live scraper's global knapsack budget pass deleting wish-list buy orders; wish-list items are now excluded from the knapsack check.
 
 ## Refactors
 

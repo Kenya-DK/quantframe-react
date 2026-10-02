@@ -12,6 +12,7 @@ import classes from "./OverviewTab.module.css";
 
 interface Properties {
   image: string;
+  bulk_tradable: boolean;
   [key: string]: any;
 }
 

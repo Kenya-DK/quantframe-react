@@ -204,6 +204,7 @@ pub async fn populate_item_market_properties(
     properties.set_property_value("name", item_info.name.clone());
     properties.set_property_value("image", item_info.icon.clone());
     properties.set_property_value("t_type", item_info.sub_type.clone());
+    properties.set_property_value("bulk_tradable", item_info.bulk_tradable);
 
     // ---------------- Order Info ----------------
     let order = wfm

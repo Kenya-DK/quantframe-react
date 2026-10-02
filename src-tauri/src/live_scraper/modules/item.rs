@@ -311,11 +311,20 @@ impl ItemModule {
         }
 
         // Global knapsack pass: run once on all cached orders after all items processed
-        let all_buy_orders = app
+        let wishlist_wfm_ids: HashSet<&str> = interesting_items
+            .iter()
+            .filter(|entry| entry.operations.has("WishList"))
+            .map(|entry| entry.wfm_id.as_str())
+            .collect();
+
+        let all_buy_orders: Vec<_> = app
             .wfm_client
             .order()
             .cache_orders()
-            .extract_order_summary(OrderType::Buy);
+            .extract_order_summary(OrderType::Buy)
+            .into_iter()
+            .filter(|order| !wishlist_wfm_ids.contains(order.2.as_str()))
+            .collect();
 
         let max_total_price_cap = app.settings.live_scraper.items.wtb.max_total_price_cap;
         if all_buy_orders.len() > 1 && !is_disabled(max_total_price_cap) {
@@ -378,7 +387,11 @@ impl ItemModule {
         let wfm_client = states::app_state()?.wfm_client;
 
         // Get the per-trade quantity for this item, based on its type and settings
-        let per_trade = get_per_trade(item_info);
+        let per_trade = get_per_trade(
+            item_info.bulk_tradable,
+            entry.get_quantity(OrderType::Buy),
+            false,
+        );
 
         // Get item Price Info from cache, including moving average and other metrics
         let closed_avg = price.moving_avg.unwrap_or(0.0);
@@ -632,7 +645,11 @@ impl ItemModule {
         let wfm_client = states::app_state()?.wfm_client;
 
         // Get the per-trade quantity for this item, based on its type and settings
-        let per_trade = get_per_trade(item_info);
+        let per_trade = get_per_trade(
+            item_info.bulk_tradable,
+            entry.get_quantity(OrderType::Sell),
+            false,
+        );
 
         // Use the moving average as the baseline closed-average price
         let closed_avg = price.moving_avg.unwrap_or(0.0) as i64;
@@ -907,7 +924,6 @@ impl ItemModule {
         }
 
         let market = &entry.buy_market_info;
-        let per_trade = get_per_trade(item_info);
 
         // Load the persisted wishlist item.
         let mut wishlist_item = entry.get_wishlist_item_or_error(conn).await?;
@@ -925,6 +941,14 @@ impl ItemModule {
             .properties
             .get_property_value("max_price", 0i64);
 
+        let is_bulk = wishlist_item
+            .properties
+            .get_property_value("is_bulk", false);
+
+        let per_trade = get_per_trade(item_info.bulk_tradable, wishlist_item.quantity, is_bulk);
+
+        println!("Per trade quantity: {:?}", per_trade);
+        // return Ok(());
         // Hidden items are either ignored or scheduled for deletion,
         // depending on their current status.
         if wishlist_item.is_hidden {
@@ -1088,7 +1112,11 @@ impl ItemModule {
         let wfm_client = states::app_state()?.wfm_client;
 
         // Get the per-trade quantity for this item, based on its type and settings
-        let per_trade = get_per_trade(item_info);
+        let per_trade = get_per_trade(
+            item_info.bulk_tradable,
+            entry.get_quantity(OrderType::Sell),
+            false,
+        );
 
         // Get the current market snapshot for this item's sell orders
         let mut stock_syndicate = entry.get_syndicate_item_or_error(conn).await?;

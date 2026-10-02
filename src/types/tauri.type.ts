@@ -482,6 +482,7 @@ export namespace TauriTypes {
     max_price?: number;
     min_profit?: number;
     min_sma?: number;
+    is_bulk?: boolean;
     cooldown?: CoolDownInfo;
     [key: string]: any;
   }

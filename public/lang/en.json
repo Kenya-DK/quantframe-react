@@ -1886,15 +1886,56 @@
           "edit": {
             "title": "Edit",
             "fields": {
-              "bought": "Bought For",
-              "minimum_price": "Minimum Price",
-              "maximum_price": "Maximum Price",
-              "owned": "Currently Owned",
-              "quantity": "Quantity",
-              "minimum_sma": "Minimum SMA",
-              "minimum_profit": "Minimum Profit",
-              "syndicate": "Syndicate",
-              "standing_cost": "Standing Cost"
+              "bought": {
+                "label": "Bought For",
+                "placeholder": "Enter the price you bought this item for.",
+                "description": "The price you bought this item for."
+              },
+              "min_price": {
+                "label": "Minimum Price",
+                "placeholder": "Enter the minimum price you are willing to sell this item for.",
+                "description": "The minimum price you are willing to sell this item for."
+              },
+              "max_price": {
+                "label": "Maximum Price",
+                "placeholder": "Enter the maximum price you are willing to buy this item for.",
+                "description": "The maximum price you are willing to buy this item for."
+              },
+              "owned": {
+                "label": "Currently Owned",
+                "placeholder": "Enter the number of this item you currently own.",
+                "description": "The number of this item you currently own."
+              },
+              "quantity": {
+                "label": "Quantity",
+                "placeholder": "Enter the quantity of this item you want to manage.",
+                "description": "The quantity of this item you want to manage."
+              },
+              "min_sma": {
+                "label": "Minimum SMA",
+                "placeholder": "Enter the minimum simple moving average to consider for selling this item.",
+                "description": "The minimum simple moving average to consider for selling this item."
+              },
+              "min_profit": {
+                "label": "Minimum Profit",
+                "placeholder": "Enter the minimum profit you want to make when selling this item.",
+                "description": "The minimum profit you want to make when selling this item."
+              },
+              "syndicate": {
+                "label": "Syndicate",
+                "placeholder": "Enter the syndicate associated with this item.",
+                "description": "The syndicate associated with this item."
+              },
+              "standing_cost": {
+                "label": "Standing Cost",
+                "placeholder": "Enter the standing cost required for this item.",
+                "description": "The standing cost required for this item."
+              },
+              "is_bulk": {
+                "label": "Is Bulk",
+                "placeholder": "Indicate whether this item is managed in bulk.",
+                "description": "Indicates whether this item is managed in bulk."
+              }
             },
             "tooltips": {
               "minimum_price": "The minimum price you are willing to sell this item for. Set to 0 to disable.",
