@@ -39,7 +39,7 @@ tauri-plugin-clipboard-manager = "2.3.0"
 # Other dependencies
 aes = "0.8.4"
 cbc = { version = "0.1.2", features = ["std"] }
-reqwest = { version = "0.12.19", features = ["json"] }
+reqwest = { version = "0.12.19", features = ["json", "gzip", "deflate"] }
 tokio = {version =  "1.45.1", features = ["full"] }
 regex = "1.9.1"
 chrono = "0.4"
