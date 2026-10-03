@@ -2,7 +2,6 @@ use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
 use utils::{get_location, info, log_json, Error, LogLevel, LoggerOptions};
-use wf_market::client::Authenticated as WFAuthenticated;
 use wf_market::types::websocket::WsClient;
 use wf_market::types::UserPrivate as WFUserPrivate;
 use wf_market::Client as WFClient;
@@ -44,37 +43,50 @@ impl AppState {
     ) -> Result<
         (
             QFClient,
-            WFClient<WFAuthenticated>,
+            WFUserPrivate,
+            QFUserPrivate,
             User,
             WsClient,
             WsClient,
         ),
         Error,
     > {
-        let mut wfm_client = match self
-            .new_base_wfm_client()
-            .login(email, password, &self.wfm_client.get_device_id())
+        // WFM: sign in and update the already-created client in place. Its
+        // shared base makes the new token visible to every clone.
+        let device_id = self.wfm_client.get_device_id();
+        let (_, token) = self
+            .wfm_client
+            .authentication()
+            .signin(email, password, &device_id)
             .await
-        {
-            Ok(client) => client,
-            Err(e) => {
-                return Err(Error::from_wfm(
+            .map_err(|e| {
+                Error::from_wfm(
                     "AppState:Login",
                     "Failed to login to WFM client",
                     e,
                     get_location!(),
-                ))
-            }
-        };
-        let mut wfm_user = wfm_client
+                )
+            })?;
+        self.wfm_client.set_token(token.clone());
+        self.wfm_client.refresh().await.map_err(|e| {
+            Error::from_wfm(
+                "AppState:Login",
+                "Failed to authenticate WFM client",
+                e,
+                get_location!(),
+            )
+        })?;
+
+        let mut wfm_user = self
+            .wfm_client
             .get_user()
             .map_err(|e| Error::from_wfm("Login", "Failed to get WFM user", e, get_location!()))?;
+        wfm_user.unread_messages = self.wfm_client.chat().cache_chats().total_unread_count() as i16;
 
-        wfm_user.unread_messages = wfm_client.chat().cache_chats().total_unread_count() as i16;
         let mut user = self.user.clone();
-        wfm_client.set_device_id(&self.qf_client.device);
-        user.wfm_token = wfm_client.get_token();
+        user.wfm_token = token;
 
+        // QF: set the WFM details on a client used for authentication.
         let mut qf_client = self.qf_client.clone();
         qf_client.set_wfm_id(&wfm_user.id);
         qf_client.set_wfm_username(&wfm_user.ingame_name);
@@ -84,42 +96,9 @@ impl AppState {
         user.qf_token = qf_user.token.clone().unwrap();
         qf_client.set_token(&user.qf_token);
         let updated_user = update_user(user, &wfm_user, &qf_user);
-        let (ws, ws_chat) = setup_socket(wfm_client.clone()).await?;
+        let (ws, ws_chat) = setup_socket(self.wfm_client.clone()).await?;
         updated_user.save()?;
-        Ok((qf_client, wfm_client, updated_user, ws, ws_chat))
-    }
-
-    fn new_base_wfm_client(&self) -> WFClient {
-        let wfm_client = WFClient::new()
-            .with_callback("api:after", |_, data| {
-                info(
-                    "WarframeMarket:API",
-                    &format!(
-                        "Method: {} | Route: {} | Took {}ms",
-                        data.get_property_value("method", String::new()),
-                        data.get_property_value("url", String::new()),
-                        data.get_property_value("duration_ms", 0)
-                    ),
-                    &LoggerOptions::default(),
-                );
-            })
-            .with_callback("api:refresh", |_, data| {
-                let state = data.get_property_value("state", String::from("unknown"));
-                emit_startup!(format!("wfm.{}", state), json!({}));
-            })
-            .with_callback("api:error", |_, data| {
-                let mut data = data.clone();
-                data.mask_sensitive_data(SENSITIVE_FIELDS);
-                let timestamp = chrono::Local::now()
-                    .with_timezone(&chrono::Utc)
-                    .format("%Y_%m_%d_%H_%M_%S")
-                    .to_string();
-
-                if let Some(data) = data.properties.clone() {
-                    log_json(data, &format!("wfm_api_error_{}.json", timestamp)).ok();
-                }
-            });
-        wfm_client
+        Ok((qf_client, wfm_user, qf_user, updated_user, ws, ws_chat))
     }
 
     pub async fn validate(&mut self) -> Result<(WFUserPrivate, QFUserPrivate), Error> {
@@ -130,23 +109,18 @@ impl AppState {
                 get_location!(),
             ));
         }
-        let wfm_client = match self
-            .new_base_wfm_client()
-            .login_with_token(&self.user.wfm_token, &self.wfm_client.get_device_id())
-            .await
-        {
-            Ok(client) => client,
-            Err(e) => {
-                return Err(Error::from_wfm(
-                    "AppState:Validate",
-                    "Failed to login with WFM token",
-                    e,
-                    get_location!(),
-                ));
-            }
-        };
-        let mut wfm_user = wfm_client.get_user().unwrap();
-        wfm_user.unread_messages = wfm_client.chat().cache_chats().total_unread_count() as i16;
+        // Update the already-created client in place.
+        self.wfm_client.set_token(self.user.wfm_token.clone());
+        self.wfm_client.refresh().await.map_err(|e| {
+            Error::from_wfm(
+                "AppState:Validate",
+                "Failed to login with WFM token",
+                e,
+                get_location!(),
+            )
+        })?;
+        let mut wfm_user = self.wfm_client.get_user().unwrap();
+        wfm_user.unread_messages = self.wfm_client.chat().cache_chats().total_unread_count() as i16;
         self.qf_client.set_wfm_id(&wfm_user.id);
         self.qf_client.set_wfm_username(&wfm_user.ingame_name);
         self.qf_client.set_wfm_platform(&wfm_user.platform);
@@ -173,7 +147,7 @@ impl AppState {
         if !qf_user.token.is_none() {
             self.qf_client.set_token(qf_user.token.as_ref().unwrap());
         }
-        let (ws, ws_chat) = setup_socket(wfm_client.clone()).await?;
+        let (ws, ws_chat) = setup_socket(self.wfm_client.clone()).await?;
         self.wfm_socket = Some(ws);
         self.wfm_chat_socket = Some(ws_chat);
         if !qf_user.banned {
@@ -182,7 +156,6 @@ impl AppState {
             self.analytics.stop()
         }
         self.analytics.set_client(self.qf_client.clone());
-        self.wfm_client = wfm_client;
         Ok((wfm_user, qf_user))
     }
 

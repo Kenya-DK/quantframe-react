@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use qf_api::enums::ApplicationEvent;
-use utils::{get_location, info, trace, warning, Error, LoggerOptions};
+use utils::{get_location, info, warning, Error, LoggerOptions};
 
 use crate::{
     app::{AppState, User},
@@ -9,7 +9,7 @@ use crate::{
     live_scraper::LiveScraperState,
     send_event, track_event,
     types::{PermissionsFlags, UIEvent},
-    utils::{AuctionListExt, ErrorFromExt, OrderListExt},
+    utils::{AuctionListExt, OrderListExt},
 };
 
 // --------------------------------------------------
@@ -45,7 +45,7 @@ pub async fn auth_login(
     let mut cache_state = cache.lock()?.clone();
 
     let result = async {
-        let (qf_client, wfm_client, updated_user, ws, ws_chat) =
+        let (qf_client, wfm_user, _qf_user, updated_user, ws, ws_chat) =
             app_state.login(&email, &password).await?;
 
         info(
@@ -70,19 +70,23 @@ pub async fn auth_login(
         cache.version.id_price = price_version_id;
         cache.version.save()?;
 
-        wfm_client
+        app.wfm_client
             .order()
             .cache_orders_mut()
             .apply_item_info(&cache)?;
 
-        wfm_client
+        app.wfm_client
             .auction()
             .cache_auctions_mut()
             .apply_item_info(&cache)?;
 
-        app.wfm_client = wfm_client;
+        // Update the single QF client in place instead of replacing it.
+        app.qf_client.set_wfm_id(&wfm_user.id);
+        app.qf_client.set_wfm_username(&wfm_user.ingame_name);
+        app.qf_client.set_wfm_platform(&wfm_user.platform);
+        app.qf_client.set_token(&updated_user.qf_token);
+        app.analytics.set_client(app.qf_client.clone());
         app.user = updated_user.clone();
-        app.set_qf_client(qf_client);
         app.wfm_socket = Some(ws);
         app.wfm_chat_socket = Some(ws_chat);
 

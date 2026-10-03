@@ -80,6 +80,7 @@ pub struct Client {
     wfm_username: String,
     wfm_id: String,
     is_pre_release: bool,
+    user_agent: String,
     limiter: Arc<RateLimiter<NotKeyed, InMemoryState, DefaultClock>>,
     callbacks: Arc<Mutex<HashMap<String, Vec<ClientCallback>>>>,
     // Routes
@@ -111,6 +112,7 @@ impl Client {
                     wfm_username: self.wfm_username.clone(),
                     wfm_id: self.wfm_id.clone(),
                     is_pre_release: self.is_pre_release.clone(),
+                    user_agent: self.user_agent.clone(),
                     limiter: self.limiter.clone(),
                     callbacks: self.callbacks.clone(),
                     // Initialize the routes with the new client
@@ -173,6 +175,14 @@ impl Client {
             wfm_username: wfm_username.to_string(),
             wfm_id: wfm_id.to_string(),
             is_pre_release,
+            user_agent: format!(
+                "QF API Client/{} ({}, {}, {}, {})",
+                env!("CARGO_PKG_VERSION"),
+                platform,
+                device,
+                app,
+                version
+            ),
             limiter: build_limiter(REQUESTS_PER_SECOND).into(),
             callbacks: Arc::new(Mutex::new(HashMap::new())),
             // Initialize the routes with the new client
@@ -187,6 +197,13 @@ impl Client {
             events_route: OnceLock::new(),
         }
     }
+
+    /// Overrides the `User-Agent` header sent with every request.
+    pub fn with_user_agent(mut self, user_agent: impl Into<String>) -> Self {
+        self.user_agent = user_agent.into();
+        self
+    }
+
     pub async fn call_api<T: serde::de::DeserializeOwned>(
         &self,
         method: Method,
@@ -224,19 +241,7 @@ impl Client {
             "IsPreRelease",
             self.is_pre_release.to_string().parse().unwrap(),
         );
-        default_headers.insert(
-            "User-Agent",
-            format!(
-                "QF API Client/{} ({}, {}, {}, {})",
-                env!("CARGO_PKG_VERSION"),
-                self.platform,
-                self.device,
-                self.app,
-                self.version
-            )
-            .parse()
-            .unwrap(),
-        );
+        default_headers.insert("User-Agent", self.user_agent.parse().unwrap());
 
         // If the client is authenticated, add the token to the headers
         if self.token != "" {
