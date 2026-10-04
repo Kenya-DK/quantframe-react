@@ -24,7 +24,7 @@
   },
   "productName": "Quantframe",
   "mainBinaryName": "Quantframe",
-  "version": "1.6.29",
+  "version": "1.6.30",
   "identifier": "dev.kenya.quantframe",
   "plugins": {
     "updater": {
