@@ -1,4 +1,4 @@
-use ::entity::{dto::*, enums::*, syndicate_item::*};
+use ::entity::{enums::*, syndicate_item::*};
 use sea_orm::*;
 use utils::*;
 

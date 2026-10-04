@@ -7,7 +7,6 @@ use crate::{
     utils::{modules::states, OrderListExt},
 };
 use qf_api::enums::app_events::ApplicationEvent as EventType;
-use serde_json::json;
 use std::{
     sync::{
         atomic::{AtomicBool, Ordering},

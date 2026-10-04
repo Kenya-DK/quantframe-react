@@ -1,6 +1,5 @@
 use std::{collections::HashMap, sync::OnceLock};
 
-use regex::Regex;
 use utils::{combine_and_detect_match, DetectionStatus};
 
 use crate::{enums::TradeItemType, log_parser::TradeResult};

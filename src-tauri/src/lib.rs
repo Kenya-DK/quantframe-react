@@ -14,7 +14,6 @@ use ::utils::LoggerOptions;
 use app::AppState;
 use migration::{Migrator, MigratorTrait};
 use service::sea_orm::{Database, DatabaseConnection};
-use std::collections::HashMap;
 
 use std::panic;
 use std::sync::{Mutex, OnceLock};

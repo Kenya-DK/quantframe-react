@@ -5,7 +5,6 @@ use utils::SubType;
 
 use crate::stock_item::*;
 
-use crate::dto::*;
 use crate::enums::*;
 use crate::transaction::Model as TransactionModel;
 

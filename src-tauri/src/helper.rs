@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use entity::{
-    dto::{FinancialGraph, FinancialReport, PaginatedResult, PriceHistory, PriceHistoryVec},
+    dto::{FinancialGraph, FinancialReport, PaginatedResult, PriceHistory},
     enums::RivenGrade,
     stock_riven::RivenAttribute,
     transaction::TransactionPaginationQueryDto,
@@ -20,7 +20,6 @@ use crate::{
     cache::{
         derive_riven_summary_attributes, grade_riven, scale_attributes, CacheState, CacheWeaponBase,
     },
-    live_scraper::get_cooldown,
     utils::{auction_list_ext::AuctionWithOwnerListExt, ErrorFromExt, OrderListExt, SubTypeExt},
     APP, DATABASE,
 };

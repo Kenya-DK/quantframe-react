@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{ErrorFromExt, WishListQuery};
-use ::entity::{dto::*, wish_list::*};
+use ::entity::wish_list::*;
 use sea_orm::*;
 use utils::*;
 

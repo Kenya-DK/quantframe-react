@@ -7,10 +7,9 @@ use std::{
     vec,
 };
 
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use entity::{
     dto::{add_price_history, PriceHistory},
-    enums::StockStatus,
     stock_item::*,
     syndicate_item::SyndicateItemPaginationQueryDto,
     wish_list::*,
@@ -24,7 +23,7 @@ use wf_market::{
 };
 
 use crate::{
-    app::{AppState, ItemSettings, Settings, SyndicateSettings},
+    app::{AppState, ItemSettings, Settings},
     cache::types::{CacheTradableItem, ItemPriceInfo},
     enums::*,
     live_scraper::*,

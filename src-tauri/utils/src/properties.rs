@@ -2,7 +2,7 @@ use sea_orm::sea_query::ValueType;
 use sea_orm::{TryGetError, TryGetable, Value, sea_query};
 use serde::{Deserialize, Serialize};
 
-use crate::{LoggerOptions, critical, info};
+use crate::{LoggerOptions, critical};
 
 #[derive(Clone, PartialEq, Eq, Debug, Serialize, Deserialize, Default)]
 pub struct Properties {

@@ -6,7 +6,6 @@ use utils::SubType;
 
 use crate::syndicate_item::*;
 
-use crate::dto::*;
 use crate::enums::*;
 use crate::transaction::Model as TransactionModel;
 

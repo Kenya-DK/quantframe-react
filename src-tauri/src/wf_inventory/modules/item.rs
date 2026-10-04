@@ -1,11 +1,9 @@
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 
 use crate::wf_inventory::WFInventoryState;
 
 #[derive(Debug)]
-pub struct ItemModule {
-    client: Weak<WFInventoryState>,
-}
+pub struct ItemModule;
 
 impl ItemModule {
     /**
@@ -13,9 +11,7 @@ impl ItemModule {
      * The `client` parameter is an `Arc<WFInventoryState>` that allows the module
      * to access the live scraper state.
      */
-    pub fn new(client: Arc<WFInventoryState>) -> Arc<Self> {
-        Arc::new(Self {
-            client: Arc::downgrade(&client),
-        })
+    pub fn new(_client: Arc<WFInventoryState>) -> Arc<Self> {
+        Arc::new(Self)
     }
 }

@@ -68,11 +68,4 @@ impl QuestModule {
                 )
             })
     }
-    /* -------------------------------------------------------------
-        Vector Functions
-    ------------------------------------------------------------- */
-    pub fn get_all_items(&self) -> Result<Vec<CacheQuest>, Error> {
-        let lookup = self.lookup.lock().unwrap();
-        Ok(lookup.get_all_values())
-    }
 }

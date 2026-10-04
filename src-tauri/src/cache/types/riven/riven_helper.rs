@@ -6,7 +6,7 @@ use utils::{get_location, Error};
 
 use crate::{
     cache::{
-        modules::{ModModule, WeaponModule},
+        modules::ModModule,
         types::*,
         CacheState,
     },

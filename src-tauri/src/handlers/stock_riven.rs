@@ -3,7 +3,7 @@ use crate::{
     utils::{modules::states, CreateStockRivenExt},
     DATABASE,
 };
-use entity::{dto::*, enums::*, stock_riven::*};
+use entity::{enums::*, stock_riven::*};
 use service::{sea_orm::DatabaseConnection, StockRivenMutation, StockRivenQuery};
 use utils::SubType;
 use utils::{get_location, info, warning, Error, OperationSet};

@@ -1,8 +1,7 @@
-use std::{fs::File, io::Read, path::PathBuf};
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use utils::{get_location, read_json_file_optional, validate_json, Error};
+use utils::{get_location, read_json_file_optional, Error};
 
 use crate::helper;
 

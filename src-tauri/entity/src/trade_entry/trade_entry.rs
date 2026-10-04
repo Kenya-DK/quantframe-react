@@ -3,7 +3,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{dto::*, enums::*, trade_entry::dto::UpdateTradeEntry};
+use crate::{enums::*, trade_entry::dto::UpdateTradeEntry};
 use utils::SubType;
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "trade_entry")]

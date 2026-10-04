@@ -3,7 +3,6 @@ use std::sync::Mutex;
 use crate::{
     app::{AppState, Settings},
     cache::client::CacheState,
-    log_parser::LogParserState,
     APP, APP_ERROR,
 };
 use tauri::Manager;

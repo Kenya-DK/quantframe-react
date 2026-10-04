@@ -1,5 +1,5 @@
 use entity::{dto::*, enums::*};
-use utils::{OperationSet, SortDirection};
+use utils::SortDirection;
 use wf_market::enums::OrderType;
 
 use serde::{Deserialize, Serialize};

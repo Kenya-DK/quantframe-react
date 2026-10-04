@@ -1,16 +1,16 @@
 use std::sync::Mutex;
 
-use entity::{dto::*, enums::*, syndicate_item::*};
+use entity::{enums::*, syndicate_item::*};
 use service::{SyndicateItemMutation, SyndicateItemQuery};
 use tauri::Manager;
 use utils::SubType;
 use utils::{get_location, info, warning, Error, OperationSet};
 use wf_market::enums::OrderType;
 
-use crate::app::{settings, AppState};
+use crate::app::AppState;
 use crate::types::UIEvent;
 use crate::{handlers::*, utils::CreateSyndicateItemExt, DATABASE};
-use crate::{send_event, send_event_update, APP};
+use crate::{send_event, APP};
 
 // --------------------------------------------------
 // Helper functions.

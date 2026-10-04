@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-use ::entity::{dto::*, enums::*, stock_item::*};
+use ::entity::{enums::*, stock_item::*};
 use sea_orm::*;
-use serde_json::json;
 use utils::*;
 
 use crate::{ErrorFromExt, StockItemQuery};

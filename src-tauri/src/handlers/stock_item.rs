@@ -1,5 +1,4 @@
-use entity::{dto::*, enums::*, stock_item::*, wish_list::CreateWishListItem};
-use serde::{Deserialize, Serialize};
+use entity::{enums::*, stock_item::*};
 use service::StockItemMutation;
 use utils::SubType;
 use utils::{get_location, info, warning, Error, OperationSet};

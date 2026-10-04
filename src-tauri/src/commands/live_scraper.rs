@@ -4,7 +4,7 @@ use serde_json::{json, Value};
 use utils::Error;
 
 use crate::{
-    app::{ItemSettings, ItemWtbSettings},
+    app::ItemSettings,
     cache::{CacheState, ItemPriceInfo},
     live_scraper::{self, LiveScraperState},
     send_event,

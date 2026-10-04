@@ -4,7 +4,6 @@ use entity::{dto::PaginatedResult, enums::FieldChange};
 use utils::*;
 
 use crate::{
-    cache::CacheSyndicateTitle,
     helper::paginate,
     utils::modules::states,
     wf_inventory::{item_base::WFInvItemBase, *},

@@ -1,6 +1,5 @@
 use std::{
     collections::HashMap,
-    ops::Mul,
     path::PathBuf,
     sync::{Arc, Mutex},
 };

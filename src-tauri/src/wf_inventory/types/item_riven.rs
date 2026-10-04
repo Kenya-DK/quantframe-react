@@ -62,9 +62,9 @@ impl WFInvItemRiven {
 
     fn populate_unveiled(
         &mut self,
-        raw: &WFInvItemRaw,
-        fingerprint: &UpgradeFingerprint,
-        cache: &CacheState,
+        _raw: &WFInvItemRaw,
+        _fingerprint: &UpgradeFingerprint,
+        _cache: &CacheState,
     ) -> Result<(), Error> {
         // let challenge = fingerprint.challenge.clone().ok_or_else(|| {
         //     Error::new(

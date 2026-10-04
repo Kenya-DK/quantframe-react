@@ -18,8 +18,7 @@ use crate::{
     utils::OrderListExt,
 };
 use crate::{
-    enums::TradeMode, live_scraper::*, send_event, types::*, utils::modules::states,
-    utils::ErrorFromExt, utils::SubTypeExt, DATABASE,
+    enums::TradeMode, live_scraper::*, send_event, types::*, utils::modules::states, utils::SubTypeExt, DATABASE,
 };
 
 static COMPONENT: &str = "LiveScraper:Item:";

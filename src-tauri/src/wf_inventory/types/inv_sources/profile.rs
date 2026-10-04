@@ -1,7 +1,4 @@
 use crate::wf_inventory::WarframeRootObject;
-use std::fs::File;
-use std::io::Read;
-use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use utils::*;
 

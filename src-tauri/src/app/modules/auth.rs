@@ -1,15 +1,13 @@
 use qf_api::errors::ApiError as QFApiError;
 use qf_api::types::UserPrivate as QFUserPrivate;
 use qf_api::Client as QFClient;
-use utils::{get_location, info, log_json, Error, LogLevel, LoggerOptions};
+use utils::{get_location, Error, LogLevel};
 use wf_market::types::websocket::WsClient;
 use wf_market::types::UserPrivate as WFUserPrivate;
-use wf_market::Client as WFClient;
 
 use crate::app::modules::ws::setup_socket;
 use crate::app::{AppState, User};
 use crate::utils::ErrorFromExt;
-use crate::{emit_startup, SENSITIVE_FIELDS};
 
 pub fn update_user(mut cu_user: User, user: &WFUserPrivate, qf_user: &QFUserPrivate) -> User {
     cu_user.anonymous = false;

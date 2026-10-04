@@ -6,6 +6,8 @@
 
 ## Refactors
 
+- ♻️ Removed unused imports and dead code across the Rust workspace, so `cargo check` runs without warnings.
+
 ## Dev Notes
 
 ## Icons

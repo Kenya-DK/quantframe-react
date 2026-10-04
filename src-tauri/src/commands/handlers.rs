@@ -1,4 +1,4 @@
-use crate::{commands::item, handlers::*, track_event};
+use crate::{handlers::*, track_event};
 use qf_api::enums::app_events::ApplicationEvent as EventType;
 use utils::{get_location, Error};
 

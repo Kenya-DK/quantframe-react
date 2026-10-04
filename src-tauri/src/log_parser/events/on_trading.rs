@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    sync::{LazyLock, Mutex},
+    sync::Mutex,
 };
 
 use crate::{
@@ -14,12 +14,11 @@ use crate::{
     notify_gui, send_event, track_event,
     types::*,
     utils::{modules::states, SubTypeExt},
-    APP,
 };
 use entity::enums::TransactionType;
 use qf_api::enums::app_events::ApplicationEvent as EventType;
 use serde_json::json;
-use tauri::{Emitter, Listener, Manager};
+use tauri::{Emitter, Listener};
 use utils::*;
 use wf_market::enums::OrderType;
 //----------------------------

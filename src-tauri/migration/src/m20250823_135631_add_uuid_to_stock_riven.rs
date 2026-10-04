@@ -1,9 +1,8 @@
 use crate::m20240406_135307_create_stock_riven_table::StockRiven;
 
-use entity::stock_riven::*;
 use sea_orm_migration::{
     prelude::*,
-    sea_orm::{ActiveModelTrait, EntityTrait, Set, Statement},
+    sea_orm::Statement,
 };
 
 #[derive(DeriveMigrationName)]

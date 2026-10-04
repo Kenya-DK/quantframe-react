@@ -9,12 +9,6 @@ pub enum TradeResult {
     Unknown,
 }
 impl TradeResult {
-    pub fn was_detected(&self) -> bool {
-        matches!(
-            self,
-            TradeResult::Success | TradeResult::Failed | TradeResult::Cancelled
-        )
-    }
     pub fn display(&self) -> &'static str {
         match self {
             TradeResult::Success => "Success",

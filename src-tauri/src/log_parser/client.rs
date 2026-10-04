@@ -1,5 +1,5 @@
 use crate::{
-    app::{AdvancedSettings, LogSettings},
+    app::LogSettings,
     helper,
     log_parser::*,
 };

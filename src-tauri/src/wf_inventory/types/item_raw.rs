@@ -40,18 +40,6 @@ impl WFInvItemRaw {
         }
         false
     }
-    pub fn is_arcane(&self) -> bool {
-        !self.unique_name.contains("/CosmeticEnhancers/Peculiars/")
-            && self
-                .unique_name
-                .contains("/Lotus/Upgrades/CosmeticEnhancers")
-    }
-    pub fn is_mod(&self) -> bool {
-        !self.unique_name.contains("/Beginner/")
-            && (self.unique_name.contains("/CosmeticEnhancers/Peculiars/")
-                || self.unique_name.contains("/Lotus/Upgrades/Mods/Railjack/")
-                || !self.is_arcane())
-    }
     pub fn get_upgrade_fingerprint(&self) -> UpgradeFingerprint {
         if self.upgrade_fingerprint.is_none() {
             return UpgradeFingerprint::default();

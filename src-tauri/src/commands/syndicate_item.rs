@@ -1,4 +1,4 @@
-use std::{collections::HashMap, os::raw, sync::Mutex};
+use std::{collections::HashMap, sync::Mutex};
 
 use entity::{dto::*, syndicate_item::*};
 use qf_api::enums::app_events::ApplicationEvent as EventType;

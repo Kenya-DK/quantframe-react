@@ -3,7 +3,7 @@ use std::{collections::HashMap, fs::File, io::Read, path::PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use utils::{
-    extract_json_values, get_location, log_json_formatted, merge_json, validate_json, Error,
+    extract_json_values, get_location, merge_json, validate_json, Error,
 };
 
 use super::*;
