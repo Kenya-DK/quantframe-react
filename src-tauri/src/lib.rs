@@ -380,6 +380,51 @@ pub fn run() {
             commands::wf_inventory::wf_inventory_get_syndicates,
             commands::wf_inventory::wf_inventory_update,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|_app_handle, event| {
+            if let tauri::RunEvent::ExitRequested { .. } = event {
+                track_app_exit();
+            }
+        });
+}
+
+/// Sends the `app_exit` analytics event and flushes the queue before the
+/// process terminates. Safe to call more than once.
+fn track_app_exit() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    static TRACKED: AtomicBool = AtomicBool::new(false);
+    if TRACKED.swap(true, Ordering::SeqCst) {
+        return;
+    }
+
+    let Ok(app) = crate::utils::modules::states::app_state() else {
+        return;
+    };
+
+    app.analytics.track_event(
+        qf_api::enums::ApplicationEvent::AppExit,
+        [(
+            "session_duration",
+            ::utils::get_duration_since_start().as_secs().to_string(),
+        )],
+    );
+
+    // Report how many Warframe Market API calls were made per route this
+    // session (one event per route, so it's easy to aggregate in ClickHouse).
+    let routes: Vec<(String, String)> = match app.wfm_client.get_tracking().lock() {
+        Ok(tracking) => tracking
+            .iter()
+            .map(|(route, count)| (route.clone(), count.to_string()))
+            .collect(),
+        Err(_) => Vec::new(),
+    };
+    for (route, count) in routes {
+        app.analytics.track_event(
+            qf_api::enums::ApplicationEvent::WfmApiTracking,
+            [("route", route), ("count", count)],
+        );
+    }
+
+    app.analytics.flush();
 }

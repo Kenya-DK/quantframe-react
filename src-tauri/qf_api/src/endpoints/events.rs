@@ -57,6 +57,12 @@ impl EventsRoute {
         self.queue.lock().unwrap().push(dto);
     }
 
+    /// Immediately flushes all queued events. Used on shutdown so events
+    /// (e.g. `app_exit`) are sent before the process ends.
+    pub async fn flush_now(&self) -> Result<(), ApiError> {
+        self.flush().await
+    }
+
     async fn flush(&self) -> Result<(), ApiError> {
         let _flush_lock = self.flush_lock.lock().await;
 

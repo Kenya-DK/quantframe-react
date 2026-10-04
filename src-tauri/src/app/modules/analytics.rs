@@ -61,4 +61,21 @@ impl Analytics {
         let mut stop = self._stop.lock().unwrap();
         *stop = true;
     }
+
+    /// Force-flushes any queued events. Used on shutdown so the `app_exit`
+    /// event is sent before the process terminates.
+    pub fn flush(&self) {
+        let events = match self.client.lock() {
+            Ok(client) => client.events(),
+            Err(_) => return,
+        };
+
+        if let Err(e) = tauri::async_runtime::block_on(events.flush_now()) {
+            utils::warning(
+                "Analytics:Flush",
+                format!("Failed to flush events on shutdown: {e:?}"),
+                &utils::LoggerOptions::default(),
+            );
+        }
+    }
 }

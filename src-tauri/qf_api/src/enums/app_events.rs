@@ -160,4 +160,9 @@ pub enum ApplicationEvent {
     // --------------------------------------------------
     LiveScraperStop,
     LiveScraperError,
+
+    // --------------------------------------------------
+    // Warframe Market API Tracking
+    // --------------------------------------------------
+    WfmApiTracking,
 }
