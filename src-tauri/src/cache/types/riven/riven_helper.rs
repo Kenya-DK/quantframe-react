@@ -125,7 +125,8 @@ pub fn build_riven_attributes_from_fingerprint(
             attr.properties.set_property_value("suffix", upgrade.suffix);
             attr.properties.set_property_value("prefix", upgrade.prefix);
             attr.properties.set_property_value("raw_value", raw.value);
-            attr.properties.set_property_value("tag", raw.tag.clone());
+            attr.properties
+                .set_property_value("tag", format!("WF_Special/Attribute/{}", raw.tag.clone()));
             out.push(attr);
         }
     }
