@@ -1,5 +1,4 @@
 import { Button } from "@mantine/core";
-import classes from "./ButtonInterval.module.css";
 
 export type ButtonIntervalProps = {
   intervals: number[];
@@ -13,7 +12,7 @@ export function ButtonInterval({ color, prefix, OnClick, intervals, disabled }: 
   return (
     <>
       {intervals.map((interval) => (
-        <Button key={interval} onClick={() => OnClick(interval)} variant="filled" color={color} className={classes.button} disabled={disabled}>
+        <Button key={interval} p="0px 11px 0px" h={22} onClick={() => OnClick(interval)} variant="filled" color={color} disabled={disabled}>
           {prefix}
           {interval}
         </Button>
