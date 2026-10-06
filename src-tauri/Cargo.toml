@@ -46,6 +46,7 @@ chrono = "0.4"
 zip = "0.6"
 sha256 = "1.5.0"
 uuid = { version = "1.19.0",features = ["v4"] }
+tract-onnx = "0.21"
 # wf-market = { path = "C:/Users/Kenya/Desktop/Andet/Coding/Warframe/wf-market" }
 wf-market = { git = "https://github.com/KibbeWater/wf-market", rev = "1d9f79aa80406acc6bc8e30878e499ebf75d5409" }
 

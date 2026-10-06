@@ -6,7 +6,7 @@ use utils::SubType;
 use utils::{generate_uuid_from_list, Properties};
 
 use super::{attribute::RivenAttributeVec, match_riven::MatchRivenStruct};
-pub static ALLOWED_PROPERTIES_FIELDS: &[&str] = &["min_price"];
+pub static ALLOWED_PROPERTIES_FIELDS: &[&str] = &["min_price", "is_predicted"];
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "stock_riven")]
 pub struct Model {

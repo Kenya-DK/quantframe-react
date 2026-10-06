@@ -76,6 +76,9 @@ pub use recipe::*;
 pub mod riven_good_roll;
 pub use riven_good_roll::*;
 
+pub mod riven_pricer;
+pub use riven_pricer::*;
+
 pub mod attribute;
 pub use attribute::*;
 

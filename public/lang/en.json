@@ -1574,6 +1574,11 @@
                   "error": "Invalid update interval",
                   "tooltip": "Interval for updating riven trades",
                   "link": "https://quantframe.app/features/live-trading/settings/riven/wts#update-interval"
+                },
+                "use_predict": {
+                  "label": "Use Price Prediction",
+                  "tooltip": "Use the riven price prediction model to set the listing price instead of the live auction average.",
+                  "link": "https://quantframe.app/features/live-trading/settings/riven/wts#use-predict"
                 }
               }
             },
@@ -2363,6 +2368,7 @@
         },
         "riven": {
           "title": "Riven",
+          "predicted_tooltip": "Price was set using the price prediction model",
           "datatable": {
             "columns": {
               "attributes": "Attributes",
@@ -2799,6 +2805,8 @@
             "footer_left": "{{rank}}/8  <polarity/>",
             "footer_right": "MR: {{mastery}}",
             "footer_center": "<stock/>",
+            "get_price": "Estimate price",
+            "price_unavailable": "Price unavailable",
             "stock_status": {
               "found": "Found in inventory",
               "not_found": "Not found in inventory"

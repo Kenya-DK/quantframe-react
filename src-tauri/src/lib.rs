@@ -352,6 +352,11 @@ pub fn run() {
             // Riven commands
             commands::riven::riven_prices_lookup,
             commands::riven::export_riven_price_data,
+            // Riven price prediction commands
+            commands::riven_pricer::riven_pricer_available,
+            commands::riven_pricer::riven_price_predict,
+            commands::riven_pricer::riven_pricer_reload,
+            commands::riven_pricer::get_known_riven_weapons,
             // Market commands
             commands::market::get_user_activity,
             // Trade Entry commands

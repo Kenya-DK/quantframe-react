@@ -7,7 +7,7 @@ import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { ColorInfo } from "@components/Shared/ColorInfo";
 import { StatsWithSegments } from "@components/Shared/StatsWithSegments";
 import { useLiveScraperContext } from "@contexts/liveScraper.context";
-import { faDownload, faEdit, faInfo, faMessage, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faDownload, faEdit, faInfo, faMessage, faRobot, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { useTauriEvent } from "@hooks/useTauriEvent.hook";
@@ -284,6 +284,18 @@ export const RivenPanel = ({ isActive }: RivenPanelProps = {}) => {
             accessor: "list_price",
             title: useTranslateCommon("datatable_columns.list_price"),
             sortable: true,
+            render: ({ list_price, properties }) => (
+              <Group gap={4} wrap="nowrap">
+                <NumberFormatter thousandSeparator="." decimalSeparator="," value={list_price ?? 0} />
+                {properties?.is_predicted && (
+                  <Tooltip label={useTranslateTabRiven("predicted_tooltip")}>
+                    <span style={{ display: "inline-flex" }}>
+                      <FontAwesomeIcon icon={faRobot} size="xs" color="var(--qf-positive-color)" />
+                    </span>
+                  </Tooltip>
+                )}
+              </Group>
+            ),
           },
           {
             accessor: "actions",

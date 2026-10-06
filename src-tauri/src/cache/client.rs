@@ -57,6 +57,7 @@ pub struct CacheState {
     weapon_module: OnceLock<Arc<WeaponModule>>,
     recipe_module: OnceLock<Arc<RecipeModule>>,
     riven_good_roll_module: OnceLock<Arc<RivenGoodRollModule>>,
+    riven_pricer_module: OnceLock<Arc<RivenPricerModule>>,
     attribute_module: OnceLock<Arc<AttributeModule>>,
     bundle_module: OnceLock<Arc<BundleModule>>,
     quest_module: OnceLock<Arc<QuestModule>>,
@@ -100,6 +101,7 @@ impl CacheState {
                     weapon_module: self.weapon_module.clone(),
                     recipe_module: self.recipe_module.clone(),
                     riven_good_roll_module: self.riven_good_roll_module.clone(),
+                    riven_pricer_module: self.riven_pricer_module.clone(),
                     attribute_module: self.attribute_module.clone(),
                     bundle_module: self.bundle_module.clone(),
                     quest_module: self.quest_module.clone(),
@@ -150,6 +152,7 @@ impl CacheState {
             weapon_module: OnceLock::new(),
             recipe_module: OnceLock::new(),
             riven_good_roll_module: OnceLock::new(),
+            riven_pricer_module: OnceLock::new(),
             attribute_module: OnceLock::new(),
             bundle_module: OnceLock::new(),
             quest_module: OnceLock::new(),
@@ -287,6 +290,7 @@ impl CacheState {
         self.theme().load()?;
         self.chat_icon().load()?;
         self.riven_good_roll().load(language)?;
+        self.riven_pricer().load()?;
         self.recipe().load(language)?;
         self.bundle().load(language)?;
         self.gear().load(language)?;
@@ -599,6 +603,11 @@ impl CacheState {
     pub fn riven_good_roll(&self) -> Arc<RivenGoodRollModule> {
         self.riven_good_roll_module
             .get_or_init(|| RivenGoodRollModule::new(self.arc()))
+            .clone()
+    }
+    pub fn riven_pricer(&self) -> Arc<RivenPricerModule> {
+        self.riven_pricer_module
+            .get_or_init(|| RivenPricerModule::new(self.arc()))
             .clone()
     }
     pub fn attribute(&self) -> Arc<AttributeModule> {

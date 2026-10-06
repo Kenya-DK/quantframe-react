@@ -6,7 +6,7 @@ import { useModals } from "./modals";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../../WFInventory.module.css";
 import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
-import { faInfinity, faEyeSlash, faEye, faAdd } from "@fortawesome/free-solid-svg-icons";
+import { faInfinity, faEyeSlash, faEye, faAdd, faCoins } from "@fortawesome/free-solid-svg-icons";
 import { upperFirst, useLocalStorage } from "@mantine/hooks";
 import { ItemRiven, TauriTypes } from "$types";
 import { SearchField } from "@components/Forms/SearchField";
@@ -17,6 +17,9 @@ import { PreviewCard } from "@components/Shared/PreviewCard";
 import { RivenAttribute } from "@components/DataDisplay/RivenAttribute";
 import { ActionWithTooltip } from "@components/Shared/ActionWithTooltip";
 import { RivenGrade } from "@components/DataDisplay/RivenGrade";
+import { DisplayPlatinum } from "@components/DataDisplay/DisplayPlatinum";
+import { useState } from "react";
+import api from "@api/index";
 
 interface RivenPanelProps {
   isActive: boolean;
@@ -41,6 +44,60 @@ const ExpandableButtonExt: React.FC<ExpandableButtonExtProps> = ({ img, text, cu
     <Text>{text}</Text>
   </ExpandableButton>
 );
+
+interface RivenPriceButtonProps {
+  riven: ItemRiven;
+}
+
+const RivenPriceButton: React.FC<RivenPriceButtonProps> = ({ riven }) => {
+  const [loading, setLoading] = useState(false);
+  const [price, setPrice] = useState<number | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+
+  const useTranslate = (key: string) => useTranslatePages(`wf_inventory.tabs.riven.riven_card.${key}`);
+  const getPriceLabel = useTranslate("get_price");
+  const unavailableLabel = useTranslate("price_unavailable");
+
+  const HandleGetPrice = async () => {
+    setLoading(true);
+    setUnavailable(false);
+    try {
+      const estimate = await api.riven.predictPrice({
+        weapon: riven.wfm_url || riven.name,
+        re_rolls: riven.re_rolls,
+        positives: riven.attributes.filter((attr) => attr.positive).map((attr) => attr.wfmUrl),
+        negative: riven.attributes.find((attr) => !attr.positive)?.wfmUrl,
+      });
+      if (estimate) {
+        setPrice(estimate.price);
+      } else {
+        setPrice(null);
+        setUnavailable(true);
+      }
+    } catch (e) {
+      console.error(e);
+      setPrice(null);
+      setUnavailable(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Group gap={4}>
+      <ActionWithTooltip
+        icon={faCoins}
+        color={price !== null ? "var(--mantine-color-yellow-6)" : "var(--mantine-color-blue-6)"}
+        actionProps={{ size: "sm" }}
+        iconProps={{ size: "xs" }}
+        loading={loading}
+        tooltip={unavailable ? unavailableLabel : getPriceLabel}
+        onClick={HandleGetPrice}
+      />
+      {price !== null && <DisplayPlatinum value={Math.round(price)} size="sm" />}
+    </Group>
+  );
+};
 
 export const RivenPanel = ({ isActive }: RivenPanelProps) => {
   // States For DataGrid
@@ -235,6 +292,7 @@ export const RivenPanel = ({ isActive }: RivenPanelProps) => {
                       onClick={async () => await HandleAddRiven(riven)}
                     />
                   )}
+                  {riven.riven_type === "veiled" && <RivenPriceButton riven={riven} />}
                 </Group>
               }
               footerRight={{

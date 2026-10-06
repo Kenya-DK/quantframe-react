@@ -7,14 +7,17 @@ use utils::{
     average_filtered_lowest_prices, get_location, info, warning, Error, LoggerOptions, OperationSet,
 };
 use wf_market::{
+    client::Authenticated as WFAuthenticated,
     enums::{AuctionType, Polarity, StatusType},
     types::{
         AuctionFilter, AuctionList, AuctionWithOwner, CreateAuctionItem, CreateAuctionParams,
         ItemAttribute, UpdateAuctionParams,
     },
+    Client as WFClient,
 };
-static COMPONENT: &str = "LiveScraper:RivenModule";
+
 use crate::{
+    cache::types::RivenPriceInput,
     live_scraper::{is_disabled, LiveScraperState},
     send_event,
     types::*,
@@ -22,29 +25,27 @@ use crate::{
     DATABASE,
 };
 
+static COMPONENT: &str = "LiveScraper:RivenModule";
+
 #[derive(Debug)]
 pub struct RivenModule {
     client: Weak<LiveScraperState>,
 }
 
 impl RivenModule {
-    /**
-     * Creates a new `RivenModule` with an empty item list.
-     * The `client` parameter is an `Arc<LiveScraperState>` that allows the module
-     * to access the live scraper state.
-     */
     pub fn new(client: Arc<LiveScraperState>) -> Arc<Self> {
         Arc::new(Self {
             client: Arc::downgrade(&client),
         })
     }
 
-    fn send_event(&self, i18nKey: &str, values: Option<serde_json::Value>) {
+    fn send_event(&self, i18n_key: &str, values: Option<serde_json::Value>) {
         send_event!(
             UIEvent::SendLiveScraperMessage,
-            json!({"i18nKey": format!("riven.{}", i18nKey), "values": values})
+            json!({"i18nKey": format!("riven.{}", i18n_key), "values": values})
         );
     }
+
     async fn interesting_items() -> Result<Vec<Model>, Error> {
         let conn = DATABASE.get().unwrap();
         let stocks = StockRivenQuery::get_all(conn, StockRivenPaginationQueryDto::new(1, -1))
@@ -57,31 +58,35 @@ impl RivenModule {
         let conn = DATABASE.get().unwrap();
         let cache = states::cache_client()?;
         let app = states::app_state()?;
-        let wfm_client = app.wfm_client;
+        let wfm_client = &app.wfm_client;
+        let log_options = &LoggerOptions::default()
+            .set_file("progress_riven.log")
+            .set_show_component(false)
+            .set_show_time(false);
+
         info(
             format!("{}:Check", COMPONENT),
             "Checking Riven items...",
             &LoggerOptions::default(),
         );
+
         let client = self.client.upgrade().expect("Client should not be dropped");
         let interesting_items = Self::interesting_items().await?;
         let total = interesting_items.len();
-        let mut current_index = 1;
-        let log_options = &LoggerOptions::default()
-            .set_file("progress_riven.log")
-            .set_show_component(false)
-            .set_show_time(false);
-        for stock_riven in interesting_items {
-            let stock_riven = &mut stock_riven.clone();
-            // Stop if client stopped running or user is banned
+
+        for (index, mut stock_riven) in interesting_items.into_iter().enumerate() {
+            let stock_riven = &mut stock_riven;
+
+            // Stop if the scraper stopped running or the user is banned.
             if !client.is_running.load(Ordering::SeqCst) || app.user.is_banned() {
                 warning(
                     format!("{}:ProcessRiven", COMPONENT),
                     "Live Scraper is not running or user is banned, stopping processing.",
-                    &&LoggerOptions::default(),
+                    &LoggerOptions::default(),
                 );
                 return Ok(());
             }
+
             info(
                 COMPONENT,
                 &format!(
@@ -93,11 +98,10 @@ impl RivenModule {
                     .set_width(180)
                     .set_enable(true),
             );
-            // GUI event for progress
             self.send_event(
                 "checking",
                 Some(json!({
-                    "current": current_index,
+                    "current": index + 1,
                     "total": total,
                     "name": stock_riven.weapon_name,
                     "mod_name": stock_riven.mod_name,
@@ -105,16 +109,12 @@ impl RivenModule {
                 })),
             );
 
-            // Settings
             let settings = states::get_settings()?.live_scraper.rivens;
-
-            // Get tradable item info from cache
             let weapon_info = cache
                 .weapon()
                 .get_by(&stock_riven.wfm_weapon_url)
                 .map_err(|e| e.with_location(get_location!()))?;
 
-            // Get auction details or use default if not found
             let (mut operations, auction_id) = wfm_client
                 .auction()
                 .cache_auctions()
@@ -122,19 +122,19 @@ impl RivenModule {
                 .map(|auction| (OperationSet::from(vec!["Update"]), auction.id))
                 .unwrap_or_else(|| (OperationSet::from(vec!["Create"]), String::new()));
 
-            // let mut auction_info = get_auction_details(&stock_riven.uuid, &item_info, &wfm_client);
-
-            if stock_riven.is_hidden && stock_riven.status == StockStatus::InActive {
-                info(
-                    format!("{}Skip", COMPONENT),
-                    &format!(
-                        "Riven {} is marked as hidden and inactive. Skipping.",
-                        stock_riven.weapon_name
-                    ),
-                    &log_options,
-                );
-                continue;
-            } else if stock_riven.is_hidden && stock_riven.status != StockStatus::InActive {
+            // Hidden rivens are taken down; inactive ones are simply skipped.
+            if stock_riven.is_hidden {
+                if stock_riven.status == StockStatus::InActive {
+                    info(
+                        format!("{}Skip", COMPONENT),
+                        &format!(
+                            "Riven {} is marked as hidden and inactive. Skipping.",
+                            stock_riven.weapon_name
+                        ),
+                        &log_options,
+                    );
+                    continue;
+                }
                 stock_riven.set_status(StockStatus::InActive);
                 stock_riven.set_list_price(None);
                 stock_riven.locked = true;
@@ -146,63 +146,78 @@ impl RivenModule {
             } else {
                 match wfm_client
                     .auction()
-                    .search_auctions(get_filter(&stock_riven))
+                    .search_auctions(get_filter(stock_riven))
                     .await
                 {
                     Ok(auctions) => auctions,
-                    Err(e) => match e {
-                        wf_market::errors::ApiError::TooManyRequests(err) => {
-                            warning(
-                                    format!("{}:Check", COMPONENT),
-                                    &format!(
-                                        "Rate limited when getting live auctions for item {}. Skipping this item for now.",
-                                        stock_riven.wfm_weapon_url
-                                    ),
-                                    &log_options,
-                                );
-                            self.send_event(
-                                "rate_limited",
-                                Some(json!({"seconds": err.retry_after})),
-                            );
-                            continue;
-                        }
-                        _ => {
-                            return Err(Error::from_wfm(
-                                format!("{}:Check", COMPONENT),
-                                &format!(
-                                    "Failed to get live auctions for item {}",
-                                    stock_riven.wfm_weapon_url
-                                ),
-                                e,
-                                get_location!(),
-                            ))
-                        }
-                    },
+                    Err(wf_market::errors::ApiError::TooManyRequests(err)) => {
+                        warning(
+                            format!("{}:Check", COMPONENT),
+                            &format!(
+                                "Rate limited when getting live auctions for item {}. Skipping this item for now.",
+                                stock_riven.wfm_weapon_url
+                            ),
+                            &log_options,
+                        );
+                        self.send_event("rate_limited", Some(json!({"seconds": err.retry_after})));
+                        continue;
+                    }
+                    Err(e) => {
+                        return Err(Error::from_wfm(
+                            format!("{}:Check", COMPONENT),
+                            &format!(
+                                "Failed to get live auctions for item {}",
+                                stock_riven.wfm_weapon_url
+                            ),
+                            e,
+                            get_location!(),
+                        ))
+                    }
                 }
             };
-            // Apply filters to auctions
             live_auctions.filter_username(&app.user.wfm_username, true);
             live_auctions.sort_by_platinum();
 
-            // Get the price the item was bought for.
-            let mut post_price = average_filtered_lowest_prices(
-                live_auctions.prices(),
-                settings.wts.max_results,
-                settings.wts.threshold_percentage,
-            );
+            // Base price: the model estimate when enabled, otherwise the market average.
+            let predicted = if settings.wts.use_predict {
+                cache
+                    .riven_pricer()
+                    .predict(&price_input(stock_riven))
+                    .map(|estimate| estimate.price.round() as i64)
+            } else {
+                None
+            };
 
-            // Check if there are no live auctions
-            if live_auctions.total_auctions() == 0 {
+            // Track whether the listed price is driven by the prediction model.
+            let is_predicted = predicted.is_some();
+            if stock_riven.properties.get_property_value("is_predicted", false) != is_predicted {
+                stock_riven
+                    .properties
+                    .set_property_value("is_predicted", is_predicted);
+                stock_riven.is_dirty = true;
+            }
+
+            let mut post_price = predicted.unwrap_or_else(|| {
+                average_filtered_lowest_prices(
+                    live_auctions.prices(),
+                    settings.wts.max_results,
+                    settings.wts.threshold_percentage,
+                )
+            });
+
+            // No live auctions and no prediction: fall back to the minimum profitable price.
+            if live_auctions.total_auctions() == 0 && predicted.is_none() {
                 post_price = stock_riven.bought + settings.wts.min_profit + 1;
                 stock_riven.set_status(StockStatus::NoSellers);
                 stock_riven.set_list_price(Some(post_price));
                 stock_riven.locked = true;
             }
-            // Stock Riven properties for min
-            let min_price = stock_riven
+
+            // Respect the user configured minimum price.
+            if let Some(minimum_price) = stock_riven
                 .properties
-                .get_property_value("min_price", None::<i64>);
-            if let Some(minimum_price) = min_price {
+                .get_property_value("min_price", None::<i64>)
+            {
                 let capped_price = post_price.max(minimum_price);
                 if capped_price != post_price {
                     post_price = capped_price;
@@ -210,10 +225,9 @@ impl RivenModule {
                 }
             }
 
-            // Calculate the profit from the post price
             let mut profit = post_price - stock_riven.bought;
 
-            // Handle Low Profit
+            // Bump the price up to the minimum profit when needed.
             if !is_disabled(settings.wts.min_profit) && profit < settings.wts.min_profit {
                 post_price += settings.wts.min_profit - profit;
                 stock_riven.set_status(StockStatus::ToLowProfit);
@@ -223,19 +237,26 @@ impl RivenModule {
                 profit = post_price - stock_riven.bought;
             }
 
-            // Summary log
             let highest_price = live_auctions.highest_price();
             let lowest_price = live_auctions.lowest_price();
             info(
-            format!("{}Summary", COMPONENT),
-            format!(
-                "Auction {}: PostPrice: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | Operations: {:?} | HighestPrice: {:?} | LowestPrice: {:?} | Profit: {:?}",
-                stock_riven.weapon_name, post_price, profit, stock_riven.is_dirty, stock_riven.status, stock_riven.list_price, operations, highest_price, lowest_price, profit
-            ),
-            &log_options,
+                format!("{}Summary", COMPONENT),
+                format!(
+                    "Auction {}: PostPrice: {} | Profit: {} | IsStockDirty: {} | StockStatus: {:?} | StockListPrice: {:?} | Operations: {:?} | HighestPrice: {:?} | LowestPrice: {:?} | Predicted: {}",
+                    stock_riven.weapon_name,
+                    post_price,
+                    profit,
+                    stock_riven.is_dirty,
+                    stock_riven.status,
+                    stock_riven.list_price,
+                    operations,
+                    highest_price,
+                    lowest_price,
+                    predicted.is_some(),
+                ),
+                &log_options,
             );
 
-            // Prepare properties for auction creation or update
             let properties = json!({
                 "name": weapon_info.name,
                 "mod_name": stock_riven.mod_name,
@@ -245,153 +266,17 @@ impl RivenModule {
                 "operations": json!(operations.operations)
             });
 
-            let can_create = wfm_client.auction().can_create_auction();
-            if operations.has("Create") && !operations.has("Delete") && can_create {
-                match wfm_client
-                    .auction()
-                    .create(
-                        CreateAuctionParams::new(
-                            post_price as i32,
-                            Some(post_price as i32),
-                            0,
-                            true,
-                            &stock_riven.comment,
-                            CreateAuctionItem::new_riven(
-                                &stock_riven.wfm_weapon_url,
-                                &stock_riven.mod_name,
-                                stock_riven
-                                    .attributes
-                                    .0
-                                    .iter()
-                                    .map(|attr| {
-                                        ItemAttribute::new_with_properties(
-                                            &attr.wfm_url,
-                                            attr.positive,
-                                            attr.value,
-                                            json!({"formattedValue": attr.formatted_value}),
-                                        )
-                                    })
-                                    .collect(),
-                                stock_riven.re_rolls as i32,
-                                stock_riven.mastery_rank as i32,
-                                stock_riven.sub_type.clone().unwrap().rank.unwrap_or(0) as i32,
-                                Polarity::from_str(&stock_riven.polarity).unwrap_or_default(),
-                            ),
-                        )
-                        .with_properties(json!(properties)),
-                    )
-                    .await
-                {
-                    Ok(auction) => {
-                        info(
-                            format!("{}CreateSuccess", COMPONENT),
-                            &format!(
-                                "Created auction for weapon {}: {}",
-                                auction.item.weapon_url_name, auction.id
-                            ),
-                            &log_options,
-                        );
-                        send_event!(UIEvent::RefreshWfmAuctions, json!({"source": COMPONENT}));
-                    }
-                    Err(e) => {
-                        return Err(Error::from_wfm(
-                            format!("{}CreateFail", COMPONENT),
-                            format!(
-                                "Failed to create auction for weapon {}",
-                                stock_riven.weapon_name
-                            ),
-                            e,
-                            get_location!(),
-                        ));
-                    }
-                }
-            } else if operations.has("Update") && !operations.has("Delete") {
-                match wfm_client
-                    .auction()
-                    .update(
-                        &auction_id,
-                        UpdateAuctionParams::new()
-                            .with_buyout_price(Some(post_price as u32))
-                            .with_starting_price(post_price as u32)
-                            .with_properties(properties),
-                    )
-                    .await
-                {
-                    Ok(auction) => {
-                        info(
-                            format!("{}UpdateSuccess", COMPONENT),
-                            &format!(
-                                "Updated auction for weapon {}: {}",
-                                auction.item.weapon_url_name, auction.id
-                            ),
-                            &log_options,
-                        );
-                    }
-                    Err(e) => {
-                        return Err(Error::from_wfm(
-                            format!("{}UpdateFail", COMPONENT),
-                            format!(
-                                "Failed to update auction for weapon {}",
-                                stock_riven.weapon_name
-                            ),
-                            e,
-                            get_location!(),
-                        ));
-                    }
-                }
-            } else if operations.has("Update") && operations.has("Delete") {
-                match wfm_client.auction().delete(&auction_id).await {
-                    Ok(_) => {
-                        send_event!(UIEvent::RefreshWfmAuctions, json!({"source": COMPONENT}));
-                        info(
-                            format!("{}DeleteSuccess", COMPONENT),
-                            &format!(
-                                "Deleted auction for weapon {}: {}",
-                                stock_riven.weapon_name, auction_id
-                            ),
-                            &log_options,
-                        );
-                    }
-                    Err(e) => {
-                        return Err(Error::from_wfm(
-                            format!("{}DeleteFail", COMPONENT),
-                            format!(
-                                "Failed to delete auction for weapon {}",
-                                stock_riven.weapon_name
-                            ),
-                            e,
-                            get_location!(),
-                        ));
-                    }
-                }
-            } else if operations.has("Delete") {
-                info(
-                    format!("{}Skip", COMPONENT),
-                    &format!(
-                        "Auction {} is marked as hidden or inactive. Skipping.",
-                        stock_riven.weapon_name
-                    ),
-                    &log_options,
-                );
-            } else if !can_create {
-                warning(
-                    format!("{}Skip", COMPONENT),
-                    &format!(
-                        "Auction {} has reached the auction limit. Skipping.",
-                        stock_riven.weapon_name
-                    ),
-                    &log_options,
-                );
-            } else {
-                warning(
-                    format!("{}Skip", COMPONENT),
-                    &format!(
-                        "Auction {} is not optimal for buying. Skipping.",
-                        stock_riven.weapon_name
-                    ),
-                    &log_options,
-                );
-            }
+            apply_operations(
+                wfm_client,
+                stock_riven,
+                &operations,
+                &auction_id,
+                post_price,
+                properties,
+                log_options,
+            )
+            .await?;
+
             stock_riven.set_list_price(Some(post_price));
             stock_riven.set_status(StockStatus::Live);
             if stock_riven.status == StockStatus::Live {
@@ -416,9 +301,181 @@ impl RivenModule {
                     Err(e) => return Err(e.with_location(get_location!())),
                 }
             }
-            current_index += 1;
         }
         Ok(())
+    }
+}
+
+/// Creates, updates or deletes the WFM auction for a stock riven.
+async fn apply_operations(
+    wfm_client: &WFClient<WFAuthenticated>,
+    stock_riven: &Model,
+    operations: &OperationSet,
+    auction_id: &str,
+    post_price: i64,
+    properties: serde_json::Value,
+    log_options: &LoggerOptions,
+) -> Result<(), Error> {
+    let can_create = wfm_client.auction().can_create_auction();
+
+    if operations.has("Create") && !operations.has("Delete") && can_create {
+        let item = CreateAuctionItem::new_riven(
+            &stock_riven.wfm_weapon_url,
+            &stock_riven.mod_name,
+            stock_riven
+                .attributes
+                .0
+                .iter()
+                .map(|attr| {
+                    ItemAttribute::new_with_properties(
+                        &attr.wfm_url,
+                        attr.positive,
+                        attr.value,
+                        json!({"formattedValue": attr.formatted_value}),
+                    )
+                })
+                .collect(),
+            stock_riven.re_rolls as i32,
+            stock_riven.mastery_rank as i32,
+            stock_riven.sub_type.clone().unwrap().rank.unwrap_or(0) as i32,
+            Polarity::from_str(&stock_riven.polarity).unwrap_or_default(),
+        );
+        let params = CreateAuctionParams::new(
+            post_price as i32,
+            Some(post_price as i32),
+            0,
+            true,
+            &stock_riven.comment,
+            item,
+        )
+        .with_properties(json!(properties));
+
+        match wfm_client.auction().create(params).await {
+            Ok(auction) => {
+                info(
+                    format!("{}CreateSuccess", COMPONENT),
+                    &format!(
+                        "Created auction for weapon {}: {}",
+                        auction.item.weapon_url_name, auction.id
+                    ),
+                    log_options,
+                );
+                send_event!(UIEvent::RefreshWfmAuctions, json!({"source": COMPONENT}));
+            }
+            Err(e) => {
+                return Err(Error::from_wfm(
+                    format!("{}CreateFail", COMPONENT),
+                    format!(
+                        "Failed to create auction for weapon {}",
+                        stock_riven.weapon_name
+                    ),
+                    e,
+                    get_location!(),
+                ))
+            }
+        }
+    } else if operations.has("Update") && !operations.has("Delete") {
+        let params = UpdateAuctionParams::new()
+            .with_buyout_price(Some(post_price as u32))
+            .with_starting_price(post_price as u32)
+            .with_properties(properties);
+        match wfm_client.auction().update(auction_id, params).await {
+            Ok(auction) => {
+                info(
+                    format!("{}UpdateSuccess", COMPONENT),
+                    &format!(
+                        "Updated auction for weapon {}: {}",
+                        auction.item.weapon_url_name, auction.id
+                    ),
+                    log_options,
+                );
+            }
+            Err(e) => {
+                return Err(Error::from_wfm(
+                    format!("{}UpdateFail", COMPONENT),
+                    format!(
+                        "Failed to update auction for weapon {}",
+                        stock_riven.weapon_name
+                    ),
+                    e,
+                    get_location!(),
+                ))
+            }
+        }
+    } else if operations.has("Update") && operations.has("Delete") {
+        match wfm_client.auction().delete(auction_id).await {
+            Ok(_) => {
+                send_event!(UIEvent::RefreshWfmAuctions, json!({"source": COMPONENT}));
+                info(
+                    format!("{}DeleteSuccess", COMPONENT),
+                    &format!(
+                        "Deleted auction for weapon {}: {}",
+                        stock_riven.weapon_name, auction_id
+                    ),
+                    log_options,
+                );
+            }
+            Err(e) => {
+                return Err(Error::from_wfm(
+                    format!("{}DeleteFail", COMPONENT),
+                    format!(
+                        "Failed to delete auction for weapon {}",
+                        stock_riven.weapon_name
+                    ),
+                    e,
+                    get_location!(),
+                ))
+            }
+        }
+    } else if operations.has("Delete") {
+        info(
+            format!("{}Skip", COMPONENT),
+            &format!(
+                "Auction {} is marked as hidden or inactive. Skipping.",
+                stock_riven.weapon_name
+            ),
+            log_options,
+        );
+    } else if !can_create {
+        warning(
+            format!("{}Skip", COMPONENT),
+            &format!(
+                "Auction {} has reached the auction limit. Skipping.",
+                stock_riven.weapon_name
+            ),
+            log_options,
+        );
+    } else {
+        warning(
+            format!("{}Skip", COMPONENT),
+            &format!(
+                "Auction {} is not optimal for buying. Skipping.",
+                stock_riven.weapon_name
+            ),
+            log_options,
+        );
+    }
+    Ok(())
+}
+
+/// Builds the riven price model input from a stock riven.
+fn price_input(stock_riven: &Model) -> RivenPriceInput {
+    RivenPriceInput {
+        weapon: stock_riven.wfm_weapon_url.clone(),
+        re_rolls: stock_riven.re_rolls as u32,
+        positives: stock_riven
+            .attributes
+            .0
+            .iter()
+            .filter(|attr| attr.positive)
+            .map(|attr| attr.wfm_url.clone())
+            .collect(),
+        negative: stock_riven
+            .attributes
+            .0
+            .iter()
+            .find(|attr| !attr.positive)
+            .map(|attr| attr.wfm_url.clone()),
     }
 }
 

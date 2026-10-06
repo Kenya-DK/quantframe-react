@@ -22,6 +22,7 @@ pub mod handlers;
 pub mod item;
 pub mod market;
 pub mod riven;
+pub mod riven_pricer;
 pub mod sound;
 pub mod stock_item;
 pub mod stock_riven;

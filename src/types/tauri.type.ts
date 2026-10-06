@@ -210,6 +210,7 @@ export namespace TauriTypes {
     min_profit: number;
     threshold_percentage: number;
     max_results: number;
+    use_predict: boolean;
   }
   export interface SummarySettings {
     recent_days: number;
@@ -486,6 +487,7 @@ export namespace TauriTypes {
     min_profit?: number;
     min_sma?: number;
     is_bulk?: boolean;
+    is_predicted?: boolean;
     cooldown?: CoolDownInfo;
     [key: string]: any;
   }
@@ -748,6 +750,18 @@ export namespace TauriTypes {
     name: string;
     code: string;
     url: string;
+  }
+  export interface RivenPriceInput {
+    weapon: string;
+    re_rolls?: number;
+    positives?: string[];
+    negative?: string | null;
+  }
+  export interface RivenPriceEstimate {
+    price: number;
+    log_price: number;
+    weapon_idx: number;
+    attr_indices: number[];
   }
   export interface RivenGodRoll {
     good_rolls: RivenGoodRoll[];
