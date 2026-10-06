@@ -1,0 +1,9 @@
+minimumReleaseAgeExclude:
+  - '@mantine/core@9.7.1'
+  - '@mantine/dates@9.7.1'
+  - '@mantine/form@9.7.1'
+  - '@mantine/hooks@9.7.1'
+  - '@mantine/modals@9.7.1'
+  - '@mantine/notifications@9.7.1'
+  - '@mantine/store@9.7.1'
+  - '@mantine/tiptap@9.7.1'
