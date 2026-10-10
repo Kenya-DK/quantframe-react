@@ -3,12 +3,18 @@ use wf_market::types::Order;
 
 use crate::cache::client::CacheState;
 
+const ITEM_INFO_APPLIED: &str = "item_info_applied";
+
 // Extension trait for order
 pub trait OrderExt {
     fn apply_info(&mut self, cache: &CacheState) -> Result<(), Error>;
+    fn has_item_info(&self) -> bool;
 }
 
 impl OrderExt for Order {
+    fn has_item_info(&self) -> bool {
+        self.properties.get_property_value(ITEM_INFO_APPLIED, false)
+    }
     fn apply_info(&mut self, cache: &CacheState) -> Result<(), Error> {
         match cache.tradable_item().get_by(&self.item_id) {
             Ok(item_info) => {
@@ -34,6 +40,7 @@ impl OrderExt for Order {
                 );
             }
         }
+        self.properties.set_property_value(ITEM_INFO_APPLIED, true);
         Ok(())
     }
 }
