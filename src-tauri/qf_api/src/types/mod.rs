@@ -48,3 +48,6 @@ pub use pagination_syndicate_item::*;
 
 pub mod user_activity;
 pub use user_activity::*;
+
+pub mod survey;
+pub use survey::*;

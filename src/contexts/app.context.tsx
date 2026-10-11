@@ -1,6 +1,7 @@
 import { QuantframeApiTypes, ResponseError, TauriTypes } from "$types";
 import api from "@api/index";
 import { SplashScreen } from "@components/Layouts/Shared/SplashScreen";
+import { SurveyGate } from "@components/Survey";
 import { TermsAndConditions } from "@components/Modals/TermsAndConditions";
 import { UpdateAvailableModal } from "@components/Modals/UpdateAvailable";
 import { TextTranslate } from "@components/Shared/TextTranslate";
@@ -233,6 +234,7 @@ export function AppContextProvider({ children }: AppContextProviderProps) {
       <SplashScreen opened={loading} text={useTranslateContexts(`app.${startingUp.i18n_key}`, startingUp.values)} />
       {!loading && (
         <AuthContextProvider>
+          <SurveyGate />
           <LiveScraperContextProvider>
             <CacheContextProvider>{children}</CacheContextProvider>
           </LiveScraperContextProvider>

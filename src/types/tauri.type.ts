@@ -1097,4 +1097,43 @@ export namespace TauriTypes {
   export type TradeEntryControllerGetListData = PaginatedDto & {
     results?: TradeEntry[];
   };
+
+  //--------------------------------------------------------------------------------
+  //  Survey
+  //--------------------------------------------------------------------------------
+  export type SurveyQuestionType = "single" | "multiple" | "text";
+  export interface SurveyOption {
+    id: string;
+    label: string;
+  }
+  export interface SurveyQuestion {
+    id: string;
+    type: SurveyQuestionType;
+    title: string;
+    description?: string;
+    required?: boolean;
+    options?: SurveyOption[];
+    placeholder?: string;
+    max_length?: number;
+  }
+  export interface Survey {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    title: string;
+    description?: string;
+    questions: SurveyQuestion[];
+    enabled: boolean;
+    dismissible: boolean;
+    start_at?: string;
+    end_at?: string;
+  }
+  export interface SurveyResponse {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    survey_id: string;
+    user_id: string;
+    answers: Record<string, string | string[]>;
+  }
 }

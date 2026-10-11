@@ -93,6 +93,7 @@ pub struct Client {
     alecaframe_route: OnceLock<Arc<AlecaframeRoute>>,
     syndicate_route: OnceLock<Arc<SyndicateRoute>>,
     events_route: OnceLock<Arc<EventsRoute>>,
+    survey_route: OnceLock<Arc<SurveyRoute>>,
 }
 impl Client {
     fn arc(&self) -> Arc<Self> {
@@ -125,6 +126,7 @@ impl Client {
                     alecaframe_route: self.alecaframe_route.clone(),
                     syndicate_route: self.syndicate_route.clone(),
                     events_route: self.events_route.clone(),
+                    survey_route: self.survey_route.clone(),
                 })
             })
             .clone()
@@ -195,6 +197,7 @@ impl Client {
             alecaframe_route: OnceLock::new(),
             syndicate_route: OnceLock::new(),
             events_route: OnceLock::new(),
+            survey_route: OnceLock::new(),
         }
     }
 
@@ -446,6 +449,11 @@ impl Client {
             .get_or_init(|| EventsRoute::new(self.arc()))
             .clone()
     }
+    pub fn survey(&self) -> Arc<SurveyRoute> {
+        self.survey_route
+            .get_or_init(|| SurveyRoute::new(self.arc()))
+            .clone()
+    }
 }
 
 // ---------- Client Get/Set Methods ----------
@@ -550,6 +558,11 @@ impl Client {
             let new_events = EventsRoute::from_existing(&old_events, self.arc());
             self.events_route = OnceLock::new();
             let _ = self.events_route.set(new_events);
+        }
+        if let Some(old_survey) = self.survey_route.get().cloned() {
+            let new_survey = SurveyRoute::from_existing(&old_survey, self.arc());
+            self.survey_route = OnceLock::new();
+            let _ = self.survey_route.set(new_survey);
         }
     }
 }

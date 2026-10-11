@@ -21,6 +21,7 @@ import { RivenModule } from "./riven";
 import { SoundModule } from "./sound";
 import { StockItemModule } from "./stack_item";
 import { StockRivenModule } from "./stack_riven";
+import { SurveyModule } from "./survey";
 import { SyndicateModule } from "./syndicate";
 import { SyndicateItemModule } from "./syndicate_item";
 import { TradeEntryModule } from "./trade_entry";
@@ -63,6 +64,7 @@ export class TauriClient {
     this.handlers = new HandlesModule(this);
     this.wf_inventory = new WfInventoryModule(this);
     this.syndicate = new SyndicateModule(this);
+    this.survey = new SurveyModule(this);
     this._logging = localStorage.getItem("tauri_logs") ? JSON.parse(localStorage.getItem("tauri_logs")!) : ["*"];
   }
 
@@ -210,6 +212,7 @@ export class TauriClient {
   handlers: HandlesModule;
   wf_inventory: WfInventoryModule;
   syndicate: SyndicateModule;
+  survey: SurveyModule;
 }
 
 declare global {

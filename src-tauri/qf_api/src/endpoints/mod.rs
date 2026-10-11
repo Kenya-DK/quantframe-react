@@ -24,3 +24,6 @@ pub use market::*;
 
 pub mod syndicate;
 pub use syndicate::*;
+
+pub mod survey;
+pub use survey::*;

@@ -357,6 +357,9 @@ pub fn run() {
             commands::riven_pricer::riven_price_predict,
             commands::riven_pricer::riven_pricer_reload,
             commands::riven_pricer::get_known_riven_weapons,
+            // Survey commands
+            commands::survey::survey_get_active,
+            commands::survey::survey_submit,
             // Market commands
             commands::market::get_user_activity,
             // Trade Entry commands

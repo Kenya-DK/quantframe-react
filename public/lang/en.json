@@ -1783,6 +1783,17 @@
       }
     },
     "modals": {
+      "survey": {
+        "submit": "Submit",
+        "success": {
+          "title": "Thank you!",
+          "message": "Your response has been recorded."
+        },
+        "error": {
+          "title": "Error",
+          "message": "Failed to submit your response. Please try again."
+        }
+      },
       "base": {
         "buttons": {
           "confirm": "Confirm",
