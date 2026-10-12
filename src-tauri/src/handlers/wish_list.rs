@@ -219,7 +219,7 @@ pub async fn handle_wish_list_by_entity(
         tx.transaction_type = TransactionType::Sale;
     }
 
-    handle_transaction(tx, &operations)
+    handle_transaction(tx, flags)
         .await
         .map_err(|e| e.with_location(get_location!()).log(file))?;
 
