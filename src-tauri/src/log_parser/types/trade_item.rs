@@ -629,6 +629,9 @@ impl TradeItem {
         Ok(info)
     }
     pub fn item_name(&self) -> String {
+        if self.item_type == TradeItemType::Platinum {
+            return "Platinum".to_string();
+        }
         match self.get_trade_item_info() {
             Ok(info) => info.name.clone(),
             Err(_) => self.raw.clone(),

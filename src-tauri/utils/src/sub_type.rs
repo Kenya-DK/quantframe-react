@@ -36,6 +36,12 @@ impl Default for SubType {
 }
 
 impl SubType {
+    pub fn matches(a: &Option<SubType>, b: &Option<SubType>) -> bool {
+        let a = a.as_ref().filter(|s| !s.is_empty());
+        let b = b.as_ref().filter(|s| !s.is_empty());
+        a == b
+    }
+
     pub fn new(
         rank: Option<i64>,
         charges: Option<i64>,

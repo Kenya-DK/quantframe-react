@@ -93,7 +93,7 @@ impl WishListQuery {
             .await
             .map_err(|e| e.with_location(get_location!()))?;
         for item in items {
-            if item.sub_type == sub_type {
+            if SubType::matches(&item.sub_type, &sub_type) {
                 return Ok(Some(item));
             }
         }
