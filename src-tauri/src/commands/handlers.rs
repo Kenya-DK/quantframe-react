@@ -1,6 +1,7 @@
 use crate::{handlers::*, track_event};
 use qf_api::enums::app_events::ApplicationEvent as EventType;
 use utils::{get_location, Error};
+use wf_market::enums::OrderType;
 
 #[tauri::command]
 pub async fn handles_handle_items(items: Vec<ItemEntity>) -> Result<i32, Error> {
@@ -10,7 +11,7 @@ pub async fn handles_handle_items(items: Vec<ItemEntity>) -> Result<i32, Error> 
     let mut iter = items.into_iter();
     while let Some(item) = iter.next() {
         let item = item.clone();
-        if item.operations.has("WishList") {
+        if item.operations.has("WishList") && item.order_type == OrderType::Buy {
             let (o, updated_item) = handle_wish_list_by_entity(
                 item.clone().into(),
                 item.user_name.clone(),

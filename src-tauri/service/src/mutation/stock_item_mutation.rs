@@ -70,11 +70,12 @@ impl StockItemMutation {
         }
 
         // Update the item
-        let item = item.unwrap();
+        let mut item = item.unwrap();
         let owned = item.owned - quantity;
         if owned <= 0 {
             match StockItemMutation::delete_by_id(db, id).await {
                 Ok(_) => {
+                    item.owned = 0;
                     return Ok(("Deleted".to_string(), Some(item)));
                 }
                 Err(e) => {
@@ -88,8 +89,8 @@ impl StockItemMutation {
             )
             .await
             {
-                Ok(_) => {
-                    return Ok(("Updated".to_string(), Some(item)));
+                Ok(updated) => {
+                    return Ok(("Updated".to_string(), Some(updated)));
                 }
                 Err(e) => {
                     return Err(e);
@@ -104,15 +105,13 @@ impl StockItemMutation {
         sub_type: Option<SubType>,
         quantity: i64,
     ) -> Result<(String, Option<stock_item::Model>), Error> {
-        let items = StockItemQuery::find_by_url_name(db, url)
+        let item = StockItemQuery::find_by_url_name_and_sub_type(db, url, sub_type)
             .await
             .map_err(|e| e.with_location(get_location!()))?;
-        for item in items {
-            if item.sub_type == sub_type {
-                return StockItemMutation::sold_by_id(db, item.id, quantity).await;
-            }
+        match item {
+            Some(item) => StockItemMutation::sold_by_id(db, item.id, quantity).await,
+            None => Ok(("NotFound".to_string(), None)),
         }
-        Ok(("NotFound".to_string(), None))
     }
 
     pub async fn add_item(
