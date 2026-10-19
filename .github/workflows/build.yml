@@ -30,9 +30,9 @@ jobs:
         with:
           node-version: lts/*
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
-          version: 9.12.1
+          version: 10
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -48,7 +48,7 @@ jobs:
         # webkitgtk 4.1 is required for Tauri v2.
 
       - name: install frontend dependencies
-        run: pnpm install # change this to npm, pnpm or bun depending on which one you use.
+        run: pnpm install --frozen-lockfile
 
       - uses: tauri-apps/tauri-action@v0
         env:

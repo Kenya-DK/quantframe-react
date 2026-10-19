@@ -1,3 +1,6 @@
+packages:
+  - '.'
+
 minimumReleaseAgeExclude:
   - '@mantine/core@9.7.1'
   - '@mantine/dates@9.7.1'
