@@ -1,8 +1,9 @@
 import { TauriTypes } from "$types";
 import api from "@api/index";
 import { useIsAuthenticated } from "@hooks/useIsAuthenticated.hook";
-import { useTranslateComponent } from "@hooks/useTranslate.hook";
-import { Button, Checkbox, Group, Radio, Stack, Text, Textarea } from "@mantine/core";
+import { useTranslateModals } from "@hooks/useTranslate.hook";
+import { Button, Card, Checkbox, Divider, Group, Radio, ScrollArea, Stack, Text, Textarea } from "@mantine/core";
+import { FormErrors, useForm, UseFormReturnType } from "@mantine/form";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useEffect, useState } from "react";
@@ -12,40 +13,35 @@ export type SurveyModalProps = {
   onSubmitted: () => void;
 };
 
-export function SurveyModal({ survey, onSubmitted }: SurveyModalProps) {
-  const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslateComponent(`modals.survey.${key}`, { ...context });
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const [submitting, setSubmitting] = useState(false);
+type AnswerValue = string | string[];
 
-  const setAnswer = (id: string, value: string | string[]) => setAnswers((prev) => ({ ...prev, [id]: value }));
+type SurveyFormValues = { answers: AnswerValue[] };
+type SurveyTransformedValues = { answers: Record<string, AnswerValue> };
 
-  const isAnswered = (question: TauriTypes.SurveyQuestion) => {
-    const value = answers[question.id];
-    if (Array.isArray(value)) return value.length > 0;
-    return typeof value === "string" && value.trim().length > 0;
-  };
+const emptyAnswer = (question: TauriTypes.SurveyQuestion): AnswerValue => (question.type === "multiple" ? [] : "");
 
-  const canSubmit = survey.questions.every((question) => !question.required || isAnswered(question));
+const isEmptyAnswer = (value: AnswerValue | undefined) => {
+  if (Array.isArray(value)) return value.length === 0;
+  return typeof value !== "string" || value.trim().length === 0;
+};
 
-  const handleSubmit = async () => {
-    setSubmitting(true);
-    try {
-      await api.survey.submit(survey.id, answers);
-      notifications.show({ title: useTranslate("success.title"), message: useTranslate("success.message"), color: "green.7" });
-      onSubmitted();
-    } catch (e) {
-      console.error(e);
-      notifications.show({ title: useTranslate("error.title"), message: useTranslate("error.message"), color: "red.7" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
+type SurveyQuestionFieldProps = {
+  question: TauriTypes.SurveyQuestion;
+  index: number;
+  form: UseFormReturnType<SurveyFormValues, SurveyTransformedValues>;
+};
+
+/** Renders a single survey question bound to its field in the survey form. */
+function SurveyQuestionField({ question, index, form }: SurveyQuestionFieldProps) {
+  const path = `answers.${index}`;
+  const inputProps = form.getInputProps(path);
+  const value = form.useWatchValue(path);
+  const textValue = typeof value === "string" ? value : "";
 
   return (
-    <Stack>
-      {survey.description && <Text c="dimmed">{survey.description}</Text>}
-      {survey.questions.map((question) => (
-        <Stack key={question.id} gap={4}>
+    <Card withBorder radius="md" padding="md">
+      <Stack gap="xs">
+        <Stack gap={2}>
           <Text fw={600}>
             {question.title}
             {question.required && (
@@ -59,42 +55,110 @@ export function SurveyModal({ survey, onSubmitted }: SurveyModalProps) {
               {question.description}
             </Text>
           )}
-          {question.type === "single" && (
-            <Radio.Group value={(answers[question.id] as string) || ""} onChange={(value) => setAnswer(question.id, value)}>
-              <Stack gap={4}>
-                {question.options?.map((option) => (
-                  <Radio key={option.id} value={option.id} label={option.label} />
-                ))}
-              </Stack>
-            </Radio.Group>
-          )}
-          {question.type === "multiple" && (
-            <Checkbox.Group value={(answers[question.id] as string[]) || []} onChange={(value) => setAnswer(question.id, value)}>
-              <Stack gap={4}>
-                {question.options?.map((option) => (
-                  <Checkbox key={option.id} value={option.id} label={option.label} />
-                ))}
-              </Stack>
-            </Checkbox.Group>
-          )}
-          {question.type === "text" && (
+        </Stack>
+
+        {question.type === "single" && (
+          <Radio.Group key={form.key(path)} {...inputProps}>
+            <Stack gap="xs" pl="xs">
+              {question.options?.map((option) => (
+                <Radio key={option.id} value={option.id} label={option.label} />
+              ))}
+            </Stack>
+          </Radio.Group>
+        )}
+
+        {question.type === "multiple" && (
+          <Checkbox.Group key={form.key(path)} {...inputProps}>
+            <Stack gap="xs" pl="xs">
+              {question.options?.map((option) => (
+                <Checkbox key={option.id} value={option.id} label={option.label} />
+              ))}
+            </Stack>
+          </Checkbox.Group>
+        )}
+
+        {question.type === "text" && (
+          <Stack gap={4}>
             <Textarea
-              value={(answers[question.id] as string) || ""}
-              onChange={(event) => setAnswer(question.id, event.currentTarget.value)}
+              key={form.key(path)}
+              {...inputProps}
               placeholder={question.placeholder}
               maxLength={question.max_length}
               autosize
               minRows={2}
+              maxRows={6}
             />
-          )}
-        </Stack>
-      ))}
-      <Group justify="flex-end">
-        <Button onClick={handleSubmit} loading={submitting} disabled={!canSubmit}>
-          {useTranslate("submit")}
-        </Button>
-      </Group>
-    </Stack>
+            {question.max_length != null && (
+              <Text size="xs" c="dimmed" ta="right">
+                {textValue.length}/{question.max_length}
+              </Text>
+            )}
+          </Stack>
+        )}
+      </Stack>
+    </Card>
+  );
+}
+
+export function SurveyModal({ survey, onSubmitted }: SurveyModalProps) {
+  const useTranslate = (key: string, context?: { [key: string]: any }) => useTranslateModals(`survey.${key}`, { ...context });
+
+  const form = useForm<SurveyFormValues, SurveyTransformedValues>({
+    mode: "uncontrolled",
+    initialValues: { answers: survey.questions.map(emptyAnswer) },
+    validate: (values) => {
+      const errors: FormErrors = {};
+      survey.questions.forEach((question, index) => {
+        if (question.required && isEmptyAnswer(values.answers[index])) {
+          errors[`answers.${index}`] = useTranslate("required");
+        }
+      });
+      return errors;
+    },
+    transformValues: (values) => ({
+      answers: survey.questions.reduce<Record<string, AnswerValue>>((acc, question, index) => {
+        acc[question.id] = values.answers[index];
+        return acc;
+      }, {}),
+    }),
+  });
+
+  const handleSubmit = async (values: SurveyTransformedValues) => {
+    try {
+      await api.survey.submit(survey.id, values.answers);
+      notifications.show({ title: useTranslate("success.title"), message: useTranslate("success.message"), color: "green.7" });
+      onSubmitted();
+    } catch (e) {
+      console.error(e);
+      notifications.show({ title: useTranslate("error.title"), message: useTranslate("error.message"), color: "red.7" });
+    }
+  };
+
+  return (
+    <form onSubmit={form.onSubmit(handleSubmit)}>
+      <Stack gap="md">
+        {survey.description && (
+          <Text size="sm" c="dimmed">
+            {survey.description}
+          </Text>
+        )}
+
+        <ScrollArea.Autosize mah="60vh" type="hover" offsetScrollbars>
+          <Stack gap="md" pr="sm">
+            {survey.questions.map((question, index) => (
+              <SurveyQuestionField key={question.id} question={question} index={index} form={form} />
+            ))}
+          </Stack>
+        </ScrollArea.Autosize>
+
+        <Divider />
+        <Group justify="flex-end">
+          <Button type="submit" loading={form.submitting}>
+            {useTranslate("submit")}
+          </Button>
+        </Group>
+      </Stack>
+    </form>
   );
 }
 
@@ -116,8 +180,7 @@ export function SurveyGate() {
         if (cancelled || !survey || survey.id === shownSurvey) return;
         setShownSurvey(survey.id);
 
-        let modalId = "";
-        modalId = modals.open({
+        const modalId = modals.open({
           title: survey.title,
           centered: true,
           size: "lg",

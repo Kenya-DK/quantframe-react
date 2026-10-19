@@ -1785,6 +1785,7 @@
     "modals": {
       "survey": {
         "submit": "Submit",
+        "required": "This field is required",
         "success": {
           "title": "Thank you!",
           "message": "Your response has been recorded."
