@@ -89,7 +89,7 @@ export function ProcessTradePopup() {
       ...item,
       user_name: currentTradeForm.values?.playerName,
       wfm_url: item.properties?.wfm_url,
-      price: item.properties?.price,
+      price: (item.properties?.price || 0) * item.quantity,
       order_type: currentTradeForm.values?.type === "purchase" ? "buy" : "sell",
       operations: [`SetDate:${currentTradeForm.values?.tradeTime}`, item.properties?.isWishListItem ? "WishList" : "NotWishList"],
     }));

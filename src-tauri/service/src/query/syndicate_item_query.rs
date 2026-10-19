@@ -75,7 +75,7 @@ impl SyndicateItemQuery {
     ) -> Result<Option<syndicate_item::Model>, Error> {
         let items = SyndicateItemQuery::find_by_url_name(db, url_name).await?;
         for item in items {
-            if item.sub_type == sub_type {
+            if SubType::matches(&item.sub_type, &sub_type) {
                 return Ok(Some(item));
             }
         }
