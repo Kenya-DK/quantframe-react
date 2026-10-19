@@ -18,7 +18,7 @@ use crate::{
     live_scraper::LiveScraperState,
     send_event, track_event,
     types::*,
-    utils::*,
+    utils::{modules::states, *},
 };
 #[tauri::command]
 pub async fn order_refresh(
@@ -66,6 +66,12 @@ pub fn get_wfm_orders_pagination(
     app: tauri::State<'_, Mutex<AppState>>,
 ) -> Result<PaginatedResult<Order>, Error> {
     let app = app.lock()?.clone();
+
+    let cache_state = states::cache_client()?;
+    app.wfm_client
+        .order()
+        .cache_orders_mut()
+        .restore_missing_item_info(&cache_state)?;
 
     let mut filtered_orders = filters_by(&app.wfm_client.order().cache_orders().to_vec(), |o| {
         match &query.query {
