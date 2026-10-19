@@ -1,8 +1,8 @@
-import { Box, Group, NumberInput, Switch } from "@mantine/core";
 import { TauriTypes } from "$types";
-import { useTranslateForms } from "@hooks/useTranslate.hook";
-import { UseFormReturnType } from "@mantine/form";
 import { TooltipIcon } from "@components/Shared/TooltipIcon";
+import { useTranslateForms } from "@hooks/useTranslate.hook";
+import { Box, Group, NumberInput, Switch } from "@mantine/core";
+import { UseFormReturnType } from "@mantine/form";
 
 export type RivenPanelProps = {
   form: UseFormReturnType<TauriTypes.Settings>;
@@ -57,6 +57,7 @@ export const RivenPanel = ({ form }: RivenPanelProps) => {
           {...form.getInputProps(getFieldPath("general.update_interval"))}
         />
         <Switch
+          style={{ display: "none" }}
           label={
             <Group gap={4}>
               {useTranslateFormFields("use_predict.label")}
@@ -69,4 +70,3 @@ export const RivenPanel = ({ form }: RivenPanelProps) => {
     </Box>
   );
 };
-
