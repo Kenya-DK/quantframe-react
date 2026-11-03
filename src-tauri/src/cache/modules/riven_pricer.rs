@@ -41,16 +41,15 @@ impl RivenPricerModule {
     /// Non-fatal load used during cache initialization: a missing or invalid
     /// model simply leaves the module unavailable instead of failing the cache.
     pub fn load(&self) -> Result<(), Error> {
-        return Ok(());
-        // if let Err(e) = self.try_load() {
-        //     warning(
-        //         "Cache:RivenPricer:load",
-        //         format!("Price model not loaded: {e}"),
-        //         &LoggerOptions::default(),
-        //     );
-        //     *self.model.lock().unwrap() = None;
-        // }
-        // Ok(())
+        if let Err(e) = self.try_load() {
+            warning(
+                "Cache:RivenPricer:load",
+                format!("Price model not loaded: {e}"),
+                &LoggerOptions::default(),
+            );
+            *self.model.lock().unwrap() = None;
+        }
+        Ok(())
     }
 
     /// Reloads the model from disk, returning an error if it cannot be loaded.

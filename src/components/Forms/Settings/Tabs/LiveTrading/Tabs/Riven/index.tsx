@@ -57,7 +57,6 @@ export const RivenPanel = ({ form }: RivenPanelProps) => {
           {...form.getInputProps(getFieldPath("general.update_interval"))}
         />
         <Switch
-          style={{ display: "none" }}
           label={
             <Group gap={4}>
               {useTranslateFormFields("use_predict.label")}
