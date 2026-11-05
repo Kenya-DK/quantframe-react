@@ -2823,6 +2823,24 @@
             "veiled": "Veiled",
             "unveiled": "Unveiled"
           }
+        },
+        "mods": {
+          "title": "Mods",
+          "mod_card": {
+            "rank": "Rank {{rank}}"
+          },
+          "sort": {
+            "name": "Name",
+            "quantity": "Quantity",
+            "mod_rank": "Rank"
+          },
+          "filters": {
+            "all": "All",
+            "warframe": "Warframe",
+            "primary": "Primary",
+            "melee": "Melee",
+            "archwing": "Archwing"
+          }
         }
       }
     }

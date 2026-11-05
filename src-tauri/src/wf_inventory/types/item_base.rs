@@ -29,7 +29,12 @@ pub struct WFInvItemBase {
     pub properties: Properties,
 }
 
-impl WFInvItemBase {}
+impl WFInvItemBase {
+    pub fn matches_query(&self, query: &str) -> bool {
+        let query = query.to_lowercase();
+        self.name.to_lowercase().contains(&query) || self.unique_name.to_lowercase().contains(&query)
+    }
+}
 
 impl Default for WFInvItemBase {
     fn default() -> Self {
@@ -85,6 +90,26 @@ impl WFInvItemBase {
         );
         item.properties
             .set_property_value("colour".to_string(), syndicate.icon_colour.clone());
+        Ok(item)
+    }
+    pub fn from_mod(raw: &WFInvItemRaw, cache: &CacheState) -> Result<Self, Error> {
+        let mut item = WFInvItemBase::default();
+        item.id = raw.id.id.clone().unwrap_or_default();
+        item.unique_name = raw.unique_name.clone();
+        item.quantity = raw.quantity;
+
+        let mod_rank = raw.get_upgrade_fingerprint().mod_rank;
+        item.sub_type = Some(SubType::rank(mod_rank));
+        item.properties.set_property_value("mod_rank", mod_rank);
+
+        // Resolve name/wfm_url from the mod cache; fall back to the raw path when the
+        // cache does not cover the item (e.g. Railjack cards).
+        if let Ok(mod_data) = cache.mods().get_by(raw.unique_name.clone()) {
+            item.name = mod_data.base.name.clone();
+            item.wfm_url = mod_data.base.wfm_url.unwrap_or_default();
+        } else {
+            item.name = raw.unique_name.rsplit('/').next().unwrap_or("").to_string();
+        }
         Ok(item)
     }
 }

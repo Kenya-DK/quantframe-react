@@ -28,6 +28,15 @@ pub async fn wf_inventory_get_rivens(
     Ok(json!(veiled))
 }
 #[tauri::command]
+pub async fn wf_inventory_get_mods(
+    query: WFItemPaginationDto,
+    wf_inventory: tauri::State<'_, Mutex<Arc<WFInventoryState>>>,
+) -> Result<Value, Error> {
+    let wf_inventory = wf_inventory.lock()?.clone();
+    Ok(json!(&wf_inventory.mods().get_mods(query)?))
+}
+
+#[tauri::command]
 pub async fn wf_inventory_get_syndicates(
     query: WFItemPaginationDto,
     wf_inventory: tauri::State<'_, Mutex<Arc<WFInventoryState>>>,

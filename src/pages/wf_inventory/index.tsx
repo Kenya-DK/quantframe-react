@@ -3,6 +3,7 @@ import { useTranslatePages } from "@hooks/useTranslate.hook";
 import classes from "./WFInventory.module.css";
 import { useHasAlert } from "@hooks/useHasAlert.hook";
 import { RivenPanel } from "./Tabs/Rivens";
+import { ModsPanel } from "./Tabs/Mods";
 import { useState } from "react";
 export default function WfInventoryPage() {
   // Translate general
@@ -10,7 +11,10 @@ export default function WfInventoryPage() {
     useTranslatePages(`wf_inventory.${key}`, { ...context }, i18Key);
   const useTranslateTabs = (key: string, context?: { [key: string]: any }, i18Key?: boolean) => useTranslate(`tabs.${key}`, { ...context }, i18Key);
 
-  const tabs = [{ label: useTranslateTabs("riven.title"), component: (isActive: boolean) => <RivenPanel isActive={isActive} />, id: "riven" }];
+  const tabs = [
+    { label: useTranslateTabs("riven.title"), component: (isActive: boolean) => <RivenPanel isActive={isActive} />, id: "riven" },
+    { label: useTranslateTabs("mods.title"), component: (isActive: boolean) => <ModsPanel isActive={isActive} />, id: "mods" },
+  ];
   const [activeTab, setActiveTab] = useState(tabs[0].id);
   return (
     <Container p={0} fluid className={`${classes.container} ${useHasAlert() ? classes.alert : ""}`}>

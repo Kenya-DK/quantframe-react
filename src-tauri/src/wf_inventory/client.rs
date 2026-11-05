@@ -11,6 +11,7 @@ pub struct WFInventoryState {
     item_module: OnceLock<Arc<ItemModule>>,
     riven_module: OnceLock<Arc<RivenModule>>,
     syndicate_module: OnceLock<Arc<SyndicateModule>>,
+    mods_module: OnceLock<Arc<ModsModule>>,
 }
 
 impl WFInventoryState {
@@ -27,6 +28,7 @@ impl WFInventoryState {
             item_module: OnceLock::new(),
             riven_module: OnceLock::new(),
             syndicate_module: OnceLock::new(),
+            mods_module: OnceLock::new(),
         });
 
         // Start the source (initial load + watcher for alecaframe)
@@ -57,6 +59,8 @@ impl WFInventoryState {
             .get_or_init(|| RivenModule::new(self.clone()));
         self.syndicate_module
             .get_or_init(|| SyndicateModule::new(self.clone()));
+        self.mods_module
+            .get_or_init(|| ModsModule::new(self.clone()));
     }
 
     // pub fn item(&self) -> Arc<ItemModule> {
@@ -76,6 +80,12 @@ impl WFInventoryState {
         self.syndicate_module
             .get()
             .expect("SyndicateModule not initialized")
+            .clone()
+    }
+    pub fn mods(&self) -> Arc<ModsModule> {
+        self.mods_module
+            .get()
+            .expect("ModsModule not initialized")
             .clone()
     }
 }

@@ -999,6 +999,11 @@ export namespace TauriTypes {
       total: number;
     }>[];
   };
+  export type WFInvModsControllerGetListData = PaginatedDto & {
+    results?: WFInvItemBase<{
+      mod_rank: number;
+    }>[];
+  };
 
   //--------------------------------------------------------------------------------
   //  EE Log
