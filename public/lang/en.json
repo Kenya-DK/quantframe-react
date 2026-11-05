@@ -826,6 +826,13 @@
           "wf_inventory": "WF Inventory",
           "about": "About"
         }
+      },
+      "wf_inventory": {
+        "navbar": {
+          "mods": "Mods",
+          "rivens": "Rivens",
+          "back_to_original": "Back to original UI"
+        }
       }
     },
     "select_item_tags": {
@@ -2799,16 +2806,6 @@
       }
     },
     "wf_inventory": {
-      "next": {
-        "sections": {
-          "mods": "Mods",
-          "rivens": "Rivens"
-        },
-        "filters": {
-          "category": "Category",
-          "state": "State"
-        }
-      },
       "tabs": {
         "riven": {
           "title": "Rivens",

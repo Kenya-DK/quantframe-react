@@ -8,6 +8,7 @@ import { routeLoaders } from "./routeLoaders";
 import { CleanLayout } from "./Clean";
 import { LogInLayout } from "./LogIn";
 import { LogOutLayout } from "./LogOut";
+import { WFInventoryLayout } from "./WFInventory";
 
 // Permissions Gate
 import AuthenticatedGate from "../AuthenticatedGate";
@@ -106,9 +107,11 @@ export function AppRoutes() {
               </Route>
               <Route path="*" element={<PHome />} />
             </Route>
-            {/* Full-screen flows (no app navbar) — same auth gate as the app shell routes */}
+            {/* Full-screen layouts (no app navbar) — same auth gate as the app shell routes */}
             <Route element={<AuthenticatedGate goTo="/auth/login" />}>
-              <Route path="wf_inventory_next" element={<WfInventoryNextPage />} />
+              <Route element={<WFInventoryLayout />}>
+                <Route path="/wf_inventory_next/:section?" element={<WfInventoryNextPage />} />
+              </Route>
             </Route>
           </>
         )}

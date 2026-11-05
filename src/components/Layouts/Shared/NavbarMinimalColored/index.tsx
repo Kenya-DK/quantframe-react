@@ -41,10 +41,12 @@ function NavbarLink(props: NavbarLinkProps) {
 
 export interface NavbarMinimalColoredProps {
   links: NavbarLinkProps[];
+  /** Initial highlighted link id (defaults to "home"). */
+  defaultActive?: string;
 }
 
-export function NavbarMinimalColored({ links }: NavbarMinimalColoredProps) {
-  const [active, setActive] = useState("home");
+export function NavbarMinimalColored({ links, defaultActive = "home" }: NavbarMinimalColoredProps) {
+  const [active, setActive] = useState(defaultActive);
 
   const GetActiveLinkByAlign = (align: "top" | "bottom") => {
     if (!links) return <></>;

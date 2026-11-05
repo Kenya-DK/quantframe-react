@@ -1,11 +1,11 @@
-import { AppShell, Box, Chip, Divider, Group, ScrollArea, SegmentedControl, SimpleGrid, Text } from "@mantine/core";
+import { Box, Chip, Divider, Group, ScrollArea, SegmentedControl, SimpleGrid } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
-import { Header } from "@components/Layouts/Shared/Header";
+import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
+import { useHasAlert } from "@hooks/useHasAlert.hook";
+import { useParams } from "react-router-dom";
 import { SearchField } from "@components/Forms/SearchField";
 import { CompactSortSelect } from "@components/Shared/CompactSortSelect";
 import { PaginationFooter } from "@components/Shared/PaginationFooter";
-import { useTranslateCommon, useTranslatePages } from "@hooks/useTranslate.hook";
-import { useHasAlert } from "@hooks/useHasAlert.hook";
 import classes from "../WFInventory.module.css";
 import { ItemRiven, TauriTypes } from "$types";
 import { MOD_ITEM_TYPES, RIVEN_ITEM_TYPES } from "../filters";
@@ -21,19 +21,20 @@ type Section = "mods" | "rivens";
 const sameSet = (a?: string[], b?: string[]) => !!a && !!b && a.length === b.length && a.every((t) => b.includes(t));
 
 /**
- * "Next" WF inventory layout: persistent facet drawer (navbar) + edge-to-edge
- * card wall. Reuses the classic tabs' queries and cards — this page owns only
- * the layout and the shared query state.
+ * "Next" WF inventory page, hosted by the WFInventoryLayout (icon nav rail):
+ * toolbar with search/facets/sort, then the card wall. Reuses the classic
+ * tabs' queries and cards — this page owns only the content and query state.
  */
 export default function WfInventoryNextPage() {
+  // Section comes from the layout's navigation (/wf_inventory_next/mods or /rivens).
+  const { section: urlSection } = useParams();
+  const section: Section = urlSection === "rivens" ? "rivens" : "mods";
+
   // Translate general
-  const useTranslate = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
-    useTranslatePages(`wf_inventory.next.${key}`, { ...context }, i18Key);
   const useTranslateRivenFilters = (key: string) => useTranslatePages(`wf_inventory.tabs.riven.filters.${key}`);
   const useTranslateModFilters = (key: string) => useTranslatePages(`wf_inventory.tabs.mods.filters.${key}`);
 
   // States
-  const [section, setSection] = useLocalStorage<Section>({ key: "next_wf_section", getInitialValueInEffect: false, defaultValue: "mods" });
   const [modsParams, setModsParams] = useLocalStorage<TauriTypes.WFItemControllerGetListParams>({
     key: "next_mods_query_key",
     getInitialValueInEffect: false,
@@ -74,41 +75,11 @@ export default function WfInventoryNextPage() {
   const activeCategory = Object.keys(categoryTypes).find((key) => sameSet(categoryTypes[key], params.item_types)) || "all";
 
   return (
-    <AppShell header={{ height: 65 }} navbar={{ width: 250, breakpoint: "sm" }}>
-      <AppShell.Header withBorder={false}>
-        <Header
-          showClock={false}
-          userMenuBackTo="/wf_inventory"
-          center={
-            <Group gap="xs" w={420}>
-              <SearchField value={params.query || ""} onChange={(text) => setParams((prev) => ({ ...prev, page: 1, query: text }))} />
-            </Group>
-          }
-        />
-      </AppShell.Header>
-
-      <AppShell.Navbar withBorder={false} p="md">
-        <Text fw={600} mb="xs">
-          {useTranslate("sections." + section)}
-        </Text>
-        <SegmentedControl
-          fullWidth
-          mb="md"
-          value={section}
-          onChange={(value) => setSection(value as Section)}
-          data={[
-            { value: "mods", label: useTranslate("sections.mods") },
-            { value: "rivens", label: useTranslate("sections.rivens") },
-          ]}
-        />
-        <Text fz="xs" tt="uppercase" c="dimmed" mb="xs">
-          {useTranslate("filters.category")}
-        </Text>
-        <Box mb="md">
+    <Box p="md">
+      <SearchField value={params.query || ""} onChange={(text) => setParams((prev) => ({ ...prev, page: 1, query: text }))} />
+      <Group mt="md" justify="space-between" wrap="nowrap">
+        <Group gap="xs">
           <Chip.Group multiple={false} value={activeCategory}>
-            <Chip value="all" onChange={() => setParams((prev) => ({ ...prev, page: 1, item_types: undefined }))}>
-              {section === "mods" ? useTranslateModFilters("all") : useTranslateRivenFilters("all")}
-            </Chip>
             {Object.keys(categoryTypes).map((key) => (
               <Chip
                 key={key}
@@ -121,14 +92,8 @@ export default function WfInventoryNextPage() {
               </Chip>
             ))}
           </Chip.Group>
-        </Box>
-        {section === "rivens" && (
-          <>
-            <Text fz="xs" tt="uppercase" c="dimmed" mb="xs">
-              {useTranslate("filters.state")}
-            </Text>
+          {section === "rivens" && (
             <SegmentedControl
-              fullWidth
               size="xs"
               value={rivenParams.properties?.riven_type || "veiled"}
               onChange={(value) => setRivenParams((prev) => ({ ...prev, page: 1, properties: { ...prev.properties, riven_type: value } }))}
@@ -137,41 +102,36 @@ export default function WfInventoryNextPage() {
                 { value: "unveiled", label: useTranslateRivenFilters("unveiled") },
               ]}
             />
-          </>
-        )}
-      </AppShell.Navbar>
-
-      <AppShell.Main pt="md">
-        <Group px="md" pb="sm" justify="flex-end">
-          <CompactSortSelect
-            value={params.sort_by || (section === "mods" ? "name" : "platinum")}
-            direction={(params.sort_direction || (section === "mods" ? "asc" : "desc")) === "desc" ? "desc" : "asc"}
-            onChange={(value) => setParams((prev) => ({ ...prev, sort_by: value }))}
-            onDirectionChange={(direction) => setParams((prev) => ({ ...prev, sort_direction: direction }))}
-            data={(section === "mods" ? ["name", "quantity", "mod_rank"] : ["disposition", "endo", "riven_grade"]).map((key) => ({
-              label: section === "mods" ? useTranslatePages(`wf_inventory.tabs.mods.sort.${key}`) : useTranslateCommon(`sort_by.${key}`),
-              value: key,
-            }))}
-          />
+          )}
         </Group>
-        <ScrollArea px="md" className={classes.veiledRivens} data-has-alert={useHasAlert()}>
-          <SimpleGrid cols={{ base: 4 }} spacing="sm">
-            {section === "mods"
-              ? modsQuery.data?.results?.map((mod, i) => <ModPreviewCard key={i} mod={mod} />)
-              : rivensQuery.data?.results?.map((riven, i) => <RivenPreviewCard key={i} riven={riven} onAdd={HandleAddRiven} />)}
-          </SimpleGrid>
-        </ScrollArea>
-        <Divider mt="md" mx="md" />
-        <Box px="md" py="md">
-          <PaginationFooter
-            page={params.page}
-            limit={params.limit || 50}
-            total={(section === "mods" ? modsQuery.data?.total : rivensQuery.data?.total) || 0}
-            onPageChange={(page) => setParams((prev) => ({ ...prev, page }))}
-            onLimitChange={(limit) => setParams((prev) => ({ ...prev, page: 1, limit }))}
-          />
-        </Box>
-      </AppShell.Main>
-    </AppShell>
+        <CompactSortSelect
+          value={params.sort_by || (section === "mods" ? "name" : "platinum")}
+          direction={(params.sort_direction || (section === "mods" ? "asc" : "desc")) === "desc" ? "desc" : "asc"}
+          onChange={(value) => setParams((prev) => ({ ...prev, sort_by: value }))}
+          onDirectionChange={(direction) => setParams((prev) => ({ ...prev, sort_direction: direction }))}
+          data={(section === "mods" ? ["name", "quantity", "mod_rank"] : ["disposition", "endo", "riven_grade"]).map((key) => ({
+            label: section === "mods" ? useTranslatePages(`wf_inventory.tabs.mods.sort.${key}`) : useTranslateCommon(`sort_by.${key}`),
+            value: key,
+          }))}
+        />
+      </Group>
+      <ScrollArea mt="md" className={classes.veiledRivens} data-has-alert={useHasAlert()}>
+        <SimpleGrid cols={{ base: 4 }} spacing="sm">
+          {section === "mods"
+            ? modsQuery.data?.results?.map((mod, i) => <ModPreviewCard key={i} mod={mod} />)
+            : rivensQuery.data?.results?.map((riven, i) => <RivenPreviewCard key={i} riven={riven} onAdd={HandleAddRiven} />)}
+        </SimpleGrid>
+      </ScrollArea>
+      <Divider mt="md" />
+      <Box mt="md">
+        <PaginationFooter
+          page={params.page}
+          limit={params.limit || 50}
+          total={(section === "mods" ? modsQuery.data?.total : rivensQuery.data?.total) || 0}
+          onPageChange={(page) => setParams((prev) => ({ ...prev, page }))}
+          onLimitChange={(limit) => setParams((prev) => ({ ...prev, page: 1, limit }))}
+        />
+      </Box>
+    </Box>
   );
 }
