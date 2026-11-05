@@ -14,6 +14,7 @@ export const routeLoaders = {
   about: () => import("@pages/about"),
   clean: () => import("@pages/clean"),
   wfInventory: () => import("@pages/wf_inventory"),
+  wfInventoryNext: () => import("@pages/wf_inventory/next"),
 } as const satisfies Record<string, RouteLoader>;
 
 export type RouteLoaderKey = keyof typeof routeLoaders;

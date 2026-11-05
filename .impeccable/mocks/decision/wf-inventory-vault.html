@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quantframe — WF Inventory · Vault</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 900px; overflow: hidden; }
+  body { width: 1440px; background: #141517; color: #e6e9ef; font: 14px/1.45 "Segoe UI", system-ui, sans-serif; display: flex; }
+  .rail { width: 76px; background: #1a1b1f; border-right: 1px solid #2b2d33; display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 12px; }
+  .logo-mini { width: 34px; height: 34px; border-radius: 10px; background: #f8c513; color: #141517; font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 10px; }
+  .railbtn { width: 54px; height: 54px; border-radius: 12px; display: flex; flex-direction: column; gap: 3px; align-items: center; justify-content: center; color: #6b7280; font-size: 10px; }
+  .railbtn.on { background: #26282e; color: #e6e9ef; }
+  .railbtn .ic { width: 20px; height: 3px; background: currentColor; border-radius: 2px; box-shadow: 0 -7px 0 -2px currentColor, 0 7px 0 -2px currentColor; opacity: .9; }
+  .railbtn.rv .ic { width: 0; height: 0; box-shadow: none; border: 4px solid currentColor; border-radius: 3px; }
+  .railbtn.wm .ic { width: 12px; height: 12px; box-shadow: none; border: 2px solid currentColor; border-radius: 50% 50% 2px 2px; }
+  .main { flex: 1; display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 14px; height: 58px; padding: 0 20px; background: #1d1e22; border-bottom: 1px solid #2b2d33; }
+  .h1 { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+  .count { font-size: 12.5px; color: #9aa3b2; } .count b { color: #e6e9ef; font-variant-numeric: tabular-nums; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #3d5afe, #1d3fae); margin-left: auto; }
+  .search { width: 340px; height: 34px; background: #141517; border: 1px solid #2b2d33; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; color: #6b7280; }
+  .strip { display: flex; align-items: center; padding: 10px 20px; background: #191a1e; border-bottom: 1px solid #2b2d33; }
+  .stat .n { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; } .stat .n em { font-style: normal; color: #f8c513; }
+  .stat .l { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #9aa3b2; }
+  .filters { display: flex; gap: 6px; margin-left: 26px; }
+  .chip { padding: 5px 12px; border-radius: 99px; background: #26282e; color: #9aa3b2; font-size: 12.5px; }
+  .chip.on { background: #2a4fdb; color: #fff; }
+  .sortbar { display: flex; align-items: center; gap: 4px; padding: 8px 20px; color: #9aa3b2; font-size: 12px; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 2px 20px; }
+  .card { background: #1d1e22; border: 1px solid #2b2d33; border-radius: 12px; overflow: hidden; height: 208px; display: flex; flex-direction: column; }
+  .card.alt { border-color: #3a3524; background: linear-gradient(180deg, #201c12, #1a1712); }
+  .chd { display: flex; justify-content: center; padding: 9px 10px; font-weight: 700; font-size: 14px; background: #17181c; border-bottom: 1px solid #2b2d33; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cbody { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .glyph { width: 66px; height: 66px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; }
+  .g1 { background: radial-gradient(circle, #232a38, #16181d); border: 1px solid #2f3542; color: #7fa4ff; box-shadow: inset 0 0 18px #2a4fdb55; }
+  .g2 { background: radial-gradient(circle, #2a2620, #1a1712); border: 1px solid #453b24; color: #f8c513; }
+  .cft { display: flex; justify-content: space-between; align-items: center; padding: 9px 10px; background: #17181c; border-top: 1px solid #2b2d33; font-size: 12.5px; color: #9aa3b2; }
+  .cft .q { font-variant-numeric: tabular-nums; font-weight: 700; color: #e6e9ef; }
+  .tag { padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+  .twfm { background: #123524; color: #4ade80; }
+  .tno { background: #2a2c31; color: #6b7280; }
+  .tveil { background: #2b1e07; color: #f8c513; }
+  .rank { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <div class="rail">
+    <div class="logo-mini">Q</div>
+    <div class="railbtn wm on"><div class="ic"></div>WF Inv</div>
+    <div class="railbtn"><div class="ic"></div>Home</div>
+    <div class="railbtn"><div class="ic"></div>Market</div>
+    <div class="railbtn"><div class="ic"></div>Log</div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="h1">WF Inventory</div>
+      <div class="search">Search your inventory…</div>
+      <div class="avatar"></div>
+    </div>
+    <div class="strip">
+      <div class="stat"><div class="n">803<em>+</em></div><div class="l">mods owned</div></div>
+      <div class="stat" style="margin-left:24px"><div class="n">48</div><div class="l">rivens</div></div>
+      <div class="filters">
+        <div class="chip on">All</div><div class="chip">Warframe</div><div class="chip">Primary</div><div class="chip">Melee</div><div class="chip">Archwing</div>
+      </div>
+      <div class="count" style="margin-left:auto">Sort <b>Name</b> ↑</div>
+    </div>
+    <div class="sortbar">Showing 1–8 of 803</div>
+    <div class="cards">
+      <div class="card"><div class="chd">Vitality</div><div class="cbody"><div class="glyph g1">V</div></div><div class="cft"><span class="q">x209</span><span class="rank">Rank 10</span><span class="tag tno">—</span></div></div>
+      <div class="card"><div class="chd">Serration</div><div class="cbody"><div class="glyph g1">S</div></div><div class="cft"><span class="q">x7</span><span class="rank">Rank 10</span><span class="tag twfm">WFM</span></div></div>
+      <div class="card alt"><div class="chd">Nobrack Riven</div><div class="cbody"><div class="glyph g2">R</div></div><div class="cft"><span class="q">x1</span><span class="rank">Veiled</span><span class="tag tveil">veiled</span></div></div>
+      <div class="card"><div class="chd">Blind Rage</div><div class="cbody"><div class="glyph g1">B</div></div><div class="cft"><span class="q">x3</span><span class="rank">Rank 10</span><span class="tag twfm">WFM</span></div></div>
+      <div class="card"><div class="chd">Pressure Point</div><div class="cbody"><div class="glyph g1">P</div></div><div class="cft"><span class="q">x133</span><span class="rank">Rank 10</span><span class="tag tno">—</span></div></div>
+      <div class="card"><div class="chd">Flow</div><div class="cbody"><div class="glyph g1">F</div></div><div class="cft"><span class="q">x9</span><span class="rank">Rank 5</span><span class="tag twfm">WFM</span></div></div>
+      <div class="card"><div class="chd">Ammo Drum</div><div class="cbody"><div class="glyph g1">A</div></div><div class="cft"><span class="q">x612</span><span class="rank">Rank 5</span><span class="tag tno">—</span></div></div>
+      <div class="card"><div class="chd">Primed Continuity</div><div class="cbody"><div class="glyph g2">PC</div></div><div class="cft"><span class="q">x2</span><span class="rank">Rank 10</span><span class="tag twfm">WFM</span></div></div>
+    </div>
+  </div>
+</body>
+</html>

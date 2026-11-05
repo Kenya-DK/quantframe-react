@@ -1,0 +1,42 @@
+{
+  "title": "WF Inventory — new layout",
+  "question": "The roll leads with the Trading Blotter. Keep the lead, take one of the other dealt structures, steer, or re-roll.",
+  "options": [
+    {
+      "id": "wf-inventory-blotter",
+      "kind": "assigned",
+      "label": "Trading Blotter",
+      "kicker": "THE ROLL",
+      "lineage": "market data sheets and trading blotters",
+      "thesis": "Every owned mod as one sortable ledger row that expands in place into the rich riven/mod card — scan your whole hoard at a glance, open the one that matters.",
+      "palette": ["#141517", "#1d1e22", "#2a4fdb", "#e6e9ef"],
+      "materials": ["ruled data rows", "tabular figures"],
+      "viewport": "Header with search and avatar, stat strip (803 mods / 48 rivens) with filter chips, then a dense ruled table; the selected riven row spreads into a full attribute card mid-table.",
+      "risk": "Reads clinical if ranks and wear shrink too far; the expanded row must keep the table rhythm when it opens."
+    },
+    {
+      "id": "wf-inventory-vault",
+      "kind": "dealt",
+      "label": "The Vault",
+      "lineage": "collector's catalogues and shelf visitors",
+      "thesis": "A collector's vault: persistent icon rail, each section a dense card grid under its own running total strip.",
+      "palette": ["#141517", "#1d1e22", "#2a4fdb", "#f8c513"],
+      "materials": ["card grid", "icon rail"],
+      "viewport": "Icon rail on the left, section header with counts and filter chips, then a 4-column card grid of owned mods.",
+      "risk": "Repeats the card grid the rest of Quantframe already uses; freshness must come from the section strip and rail."
+    },
+    {
+      "id": "wf-inventory-workbench",
+      "kind": "dealt",
+      "label": "The Workbench",
+      "lineage": "master-detail workbenches",
+      "thesis": "Master-detail bench: compact ledger list on the left, the focused item rendered full-size on the right with every stat readable at once.",
+      "palette": ["#141517", "#191a1e", "#2a4fdb", "#e6e9ef"],
+      "materials": ["dual pane", "focus plaque"],
+      "viewport": "Header and filter row, then split view: 460px ledger list left, focus pane right showing the selected riven's frame, attribute plaques and actions without any click-through.",
+      "risk": "The right pane can feel oversized for plain mods; it earns its space only while a riven is focused."
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code" }
+}

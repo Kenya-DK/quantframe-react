@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quantframe — WF Inventory · Sheets Drawer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 900px; overflow: hidden; }
+  body { width: 1440px; background: #141517; color: #e6e9ef; font: 14px/1.45 "Segoe UI", system-ui, sans-serif; display: flex; }
+  .drawer { width: 250px; background: #191a1e; border-right: 1px solid #2b2d33; padding: 16px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .logo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .q { width: 30px; height: 30px; border-radius: 9px; background: #f8c513; color: #141517; font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .title { font-weight: 700; }
+  .flabel { margin-top: 10px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; color: #9aa3b2; }
+  .facet { display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-radius: 8px; color: #c3c9d4; }
+  .facet.on { background: #26282e; color: #fff; }
+  .facet .ct { font-variant-numeric: tabular-nums; font-size: 11.5px; color: #6b7280; }
+  .clear { margin-top: auto; font-size: 12.5px; color: #9aa3b2; text-align: center; padding: 8px; border: 1px dashed #2b2d33; border-radius: 8px; }
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .top { display: flex; align-items: center; gap: 14px; height: 58px; padding: 0 18px; background: #1d1e22; border-bottom: 1px solid #2b2d33; }
+  .search { flex: 1; max-width: 420px; height: 35px; background: #141517; border: 1px solid #2b2d33; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; color: #6b7280; }
+  .sort { margin-left: auto; font-size: 12.5px; color: #9aa3b2; } .sort b { color: #e6e9ef; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #3d5afe, #1d3fae); }
+  .strip { display: flex; align-items: baseline; gap: 14px; padding: 12px 18px; font-size: 12.5px; color: #9aa3b2; }
+  .strip .big { font-size: 19px; font-weight: 700; color: #e6e9ef; font-variant-numeric: tabular-nums; }
+  .strip b { color: #e6e9ef; font-variant-numeric: tabular-nums; }
+  .wall { flex: 1; overflow: hidden; display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 176px; gap: 10px; padding: 4px 18px 16px; }
+  .card { background: #1d1e22; border: 1px solid #2b2d33; border-radius: 11px; display: flex; flex-direction: column; overflow: hidden; }
+  .card.rare { border-color: #3d3317; background: linear-gradient(180deg, #211d12, #191712); }
+  .chd { padding: 8px 10px 0; font-weight: 650; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .csub { padding: 0 10px 6px; font-size: 11px; color: #9aa3b2; }
+  .glyph { flex: 1; margin: 0 10px; border-radius: 8px; background: radial-gradient(circle at 50% 42%, #22242c, #16171b); display: flex; align-items: center; justify-content: center; font-weight: 800; }
+  .gl1 { color: #7fa4ff; } .gl2 { color: #f8c513; } .gl3 { color: #d8b2ff; }
+  .cft { display: flex; align-items: center; gap: 6px; padding: 7px 10px; font-size: 11.5px; color: #9aa3b2; }
+  .cft .qty { margin-left: auto; font-weight: 700; color: #e6e9ef; font-variant-numeric: tabular-nums; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dw { background: #4ade80; } .dn { background: #3a3d45; } .dv { background: #f8c513; }
+</style>
+</head>
+<body>
+  <div class="drawer">
+    <div class="logo-row"><div class="q">Q</div><div class="title">WF Inventory</div></div>
+    <div class="flabel">Category</div>
+    <div class="facet on">All <span class="ct">851</span></div>
+    <div class="facet">Warframe <span class="ct">214</span></div>
+    <div class="facet">Primary <span class="ct">156</span></div>
+    <div class="facet">Melee <span class="ct">98</span></div>
+    <div class="facet">Archwing <span class="ct">63</span></div>
+    <div class="flabel">Market</div>
+    <div class="facet on">Tradable only <span class="ct">322</span></div>
+    <div class="facet">Has stock <span class="ct">9</span></div>
+    <div class="flabel">Rank</div>
+    <div class="facet">Maxed (10) <span class="ct">412</span></div>
+    <div class="facet">Unranked <span class="ct">157</span></div>
+    <div class="clear">Clear all filters</div>
+  </div>
+  <div class="main">
+    <div class="top">
+      <div class="search">Search 803 mods and 48 rivens…</div>
+      <div class="sort">Newest <b>first</b></div>
+      <div class="avatar"></div>
+    </div>
+    <div class="strip">Showing <span class="big">322</span> of <b>851</b> · wall updates as filters move</div>
+    <div class="wall">
+      <div class="card"><div class="chd">Vitality</div><div class="csub">Warframe · Rank 10</div><div class="glyph gl1">V</div><div class="cft"><span class="dot dn"></span> — <span class="qty">x209</span></div></div>
+      <div class="card rare"><div class="chd">Kronen Prime Riven</div><div class="csub">Melee · Veiled</div><div class="glyph gl2">R</div><div class="cft"><span class="dot dv"></span> veiled <span class="qty">x1</span></div></div>
+      <div class="card"><div class="chd">Serration</div><div class="csub">Primary · Rank 10</div><div class="glyph gl1">S</div><div class="cft"><span class="dot dw"></span> WFM <span class="qty">x7</span></div></div>
+      <div class="card"><div class="chd">Blind Rage</div><div class="csub">Warframe · Rank 10</div><div class="glyph gl1">B</div><div class="cft"><span class="dot dw"></span> WFM <span class="qty">x3</span></div></div>
+      <div class="card"><div class="chd">Pressure Point</div><div class="csub">Melee · Rank 10</div><div class="glyph gl1">P</div><div class="cft"><span class="dot dn"></span> — <span class="qty">x133</span></div></div>
+      <div class="card"><div class="chd">Flow</div><div class="csub">Warframe · Rank 5</div><div class="glyph gl1">F</div><div class="cft"><span class="dot dw"></span> WFM <span class="qty">x9</span></div></div>
+      <div class="card"><div class="chd">Ammo Drum</div><div class="csub">Rifle · Rank 5</div><div class="glyph gl1">A</div><div class="cft"><span class="dot dn"></span> — <span class="qty">x612</span></div></div>
+      <div class="card"><div class="chd">Primed Continuity</div><div class="csub">Warframe · Rank 10</div><div class="glyph gl3">C</div><div class="cft"><span class="dot dw"></span> WFM <span class="qty">x2</span></div></div>
+      <div class="card"><div class="chd">Point Blank</div><div class="csub">Shotgun · Rank 10</div><div class="glyph gl1">PB</div><div class="cft"><span class="dot dw"></span> WFM <span class="qty">x4</span></div></div>
+      <div class="card"><div class="chd">Road Raver Necx</div><div class="csub">Necramech · Rank 5</div><div class="glyph gl1">N</div><div class="cft"><span class="dot dn"></span> — <span class="qty">x12</span></div></div>
+      <div class="card rare"><div class="chd">Phase Rionflot</div><div class="csub">Pistol Riven · Rank 5</div><div class="glyph gl2">R</div><div class="cft"><span class="dot dv"></span> veiled <span class="qty">x1</span></div></div>
+      <div class="card"><div class="chd">Stretch</div><div class="csub">Warframe · Rank 5</div><div class="glyph gl1">S</div><div class="cft"><span class="dot dw"></span> WFM <span class="qty">x11</span></div></div>
+    </div>
+  </div>
+</body>
+</html>

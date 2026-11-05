@@ -1,0 +1,42 @@
+{
+  "title": "WF Inventory — new layout (re-roll)",
+  "question": "Second hand — the three previous structures are out. The roll leads with the Sheets Drawer. Keep the lead, take another dealt structure, steer, or re-roll again.",
+  "options": [
+    {
+      "id": "wf-inventory-sheets",
+      "kind": "assigned",
+      "label": "Sheets Drawer",
+      "kicker": "THE ROLL",
+      "lineage": "collector's flat-file sheets with a pulled-out index card",
+      "thesis": "Your inventory as one edge-to-edge sheet of cards; every filter lives in a left drawer that updates the wall as you move it — content first, chrome second.",
+      "palette": ["#141517", "#191a1e", "#2a4fdb", "#f8c513"],
+      "materials": ["card wall", "faceted drawer"],
+      "viewport": "Header with search, then a left facet drawer (Category / Market / Rank with live counts), and a dense 6-column card wall filling the rest; counts read 322 of 851 as filters apply.",
+      "risk": "A 6-column wall at 1440 runs small cards; the drawer must never steal width the wall needs."
+    },
+    {
+      "id": "wf-inventory-console",
+      "kind": "dealt",
+      "label": "Console Deck",
+      "lineage": "command consoles and launcher bars",
+      "thesis": "The search bar IS the page: type and the inventory narrows under your fingers, related items fan out below the best match.",
+      "palette": ["#141517", "#1d1f24", "#2a4fdb", "#e6e9ef"],
+      "materials": ["command bar", "fanned matches"],
+      "viewport": "Slim header, then a large centered command bar with query suggestions inline, match counts, and a 5-column results deck; empty state shows a category sample.",
+      "risk": "Resting state is a search box, not an inventory scan; needs a good no-query display."
+    },
+    {
+      "id": "wf-inventory-belt",
+      "kind": "dealt",
+      "label": "Category Belt",
+      "lineage": "grouped catalogue bands",
+      "thesis": "One scrolling belt of full-width category bands — Warframe, Primary, Melee, Archwing — each with its count bar and its own row of items; scroll is the navigation.",
+      "palette": ["#141517", "#1d1e22", "#2a4fdb", "#f8c513"],
+      "materials": ["sticky bands", "count bars"],
+      "viewport": "Header with search, then stacked category bands, each with a sticky banded header (count + fill bar) and a 4-across row of wide item cards.",
+      "risk": "Long scroll before less-owned categories; bands must stay sticky-legible and the active band highlighted."
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code" }
+}

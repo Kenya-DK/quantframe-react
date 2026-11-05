@@ -784,7 +784,8 @@
       "items": {
         "app_label": "Application",
         "settings": "Settings",
-        "logout": "Logout"
+        "logout": "Logout",
+        "back_to_original": "Back to original UI"
       },
       "errors": {
         "connection_websocket_error": "Loading...",
@@ -2798,6 +2799,16 @@
       }
     },
     "wf_inventory": {
+      "next": {
+        "sections": {
+          "mods": "Mods",
+          "rivens": "Rivens"
+        },
+        "filters": {
+          "category": "Category",
+          "state": "State"
+        }
+      },
       "tabs": {
         "riven": {
           "title": "Rivens",

@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quantframe — WF Inventory · Console</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 900px; overflow: hidden; }
+  body { width: 1440px; background: #141517; color: #e6e9ef; font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+  .topbar { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 20px; background: #1d1e22; border-bottom: 1px solid #2b2d33; }
+  .logo { font-weight: 800; letter-spacing: -0.02em; font-size: 17px; color: #f8c513; }
+  .logo span { color: #e6e9ef; font-weight: 600; margin-left: 6px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #3d5afe, #1d3fae); margin-left: auto; }
+  .deck { padding: 26px 60px 18px; background: linear-gradient(180deg, #191a1e 0%, #141517 100%); }
+  .cmdbar { display: flex; align-items: center; gap: 12px; background: #1d1f24; border: 1px solid #33363e; border-radius: 14px; padding: 0 6px 0 18px; height: 64px; box-shadow: 0 10px 34px #00000066; }
+  .caret { font-size: 26px; color: #2a4fdb; font-weight: 800; }
+  .typed { font-size: 19px; font-weight: 500; white-space: nowrap; }
+  .typed em { font-style: normal; background: #2a4fdb33; border-radius: 4px; padding: 1px 2px; }
+  .cursor { width: 2px; height: 22px; background: #e6e9ef; display: inline-block; margin-left: 1px; }
+  .kbd { margin-left: auto; font-size: 11px; color: #6b7280; border: 1px solid #33363e; border-radius: 6px; padding: 3px 8px; }
+  .sugg { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+  .sug { padding: 6px 12px; border-radius: 99px; background: #26282e; color: #9aa3b2; font-size: 12.5px; }
+  .sug.on { background: #2a4fdb; color: #fff; }
+  .matchnote { margin-left: auto; color: #4ade80; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .resultmeta { display: flex; align-items: baseline; gap: 12px; padding: 8px 60px; color: #9aa3b2; font-size: 12px; }
+  .resultmeta b { color: #e6e9ef; font-variant-numeric: tabular-nums; }
+  .cols { display: grid; grid-template-columns: repeat(5, 1fr); gap: 11px; padding: 0 60px; }
+  .rrow { background: #1d1e22; border: 1px solid #2b2d33; border-radius: 11px; padding: 11px 13px; display: flex; flex-direction: column; gap: 6px; height: 148px; }
+  .rrow.hl { border-color: #2a4fdb; background: #1c2130; }
+  .rname { font-weight: 650; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rname mark { background: #2a4fdb55; color: #fff; border-radius: 3px; }
+  .rmid { font-size: 11.5px; color: #9aa3b2; }
+  .big { margin-top: auto; display: flex; align-items: baseline; gap: 6px; }
+  .big .n { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tagx { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+  .twfm { background: #123524; color: #4ade80; } .tno { background: #2a2c31; color: #6b7280; } .tv { background: #2b1e07; color: #f8c513; }
+  .foot { display: flex; align-items: center; gap: 10px; padding: 14px 60px; color: #6b7280; font-size: 12px; }
+  .pill { border: 1px solid #2b2d33; border-radius: 8px; padding: 4px 10px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo" style="display:inline-block">Quantframe<span>WF Inventory</span></div>
+  <div class="avatar"></div>
+</div>
+<div class="deck">
+  <div class="cmdbar">
+    <div class="caret">›</div>
+    <div class="typed"><em>serration</em><span class="cursor"></span></div>
+    <div class="kbd">type to search · tab filters · enter opens</div>
+  </div>
+  <div class="sugg">
+    <div class="sug on">All</div><div class="sug">Primary</div><div class="sug">Warframe</div><div class="sug">Melee</div>
+    <div class="matchnote">12 matches · 42,890 total owned copies</div>
+  </div>
+</div>
+<div class="resultmeta">Best match <b>1</b> · related <b>11</b> · sorted by owned quantity</div>
+<div class="cols">
+  <div class="rrow hl"><div class="rname"><mark>Serration</mark></div><div class="rmid">Primary · Rank 10 / 10</div><div class="big"><span class="n">x7</span><span class="tagx twfm">WFM</span></div></div>
+  <div class="rrow"><div class="rname"><mark>Serration</mark> Prime</div><div class="rmid">Primary · Rank 10</div><div class="big"><span class="n">x2</span><span class="tagx twfm">WFM</span></div></div>
+  <div class="rrow"><div class="rname">Socket <mark>Serration</mark></div><div class="rmid">Primary · fusion · Rank 8 / 8</div><div class="big"><span class="n">x1</span><span class="tagx tno">—</span></div></div>
+  <div class="rrow"><div class="rname"><mark>Serration</mark> (dupe copies)</div><div class="rmid">Primary · Rank 0</div><div class="big"><span class="n">x19</span><span class="tagx twfm">WFM</span></div></div>
+  <div class="rrow"><div class="rname">Malignant <mark>Serration</mark></div><div class="rmid">Warframe · Rank 5</div><div class="big"><span class="n">x0</span><span class="tagx tno">—</span></div></div>
+  <div class="rrow"><div class="rname">Heavy Caliber</div><div class="rmid">Primary related · Rank 10</div><div class="big"><span class="n">x5</span><span class="tagx twfm">WFM</span></div></div>
+  <div class="rrow"><div class="rname">Vital Sense</div><div class="rmid">Primary related · Rank 10</div><div class="big"><span class="n">x8</span><span class="tagx twfm">WFM</span></div></div>
+  <div class="rrow"><div class="rname">Point Strike</div><div class="rmid">Primary related · Rank 10</div><div class="big"><span class="n">x14</span><span class="tagx tno">—</span></div></div>
+  <div class="rrow"><div class="rname">Primed Chewrel</div><div class="rmid">Primary related · Rank 10</div><div class="big"><span class="n">x1</span><span class="tagx twfm">WFM</span></div></div>
+  <div class="rrow"><div class="rname">Ammo Drum</div><div class="rmid">Primary · Rank 5</div><div class="big"><span class="n">x612</span><span class="tagx tno">—</span></div></div>
+</div>
+<div class="foot">
+  <div class="pill">↑ ↓ move</div><div class="pill">enter open riven detail</div><div class="pill">esc back to all (851)</div>
+  <div style="margin-left:auto">empty query shows a category sample · search is server-side</div>
+</div>
+</body>
+</html>

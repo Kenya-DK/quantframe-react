@@ -7,9 +7,16 @@ import { useAppContext } from "@contexts/app.context";
 import { Ticker } from "@components/Layouts/Shared/Ticker";
 import { QuantframeApiTypes } from "$types";
 
-export type HeaderProps = {};
+export type HeaderProps = {
+  /** Optional middle content (e.g. a search field) rendered between the logo and the user menu. */
+  center?: React.ReactNode;
+  /** Hide the clock (used by full-screen feature layouts like WF inventory "next"). */
+  showClock?: boolean;
+  /** When set, the user dropdown gains a "Back to original UI" item navigating to this path. */
+  userMenuBackTo?: string;
+};
 
-export function Header({}: HeaderProps) {
+export function Header({ center, showClock = true, userMenuBackTo }: HeaderProps) {
   const theme = useMantineTheme();
   const { alerts } = useAppContext();
   const handleAlertClick = (alert: QuantframeApiTypes.AlertDto) => {
@@ -28,8 +35,9 @@ export function Header({}: HeaderProps) {
     <>
       <Group ml={"sm"} mr={"sm"} justify="space-between" className={classes.header}>
         <Logo color={theme.other.logoColor} />
-        <Clock />
-        <UserMenu />
+        {center}
+        {showClock && <Clock />}
+        <UserMenu backTo={userMenuBackTo} />
       </Group>
       <Ticker
         data={alerts.map((alert) => ({

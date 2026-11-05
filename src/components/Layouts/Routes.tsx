@@ -50,6 +50,7 @@ const CleanPage = lazy(routeLoaders.clean);
 
 // Inventory Pages
 const WfInventoryPage = lazy(routeLoaders.wfInventory);
+const WfInventoryNextPage = lazy(routeLoaders.wfInventoryNext);
 
 export function AppRoutes() {
   const { app_error } = useAppContext();
@@ -104,6 +105,10 @@ export function AppRoutes() {
                 <Route path="wf_inventory" element={<WfInventoryPage />} />
               </Route>
               <Route path="*" element={<PHome />} />
+            </Route>
+            {/* Full-screen flows (no app navbar) — same auth gate as the app shell routes */}
+            <Route element={<AuthenticatedGate goTo="/auth/login" />}>
+              <Route path="wf_inventory_next" element={<WfInventoryNextPage />} />
             </Route>
           </>
         )}

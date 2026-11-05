@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quantframe — WF Inventory · Category Belt</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 900px; overflow: hidden; }
+  body { width: 1440px; background: #141517; color: #e6e9ef; font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+  .topbar { display: flex; align-items: center; gap: 16px; height: 58px; padding: 0 20px; background: #1d1e22; border-bottom: 1px solid #2b2d33; }
+  .logo { font-weight: 800; letter-spacing: -0.02em; font-size: 17px; color: #f8c513; }
+  .logo span { color: #e6e9ef; font-weight: 600; margin-left: 6px; }
+  .search { margin-left: auto; width: 380px; height: 34px; background: #141517; border: 1px solid #2b2d33; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; color: #6b7280; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #3d5afe, #1d3fae); }
+  .scroller { height: calc(900px - 58px); overflow: hidden; padding: 0 22px; }
+  .band { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 12px 2px 9px; background: linear-gradient(180deg, #141517 78%, #14151700); }
+  .band .bt { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+  .band .bc { font-size: 12px; color: #9aa3b2; font-variant-numeric: tabular-nums; }
+  .band .bbar { flex: 1; height: 4px; border-radius: 3px; background: #26282e; overflow: hidden; }
+  .band .ff { height: 100%; background: #2a4fdb; border-radius: 3px; }
+  .band.chipon { background: #f8c513; color: #141517; padding: 10px 12px; border-radius: 10px; }
+  .grid2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding-bottom: 6px; }
+  .mini { background: #1d1e22; border: 1px solid #2b2d33; border-radius: 11px; height: 116px; display: flex; align-items: center; gap: 12px; padding: 0 14px; }
+  .mini.hl { border-color: #2a4fdb; background: #1c2130; }
+  .mini.rare { border-color: #3d3317; background: linear-gradient(180deg, #211d12, #191712); }
+  .mono-tag { width: 52px; height: 52px; border-radius: 10px; flex: 0 0 52px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
+  .m1 { background: #22232a; color: #7fa4ff; } .m2 { background: #2a2620; color: #f8c513; }
+  .mini .mname { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini .msub { font-size: 11px; color: #9aa3b2; margin-top: 2px; }
+  .mini .right { margin-left: auto; text-align: right; }
+  .mini .qty { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tagx { display: inline-block; margin-top: 4px; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+  .twfm { background: #123524; color: #4ade80; } .tno { background: #2a2c31; color: #6b7280; } .tv { background: #2b1e07; color: #f8c513; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo" style="display:inline-block">Quantframe<span>WF Inventory</span></div>
+  <div class="search">Search your inventory…</div>
+  <div class="avatar"></div>
+</div>
+<div class="scroller">
+  <div class="band chipon">
+    <div class="bt">Warframe</div>
+    <div class="bc">214 mods · 412 maxed</div>
+    <div class="bbar"><div class="ff" style="width:78%"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="mini hl"><div class="mono-tag m1">V</div><div><div class="mname">Vitality</div><div class="msub">Rank 10 / 10 · Warframe</div></div><div class="right"><div class="qty">x209</div><span class="tagx tno">—</span></div></div>
+    <div class="mini"><div class="mono-tag m1">B</div><div><div class="mname">Blind Rage</div><div class="msub">Rank 10 / 10 · corrupt</div></div><div class="right"><div class="qty">x3</div><span class="tagx twfm">WFM</span></div></div>
+    <div class="mini"><div class="mono-tag m1">PC</div><div><div class="mname">Primed Continuity</div><div class="msub">Rank 10 / 10 · primed</div></div><div class="right"><div class="qty">x2</div><span class="tagx twfm">WFM</span></div></div>
+    <div class="mini"><div class="mono-tag m1">F</div><div><div class="mname">Flow</div><div class="msub">Rank 5 / 5</div></div><div class="right"><div class="qty">x9</div><span class="tagx twfm">WFM</span></div></div>
+  </div>
+
+  <div class="band">
+    <div class="bt">Primary</div>
+    <div class="bc">156 mods</div>
+    <div class="bbar"><div class="ff" style="width:52%"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="mini"><div class="mono-tag m1">S</div><div><div class="mname">Serration</div><div class="msub">Rank 10 / 10 · rifle</div></div><div class="right"><div class="qty">x7</div><span class="tagx twfm">WFM</span></div></div>
+    <div class="mini"><div class="mono-tag m1">AD</div><div><div class="mname">Ammo Drum</div><div class="msub">Rank 5 / 5</div></div><div class="right"><div class="qty">x612</div><span class="tagx tno">—</span></div></div>
+    <div class="mini rare"><div class="mono-tag m2">R</div><div><div class="mname">Tobbs Riven</div><div class="msub">Rifle riven · veiled</div></div><div class="right"><div class="qty">x1</div><span class="tagx tv">veiled</span></div></div>
+    <div class="mini"><div class="mono-tag m1">PS</div><div><div class="mname">Point Blank</div><div class="msub">Shotgun · Rank 10</div></div><div class="right"><div class="qty">x4</div><span class="tagx twfm">WFM</span></div></div>
+  </div>
+
+  <div class="band">
+    <div class="bt">Melee</div>
+    <div class="bc">98 mods</div>
+    <div class="bbar"><div class="ff" style="width:34%"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="mini"><div class="mono-tag m1">PP</div><div><div class="mname">Pressure Point</div><div class="msub">Rank 10 / 10</div></div><div class="right"><div class="qty">x133</div><span class="tagx tno">—</span></div></div>
+    <div class="mini"><div class="mono-tag m1">CG</div><div><div class="mname">Condition Overload</div><div class="msub">Rank 10 / 10</div></div><div class="right"><div class="qty">x5</div><span class="tagx twfm">WFM</span></div></div>
+    <div class="mini rare"><div class="mono-tag m2">R</div><div><div class="mname">Kronen Prime Riven</div><div class="msub">Melee riven · ×4 rolls</div></div><div class="right"><div class="qty">x1</div><span class="tagx tv">veiled</span></div></div>
+    <div class="mini"><div class="mono-tag m1">GL</div><div><div class="mname">Gladiator Might</div><div class="msub">Rank 8 / 8</div></div><div class="right"><div class="qty">x6</div><span class="tagx twfm">WFM</span></div></div>
+  </div>
+
+  <div class="band">
+    <div class="bt">Archwing &amp; Railjack</div>
+    <div class="bc">63 mods</div>
+    <div class="bbar"><div class="ff" style="width:18%"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="mini"><div class="mono-tag m1">AM</div><div><div class="mname">Argon Plating</div><div class="msub">Archwing · Rank 10</div></div><div class="right"><div class="qty">x11</div><span class="tagx tno">—</span></div></div>
+    <div class="mini"><div class="mono-tag m1">IP</div><div><div class="mname">Inflated Propulsion</div><div class="msub">Railjack · listed in cache</div></div><div class="right"><div class="qty">x2</div><span class="tagx tno">—</span></div></div>
+  </div>
+</div>
+</body>
+</html>

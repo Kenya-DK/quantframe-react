@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quantframe — WF Inventory · Blotter</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 900px; overflow: hidden; }
+  body { width: 1440px; background: #141517; color: #e6e9ef; font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+  .topbar { display: flex; align-items: center; gap: 16px; height: 58px; padding: 0 20px; background: #1d1e22; border-bottom: 1px solid #2b2d33; }
+  .logo { font-weight: 800; letter-spacing: -0.02em; font-size: 17px; color: #f8c513; }
+  .logo span { color: #e6e9ef; font-weight: 600; margin-left: 6px; }
+  .search { margin-left: auto; width: 380px; height: 34px; background: #141517; border: 1px solid #2b2d33; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; color: #6b7280; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #3d5afe, #1d3fae); }
+  .strip { display: flex; align-items: center; gap: 22px; padding: 10px 20px; background: #1d1e22; border-bottom: 1px solid #2b2d33; }
+  .stat .n { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #9aa3b2; }
+  .stat .n em { font-style: normal; color: #f8c513; }
+  .filters { display: flex; gap: 6px; margin-left: 12px; }
+  .chip { padding: 5px 12px; border-radius: 99px; background: #26282e; color: #9aa3b2; font-size: 12.5px; }
+  .chip.on { background: #2a4fdb; color: #fff; }
+  .sort { margin-left: auto; font-size: 12.5px; color: #9aa3b2; }
+  .sort b { color: #e6e9ef; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  thead th { position: sticky; top: 0; background: #191a1e; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #9aa3b2; font-weight: 600; padding: 9px 14px; border-bottom: 1px solid #2b2d33; }
+  tbody td { padding: 9px 14px; border-bottom: 1px solid #22242a; }
+  tr.rn td { background: #191c25; }
+  .rk { color: #6b7280; font-size: 12px; }
+  .qty { font-weight: 700; }
+  .qty.huge { color: #f8c513; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 600; }
+  .tag.wfm { background: #123524; color: #4ade80; }
+  .tag.no { background: #2a2c31; color: #6b7280; }
+  .tag.veiled { background: #2b1e07; color: #f8c513; }
+  .exp { padding: 14px 18px 18px; border-bottom: 1px solid #2b2d33; background: #101114; }
+  .cardline { display: flex; gap: 10px; align-items: flex-start; }
+  .attr { width: 300px; background: #1d1e22; border: 1px solid #2b2d33; border-radius: 10px; padding: 10px 13px; margin-top: 8px; }
+  .attr .v { font-size: 18px; font-weight: 700; color: #4ade80; }
+  .attr .k { font-size: 13.5px; color: #e6e9ef; }
+  .attr .m { font-size: 11px; color: #9aa3b2; }
+  .attr.neg .v { color: #f87171; }
+  .wear { margin: 10px 0 0; font-size: 12.5px; color: #9aa3b2; }
+  .wear b { color: #e6e9ef; }
+  .open-mark { width: 3px; align-self: stretch; background: #2a4fdb; border-radius: 2px; margin-right: 8px; }
+  .rowwrap { display: flex; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo" style="display:inline-block">Quantframe<span>WF Inventory</span></div>
+  <div class="search">Search your inventory…</div>
+  <div class="avatar"></div>
+</div>
+<div class="strip">
+  <div class="stat"><div class="n">803<em>+</em></div><div class="l">mods owned</div></div>
+  <div class="stat"><div class="n">48</div><div class="l">rivens</div></div>
+  <div class="filters">
+    <div class="chip on">All</div><div class="chip">Warframe</div><div class="chip">Primary</div><div class="chip">Melee</div><div class="chip">Archwing</div><div class="chip">Rivens</div>
+  </div>
+  <div class="sort">Sort: <b>Quantity</b> ↓</div>
+</div>
+<table>
+  <thead><tr><th style="width:34%">Item</th><th style="width:10%">Rank</th><th style="width:10%">Qty</th><th style="width:16%">Category</th><th style="width:14%">Market</th></tr></thead>
+  <tbody>
+  <tr><td><div class="rowwrap"><div class="open-mark"></div><b>Blind Rage</b></div></td><td>10 / 10</td><td class="qty">3</td><td>Warframe</td><td><span class="tag wfm">WFM</span></td></tr>
+  <tr><td><div class="rowwrap"><div class="open-mark"></div><b>Serration</b></div></td><td>10 / 10</td><td class="qty">7</td><td>Primary</td><td><span class="tag wfm">WFM</span></td></tr>
+  <tr class="rn"><td><div class="rowwrap"><div class="open-mark"></div><b>Tobbs Riven</b> <span class="rk">rifle · weave</span></div></td><td class="rk">rank 8 · ×4</td><td class="qty">1</td><td>Riven</td><td><span class="tag veiled">veiled</span></td></tr>
+  </tbody>
+</table>
+<div class="exp">
+  <div class="cardline">
+    <div style="position:relative; width:180px; height:200px; background:linear-gradient(160deg,#20232b,#171921); border:1px solid #2b2d33; border-radius:12px;">
+      <div style="position:absolute; inset:12px; border-radius:8px; background:#0d0e11; display:flex; align-items:center; justify-content:center; color:#f8c513; font-size:44px; font-weight:800;">T</div>
+      <div style="position:absolute; right:8px; top:10px; width:30px; height:30px; border-radius:50%; border:2px solid #4ade80;"></div>
+    </div>
+    <div style="flex:1">
+      <div style="display:flex; gap:12px; align-items:baseline;"><span style="font-size:17px; font-weight:700;">Kronen Prime Riven</span><span class="rk">Veloci · MR 12 · 2 rolls · polarity D</span></div>
+      <div style="display:flex; gap:10px;">
+        <div class="attr"><div class="v">+127%</div><div class="k">Critical Chance</div><div class="m">2nd best stat · weapon-verified</div></div>
+        <div class="attr"><div class="v">-31%</div><div class="k">Damage to Infested</div><div class="m">curse on a farming weapon</div></div>
+        <div class="attr"><div class="v">+88%</div><div class="k">Status Duration</div><div class="m">2nd best stat · weapon-verified</div></div>
+      </div>
+      <div class="wear">Wear: <b>Slightly marked (2)</b> · Endo refund 2,145 · grade estimated by local model</div>
+    </div>
+  </div>
+</div>
+<table style="border-top:2px solid #22242a">
+  <tbody>
+  <tr><td><b>Primed Continuity</b></td><td>10 / 10</td><td class="qty">2</td><td>Warframe</td><td><span class="tag wfm">WFM</span></td></tr>
+  <tr><td><b>Vitality</b></td><td>10 / 10</td><td class="qty huge">209</td><td>Warframe</td><td><span class="tag no">—</span></td></tr>
+  <tr><td><b>Pressure Point</b></td><td>10 / 10</td><td class="qty huge">133</td><td>Melee</td><td><span class="tag no">—</span></td></tr>
+  <tr><td><b>Phase Rionflot Ooliz</b> <span class="rk">pistol · weave</span></td><td class="rk">rank 5 · ×1</td><td class="qty">1</td><td>Riven</td><td><span class="tag veiled">veiled</span></td></tr>
+  <tr><td><b>Ammo Drum</b></td><td>5 / 5</td><td class="qty huge">612</td><td>Rifle</td><td><span class="tag no">—</span></td></tr>
+  <tr><td><b>Flow</b></td><td>5 / 5</td><td class="qty">9</td><td>Warframe</td><td><span class="tag wfm">WFM</span></td></tr>
+  <tr><td><b>Nobrack Riven</b> <span class="rk">zaw · weave</span></td><td class="rk">rank 0 · ×0</td><td class="qty">1</td><td>Riven</td><td><span class="tag veiled">veiled</span></td></tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -10,7 +10,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInfinity } from "@fortawesome/free-solid-svg-icons";
 import { CompactSortSelect } from "@components/Shared/CompactSortSelect";
 import { ExpandableButton } from "@components/Shared/ExpandableButton";
-import { PreviewCard } from "@components/Shared/PreviewCard";
+import { MOD_ITEM_TYPES } from "../../filters";
+import { ModPreviewCard } from "./ModPreviewCard";
 
 interface ModsPanelProps {
   isActive: boolean;
@@ -70,34 +71,28 @@ export const ModsPanel = ({ isActive }: ModsPanelProps) => {
             img="/imgs/categories/category_warframe.png"
             text={useTranslate("filters.warframe")}
             currentTypes={queryData.item_types || []}
-            types={["/Lotus/Upgrades/Mods/Warframe/", "/Lotus/Upgrades/Mods/Aura/"]}
+            types={MOD_ITEM_TYPES.warframe}
             onClick={(types) => () => setQueryData((prev) => ({ ...prev, item_types: types }))}
           />
           <ExpandableButtonExt
             img="/imgs/categories/category_rifle.png"
             text={useTranslate("filters.primary")}
             currentTypes={queryData.item_types || []}
-            types={[
-              "/Lotus/Upgrades/Mods/Rifle/",
-              "/Lotus/Upgrades/Mods/Shotgun/",
-              "/Lotus/Upgrades/Mods/Pistol/",
-              "/Lotus/Upgrades/Mods/Bow/",
-              "/Lotus/Upgrades/Mods/DualSource/",
-            ]}
+            types={MOD_ITEM_TYPES.primary}
             onClick={(types) => () => setQueryData((prev) => ({ ...prev, item_types: types }))}
           />
           <ExpandableButtonExt
             img="/imgs/categories/category_melee.png"
             text={useTranslate("filters.melee")}
             currentTypes={queryData.item_types || []}
-            types={["/Lotus/Upgrades/Mods/Melee/", "/Lotus/Upgrades/Mods/Hoverboard/"]}
+            types={MOD_ITEM_TYPES.melee}
             onClick={(types) => () => setQueryData((prev) => ({ ...prev, item_types: types }))}
           />
           <ExpandableButtonExt
             img="/imgs/categories/category_archwing.png"
             text={useTranslate("filters.archwing")}
             currentTypes={queryData.item_types || []}
-            types={["/Lotus/Upgrades/Mods/Archwing/", "/Lotus/Upgrades/Mods/Railjack/", "/Lotus/Upgrades/Mods/Necromech/"]}
+            types={MOD_ITEM_TYPES.archwing}
             onClick={(types) => () => setQueryData((prev) => ({ ...prev, item_types: types }))}
           />
         </Group>
@@ -112,33 +107,7 @@ export const ModsPanel = ({ isActive }: ModsPanelProps) => {
       <ScrollArea mt={"md"} className={classes.veiledRivens}>
         <SimpleGrid cols={{ base: 4 }} spacing="sm">
           {modsQuery.data?.results?.map((mod, i) => (
-            <PreviewCard
-              key={i}
-              pos={"relative"}
-              value={mod}
-              headerCenter={
-                <Text fz={"lg"} truncate>
-                  {mod.name || mod.unique_name.split("/").pop()?.replace(/(?<!^)([A-Z])/g, " $1")}
-                </Text>
-              }
-              renderBody={() => (
-                <Group justify="center" h={"100%"}>
-                  <Text fz={"lg"}>{`x${mod.quantity || 1}`}</Text>
-                </Group>
-              )}
-              footerLeft={
-                <Text fz={"lg"}>{useTranslate("mod_card.rank", { rank: mod.properties?.mod_rank ?? mod.sub_type?.rank ?? 0 })}</Text>
-              }
-              footerCenter={
-                <Group gap={3}>
-                  {mod.wfm_url && (
-                    <Text fz={"sm"} c="var(--mantine-color-blue-6)">
-                      WFM
-                    </Text>
-                  )}
-                </Group>
-              }
-            />
+            <ModPreviewCard key={i} mod={mod} />
           ))}
         </SimpleGrid>
       </ScrollArea>

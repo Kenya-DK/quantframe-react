@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Quantframe — WF Inventory · Workbench</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 900px; overflow: hidden; }
+  body { width: 1440px; background: #141517; color: #e6e9ef; font: 14px/1.45 "Segoe UI", system-ui, sans-serif; display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 16px; height: 58px; padding: 0 20px; background: #1d1e22; border-bottom: 1px solid #2b2d33; }
+  .logo { font-weight: 800; letter-spacing: -0.02em; font-size: 17px; color: #f8c513; }
+  .logo span { color: #e6e9ef; font-weight: 600; margin-left: 6px; }
+  .search { margin-left: auto; width: 380px; height: 34px; background: #141517; border: 1px solid #2b2d33; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; color: #6b7280; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #3d5afe, #1d3fae); }
+  .filters { display: flex; gap: 6px; padding: 10px 20px; background: #191a1e; border-bottom: 1px solid #2b2d33; align-items: center; }
+  .chip { padding: 5px 12px; border-radius: 99px; background: #26282e; color: #9aa3b2; font-size: 12.5px; }
+  .chip.on { background: #2a4fdb; color: #fff; }
+  .sort { margin-left: auto; font-size: 12.5px; color: #9aa3b2; } .sort b { color: #e6e9ef; }
+  .bench { flex: 1; display: flex; min-height: 0; }
+  .list { width: 460px; border-right: 1px solid #2b2d33; overflow: hidden; background: #191a1e; }
+  .lrow { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid #22242a; }
+  .lrow.on { background: #1c2130; box-shadow: inset 3px 0 0 #2a4fdb; }
+  .lnav { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #3a3d45; flex: 0 0 12px; }
+  .lnav.ch { border-color: #4ade80; background: #12351f5c; }
+  .lrow .nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  .lrow .nm small { display: block; font-weight: 400; color: #9aa3b2; font-size: 11.5px; }
+  .lrow .num { font-variant-numeric: tabular-nums; color: #9aa3b2; font-size: 12.5px; text-align: right; }
+  .lrow .num b { color: #e6e9ef; display: block; }
+  .lhead { position: sticky; top: 0; padding: 8px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #9aa3b2; background: #191a1e; border-bottom: 1px solid #2b2d33; }
+  .focus { flex: 1; padding: 20px 24px; overflow: hidden; }
+  .fbig { display: flex; gap: 16px; margin-top: 4px; }
+  .frame { position: relative; width: 190px; height: 210px; background: linear-gradient(160deg,#20232b,#171921); border: 1px solid #2b2d33; border-radius: 14px; flex: 0 0 190px; }
+  .frame .plaque { position: absolute; inset: 14px; border-radius: 10px; background: #0d0e11; display: flex; align-items: center; justify-content: center; font-size: 52px; font-weight: 800; color: #f8c513; }
+  .frame .pol { position: absolute; right: 10px; top: 12px; width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid #4ade80; }
+  .fmeta h2 { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 3px; }
+  .fmeta .sub { color: #9aa3b2; font-size: 13px; margin-bottom: 14px; }
+  .kv { display: flex; gap: 26px; margin-bottom: 16px; }
+  .kv > div b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .kv > div span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #9aa3b2; }
+  .attr { background: #1d1e22; border: 1px solid #2b2d33; border-radius: 12px; padding: 12px 15px; }
+  .attr .v { font-size: 22px; font-weight: 700; color: #4ade80; }
+  .attr .k { font-size: 14px; }
+  .attr .m { font-size: 11.5px; color: #9aa3b2; }
+  .attr.neg .v { color: #f87171; }
+  .acts { display: flex; gap: 10px; margin-top: 18px; }
+  .btn { padding: 9px 16px; border-radius: 9px; font-weight: 600; font-size: 13.5px; background: #26282e; color: #e6e9ef; }
+  .btn.primary { background: #2a4fdb; color: #fff; }
+  .watchnote { margin-top: 14px; font-size: 12.5px; color: #9aa3b2; } .watchnote b { color: #f8c513; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo" style="display:inline-block">Quantframe<span>WF Inventory</span></div>
+  <div class="search">Search your inventory…</div>
+  <div class="avatar"></div>
+</div>
+<div class="filters">
+  <div class="chip on">All</div><div class="chip">Warframe</div><div class="chip">Primary</div><div class="chip">Melee</div><div class="chip">Archwing</div><div class="chip">Rivens</div>
+  <div class="sort">Sort <b>Rarity</b> ↓ · 803 mods + 48 rivens</div>
+</div>
+<div class="bench">
+  <div class="list">
+    <div class="lhead">Inventory — 20 of 851 shown</div>
+    <div class="lrow"><div class="lnav ch"></div><div class="nm">Blind Rage<small>Warframe · Rank 10</small></div><div class="num"><b>x3</b>WFM</div></div>
+    <div class="lrow"><div class="lnav ch"></div><div class="nm">Serration<small>Primary · Rank 10</small></div><div class="num"><b>x7</b>WFM</div></div>
+    <div class="lrow on"><div class="lnav ch"></div><div class="nm">Kronen Prime Riven<small>Melee · Veiled · ×4 rolls</small></div><div class="num"><b>x1</b>WFM</div></div>
+    <div class="lrow"><div class="lnav"></div><div class="nm">Primed Continuity<small>Warframe · Rank 10</small></div><div class="num"><b>x2</b>WFM</div></div>
+    <div class="lrow"><div class="lnav"></div><div class="nm">Vitality<small>Warframe · Rank 10</small></div><div class="num"><b>x209</b>—</div></div>
+    <div class="lrow"><div class="lnav ch"></div><div class="nm">Flow<small>Warframe · Rank 5</small></div><div class="num"><b>x9</b>WFM</div></div>
+    <div class="lrow"><div class="lnav"></div><div class="nm">Pressure Point<small>Melee · Rank 10</small></div><div class="num"><b>x133</b>—</div></div>
+    <div class="lrow"><div class="lnav"></div><div class="nm">Ammo Drum<small>Rifle · Rank 5</small></div><div class="num"><b>x612</b>—</div></div>
+    <div class="lrow"><div class="lnav ch"></div><div class="nm">Phase Rionflot Ooliz<small>Pistol Riven · Rank 5</small></div><div class="num"><b>x1</b>WFM</div></div>
+  </div>
+  <div class="focus">
+    <div class="fbig">
+      <div class="frame"><div class="plaque">R</div><div class="pol"></div></div>
+      <div class="fmeta">
+        <h2>Kronen Prime Riven</h2>
+        <div class="sub">Veiled melee riven · MR 12 · polarity D · listed as Weave</div>
+        <div class="kv">
+          <div><span>Rank</span><b>0 / 10</b></div>
+          <div><span>Rerolls</span><b>×4</b></div>
+          <div><span>Quantity</span><b>x1</b></div>
+          <div><span>Disposition</span><b>1.31</b></div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div class="attr"><div class="v">+127%</div><div class="k">Critical Chance</div><div class="m">2nd best stat · weapon-verified</div></div>
+          <div class="attr neg"><div class="v">−31%</div><div class="k">Damage to Infested</div><div class="m">curse on a farming weapon</div></div>
+          <div class="attr"><div class="v">+88%</div><div class="k">Status Duration</div><div class="m">2nd best stat · weapon-verified</div></div>
+        </div>
+        <div class="acts">
+          <div class="btn primary">Estimate price</div>
+          <div class="btn">Add to stock</div>
+          <div class="btn">WFM auction</div>
+        </div>
+        <div class="watchnote">Grade from local model: <b>B roll</b> · endo refund 2,145 · not in stock yet</div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
