@@ -63,16 +63,8 @@ impl ModsModule {
         let root = client.get_root();
         let cache = states::cache_client()?;
 
-        let items: Vec<_> = root
-            .raw_upgrades
-            .iter()
-            .chain(root.upgrades.iter())
-            .filter(|item| item.is_riven())
-            .cloned()
-            .collect();
-
         let mut mods: Vec<WFInvItemBase> = vec![];
-        for item in uniques.into_values() {
+        for item in merge_raw_mods(&root).into_values() {
             match WFInvItemBase::from_mod(&item, &cache) {
                 Ok(mod_item) => mods.push(mod_item),
                 Err(e) => {
