@@ -20,7 +20,7 @@ export function LogInForm(props: LogInFormProps) {
     useTranslateForm(`buttons.${key}`, { ...context }, i18Key);
 
   return (
-    <Paper radius="md" p="xl" withBorder {...props.paperProps}>
+    <Paper radius="md" p="xl" w={420} maw="100%" withBorder {...props.paperProps}>
       <Text size="lg" fw={500}>
         {useTranslateForm("title")}
       </Text>
@@ -30,6 +30,7 @@ export function LogInForm(props: LogInFormProps) {
       <DynamicForm<{ email: string; password: string }>
         value={{ email: "", password: "" }}
         i18n_key="components.forms.log_in.fields"
+        px={0}
         items={[
           {
             field: "email",
