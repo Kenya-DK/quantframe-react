@@ -455,6 +455,13 @@ async fn handler_wfm_error(
                 .cache_orders_mut()
                 .apply_trade_info()
                 .ok();
+            if let Ok(cache) = states::cache_client() {
+                wfm_client
+                    .order()
+                    .cache_orders_mut()
+                    .restore_missing_item_info(&cache)
+                    .ok();
+            }
             trace(
                 format!("{}:{}", component, action),
                 "Refreshed cached orders due to order limit exceeded",
