@@ -4,12 +4,14 @@ import {
   Checkbox,
   FileInput,
   Group,
+  type MantineSpacing,
   MultiSelect,
   NumberInput,
   PasswordInput,
   Radio,
   Select,
   Slider,
+  type StyleProp,
   Switch,
   TagsInput,
   Text,
@@ -80,6 +82,8 @@ export type DynamicFormProps<T extends Record<string, any>, TField extends Recor
   confirmLabel?: string;
   loading?: boolean;
   disabled?: boolean;
+  /** Horizontal padding around the fields. Defaults to "md". */
+  px?: StyleProp<MantineSpacing>;
 };
 
 export function DynamicForm<TField extends Record<string, any>, TCustom extends Record<string, any> = {}>({
@@ -93,16 +97,19 @@ export function DynamicForm<TField extends Record<string, any>, TCustom extends 
   confirmLabel = "Submit",
   loading,
   disabled,
+  px = "md",
 }: DynamicFormProps<TField, TField, TCustom>) {
-  const { t: translate } = useTranslation();
+  const { t: translate, i18n } = useTranslation();
 
   const t = i18n_key ? (key: string) => translate(`${i18n_key}.${key}`) : (key: string) => translate(key);
+  // Optional texts: return undefined instead of the raw key when no translation exists.
+  const tOptional = (key: string) => (i18n_key && i18n.exists(`${i18n_key}.${key}`) ? t(key) : undefined);
 
   const fields = items.flatMap((item) => (item.type === "group" ? item.fields : [item]));
 
   const label = (field: DynamicFormField<TField, TCustom>) => field.label ?? (i18n_key ? t(`${field.field}.label`) : undefined);
-  const placeholder = (field: DynamicFormField<TField, TCustom>) => field.placeholder ?? (i18n_key ? t(`${field.field}.placeholder`) : undefined);
-  const description = (field: DynamicFormField<TField, TCustom>) => field.description ?? (i18n_key ? t(`${field.field}.description`) : undefined);
+  const placeholder = (field: DynamicFormField<TField, TCustom>) => field.placeholder ?? tOptional(`${field.field}.placeholder`);
+  const description = (field: DynamicFormField<TField, TCustom>) => field.description ?? tOptional(`${field.field}.description`);
 
   const initialValues: Record<string, any> = {
     ...(value ?? {}),
@@ -125,9 +132,8 @@ export function DynamicForm<TField extends Record<string, any>, TCustom extends 
           const fieldValue = values[field.field];
 
           if (fieldValue === undefined || fieldValue === null || fieldValue === "") {
-            const key = `${field.field}.required`;
-            const resolved = t(key);
-            errors[field.field] = field.requiredMessage ?? (resolved !== key ? resolved : (label(field) ?? field.field));
+            errors[field.field] = field.requiredMessage ?? tOptional(`${field.field}.required`) ?? label(field) ?? field.field;
+            continue;
           }
         }
 
@@ -353,7 +359,7 @@ export function DynamicForm<TField extends Record<string, any>, TCustom extends 
 
   return (
     <form onSubmit={handleSubmit}>
-      <Box px="md">
+      <Box px={px}>
         {items.map((item, index) => {
           if (item.type === "group") {
             return (
