@@ -43,6 +43,8 @@
         "title": "Quantframe - By Kenya-DK",
         "width": 1455,
         "height": 912,
+        "minWidth": 1024,
+        "minHeight": 680,
         "useHttpsScheme": true
       }
     ],
