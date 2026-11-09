@@ -1,9 +1,9 @@
 import { AddMetric } from "@api/index";
 import { Header } from "@components/Layouts/Shared/Header";
 import { NavbarLinkProps, NavbarMinimalColored } from "@components/Layouts/Shared/NavbarMinimalColored";
-import { faUndo, faGem, faStar } from "@fortawesome/free-solid-svg-icons";
+import { faGem, faStar, faUndo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useTranslateComponent } from "@hooks/useTranslate.hook";
+import { useTranslateCommon, useTranslateComponent } from "@hooks/useTranslate.hook";
 import { AppShell, Box } from "@mantine/core";
 import { useCallback, useMemo, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
@@ -42,7 +42,7 @@ export function WFInventoryLayout() {
       {
         align: "top",
         id: "mods",
-        link: "/wf_inventory_next/mods",
+        link: "/wf_inventory/mods",
         icon: <FontAwesomeIcon size={"lg"} icon={faStar} />,
         label: useTranslateNavBar("mods"),
         onClick: (e: NavbarLinkProps) => handleNavigate(e),
@@ -50,17 +50,17 @@ export function WFInventoryLayout() {
       {
         align: "top",
         id: "rivens",
-        link: "/wf_inventory_next/rivens",
+        link: "/wf_inventory/riven",
         icon: <FontAwesomeIcon size={"lg"} icon={faGem} />,
         label: useTranslateNavBar("rivens"),
         onClick: (e: NavbarLinkProps) => handleNavigate(e),
       },
       {
         align: "bottom",
-        id: "back_to_original",
-        link: "/wf_inventory",
+        id: "go_back",
+        link: "/",
         icon: <FontAwesomeIcon size={"lg"} icon={faUndo} />,
-        label: useTranslateNavBar("back_to_original"),
+        label: useTranslateCommon("go_back"),
         onClick: (e: NavbarLinkProps) => handleNavigate(e),
       },
     ],

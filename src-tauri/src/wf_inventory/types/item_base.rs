@@ -32,7 +32,14 @@ pub struct WFInvItemBase {
 impl WFInvItemBase {
     pub fn matches_query(&self, query: &str) -> bool {
         let query = query.to_lowercase();
-        self.name.to_lowercase().contains(&query) || self.unique_name.to_lowercase().contains(&query)
+        self.name.to_lowercase().contains(&query)
+            || self.unique_name.to_lowercase().contains(&query)
+    }
+    pub fn uuid(&self) -> String {
+        match &self.sub_type {
+            Some(sub_type) => format!("{}-{}", self.unique_name, sub_type.shot_display()),
+            None => self.unique_name.clone(),
+        }
     }
 }
 
@@ -100,13 +107,14 @@ impl WFInvItemBase {
 
         let mod_rank = raw.get_upgrade_fingerprint().mod_rank;
         item.sub_type = Some(SubType::rank(mod_rank));
-        item.properties.set_property_value("mod_rank", mod_rank);
 
         // Resolve name/wfm_url from the mod cache; fall back to the raw path when the
         // cache does not cover the item (e.g. Railjack cards).
         if let Ok(mod_data) = cache.mods().get_by(raw.unique_name.clone()) {
             item.name = mod_data.base.name.clone();
             item.wfm_url = mod_data.base.wfm_url.unwrap_or_default();
+            item.properties
+                .set_property_value("max_rank", mod_data.fusion_limit);
         } else {
             item.name = raw.unique_name.rsplit('/').next().unwrap_or("").to_string();
         }

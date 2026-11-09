@@ -100,12 +100,12 @@ export function LogInLayout() {
       {
         align: "top",
         id: "wf_inventory",
-        link: "wf_inventory_next",
+        link: "wf_inventory/mods",
         icon: <FontAwesomeIcon size={"lg"} icon={faBoxes} />,
         label: useTranslateNavBar("wf_inventory"),
         hide: !import.meta.env.DEV,
         onClick: (e: NavbarLinkProps) => handleNavigate(e),
-        onPrefetch: () => prefetchRoute("wfInventoryNext"),
+        onPrefetch: () => prefetchRoute("wfInventoryMods"),
       },
       {
         align: "top",

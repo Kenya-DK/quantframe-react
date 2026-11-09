@@ -14,22 +14,6 @@ export const RIVEN_ITEM_TYPES: Record<string, string[]> = {
   arch: ["/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare", "/Lotus/Upgrades/Mods/Randomized/RawArchgunRandomMod"],
 };
 
-export const MOD_ITEM_TYPES: Record<string, string[]> = {
-  warframe: ["/Lotus/Upgrades/Mods/Warframe/", "/Lotus/Upgrades/Mods/Aura/"],
-  primary: [
-    "/Lotus/Upgrades/Mods/Rifle/",
-    "/Lotus/Upgrades/Mods/Shotgun/",
-    "/Lotus/Upgrades/Mods/Pistol/",
-    "/Lotus/Upgrades/Mods/Bow/",
-    "/Lotus/Upgrades/Mods/DualSource/",
-  ],
-  melee: ["/Lotus/Upgrades/Mods/Melee/", "/Lotus/Upgrades/Mods/Hoverboard/"],
-  archwing: [
-    "/Lotus/Upgrades/Mods/Archwing/",
-    "/Lotus/Upgrades/Mods/Railjack/",
-    "/Lotus/Upgrades/Mods/Necromech/",
-  ],
-};
 
 /** Fallback name for mods missing from the local cache: path segment with camel case split into words. */
 export const readableModPath = (unique_name: string) =>

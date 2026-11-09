@@ -1,131 +1,44 @@
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
-import { lazy } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { routeLoaders } from "./routeLoaders";
+import { BrowserRouter, RouteObject, useRoutes } from "react-router-dom";
+import { appShellRoutes } from "./routes/app";
+import { bannedRoutes, cleanRoutes, errorRoutes } from "./routes/fallbacks";
+import { publicRoutes } from "./routes/public";
+import { wfInventoryRoutes } from "./routes/wfInventory";
 
-// Layouts
-import { CleanLayout } from "./Clean";
-import { LogInLayout } from "./LogIn";
-import { LogOutLayout } from "./LogOut";
-import { WFInventoryLayout } from "./WFInventory";
+/** Which route tree is rendered — decided once, used instead of scattered booleans. */
+type AppMode = "app" | "clean" | "error" | "banned" | "wf_inventory";
 
-// Permissions Gate
-import AuthenticatedGate from "../AuthenticatedGate";
-
-// Lazy loaded pages for code splitting
-
-// Home Routes
-const PHome = lazy(routeLoaders.home);
-
-// Auth Routes
-const PLogin = lazy(routeLoaders.login);
-
-// Debug Routes
-const PDebug = lazy(routeLoaders.debug);
-
-// Error Routes
-const PError = lazy(routeLoaders.error);
-
-// Banned Routes
-const PBanned = lazy(routeLoaders.banned);
-
-// Live Scraper
-const PLiveScraper = lazy(routeLoaders.liveScraper);
-
-// Trading Analytics
-const TradingAnalyticsPage = lazy(routeLoaders.tradingAnalytics);
-
-// Warframe Market
-const PWarframeMarket = lazy(routeLoaders.warframeMarket);
-const PWarframeMarketChat = lazy(routeLoaders.chat);
-
-// Trade messages
-const PTradeMessages = lazy(routeLoaders.tradeMessages);
-
-// About Page
-const AboutPage = lazy(routeLoaders.about);
-
-// Clean Pages
-const CleanPage = lazy(routeLoaders.clean);
-
-// Inventory Pages
-const WfInventoryPage = lazy(routeLoaders.wfInventory);
-const WfInventoryNextPage = lazy(routeLoaders.wfInventoryNext);
-
-export function AppRoutes() {
+/** clean > banned > error > app (mirrors the old precedence of the boolean mix). */
+const useAppMode = (): AppMode => {
   const { app_error } = useAppContext();
   const { user } = useAuthContext();
 
-  const ShowErrorPage = () => {
-    if (window.location.href.includes("clean")) return false;
-    if (!app_error) return false;
-    if (app_error?.error.component == "WebSocket") return false;
-    return true;
-  };
+  if (window.location.href.includes("clean")) return "clean";
+  if (window.location.href.includes("wf_inventory")) return "wf_inventory";
+  if (!!user && !user.anonymous && (user.qf_banned || user.wfm_banned)) return "banned";
+  if (app_error && app_error.error.component !== "WebSocket") return "error";
+  return "app";
+};
 
-  const IsUserBanned = () => {
-    if (!user) return false;
-    if (user.anonymous) return false;
-    if (user.qf_banned || user.wfm_banned) return true;
-    return false;
-  };
-
-  const ShowCleanLayout = () => {
-    if (window.location.href.includes("clean")) return true;
-    return false;
-  };
-
+export function AppRoutes() {
   return (
     <BrowserRouter>
-      <Routes>
-        {ShowCleanLayout() && (
-          <Route path="clean" element={<CleanLayout />}>
-            <Route index element={<CleanPage />} />
-          </Route>
-        )}
-        {!ShowErrorPage() && !IsUserBanned() && !ShowCleanLayout() && (
-          <>
-            <Route element={<AuthenticatedGate exclude goTo="/" />}>
-              <Route path="/auth" element={<LogOutLayout />}>
-                <Route path="login" element={<PLogin />} />
-              </Route>
-            </Route>
-            <Route path="/" element={<LogInLayout />}>
-              <Route element={<AuthenticatedGate goTo="/auth/login" />}>
-                <Route path="/" element={<PHome />} />
-                <Route path="debug">
-                  <Route index element={<PDebug />} />
-                </Route>
-                <Route path="live_scraper" element={<PLiveScraper />} />
-                <Route path="warframe-market" element={<PWarframeMarket />} />
-                <Route path="chat" element={<PWarframeMarketChat />} />
-                <Route path="trading_analytics" element={<TradingAnalyticsPage />} />
-                <Route path="trade_messages" element={<PTradeMessages />} />
-                <Route path="about" element={<AboutPage />} />
-                <Route path="wf_inventory" element={<WfInventoryPage />} />
-              </Route>
-              <Route path="*" element={<PHome />} />
-            </Route>
-            {/* Full-screen layouts (no app navbar) — same auth gate as the app shell routes */}
-            <Route element={<AuthenticatedGate goTo="/auth/login" />}>
-              <Route element={<WFInventoryLayout />}>
-                <Route path="/wf_inventory_next/:section?" element={<WfInventoryNextPage />} />
-              </Route>
-            </Route>
-          </>
-        )}
-        {ShowErrorPage() && !IsUserBanned() && !ShowCleanLayout() && (
-          <Route path="*" element={<LogOutLayout />}>
-            <Route path="*" element={<PError />} />
-          </Route>
-        )}
-        {IsUserBanned() && !ShowCleanLayout() && (
-          <Route path="*" element={<LogOutLayout />}>
-            <Route path="*" element={<PBanned />} />
-          </Route>
-        )}
-      </Routes>
+      <ModeRoutes />
     </BrowserRouter>
   );
 }
+
+/** Runs inside the router so `useRoutes` has its context. */
+function ModeRoutes() {
+  const mode = useAppMode();
+  return useRoutes(modeByRouteTree[mode]);
+}
+
+const modeByRouteTree: Record<AppMode, RouteObject[]> = {
+  clean: cleanRoutes,
+  error: errorRoutes,
+  banned: bannedRoutes,
+  wf_inventory: wfInventoryRoutes,
+  app: [...publicRoutes, ...appShellRoutes],
+};

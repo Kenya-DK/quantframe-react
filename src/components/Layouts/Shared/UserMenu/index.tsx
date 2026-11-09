@@ -3,21 +3,21 @@ import api, { SendTauriDataEvent, SendTauriEvent, WFMThumbnail } from "@api/inde
 import { SettingsForm } from "@components/Forms/Settings";
 import { useAppContext } from "@contexts/app.context";
 import { useAuthContext } from "@contexts/auth.context";
-import { faGear, faRightFromBracket, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faBackwardStep, faGear, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslateCommon, useTranslateComponent, useTranslateEnums } from "@hooks/useTranslate.hook";
 import { Avatar, Button, Group, Indicator, Menu, Text } from "@mantine/core";
 import { modals } from "@mantine/modals";
+import { useNavigate } from "react-router-dom";
 import { notifications } from "@mantine/notifications";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import classes from "./UserMenu.module.css";
 
 export function UserMenu({ backTo }: { backTo?: string }) {
-  const navigate = useNavigate();
   // States
   const { user } = useAuthContext();
   const { settings, app_error, setLang } = useAppContext();
+  const navigate = useNavigate();
 
   // Translate general
   const useTranslateUserMenu = (key: string, context?: { [key: string]: any }, i18Key?: boolean) =>
@@ -149,6 +149,11 @@ export function UserMenu({ backTo }: { backTo?: string }) {
           </Group>
         )}
         <Menu.Divider />
+        {backTo && (
+          <Menu.Item leftSection={<FontAwesomeIcon icon={faBackwardStep} />} onClick={() => navigate(backTo)}>
+            {useTranslateUserMenu("items.back_to_original")}
+          </Menu.Item>
+        )}
         <Menu.Label>{useTranslateUserMenu("items.app_label")}</Menu.Label>
         <Menu.Item
           leftSection={<FontAwesomeIcon icon={faGear} />}
@@ -188,16 +193,7 @@ export function UserMenu({ backTo }: { backTo?: string }) {
         >
           {useTranslateUserMenu("items.logout")}
         </Menu.Item>
-        {backTo && (
-          <>
-            <Menu.Divider />
-            <Menu.Item leftSection={<FontAwesomeIcon icon={faArrowLeft} />} onClick={() => navigate(backTo)}>
-              {useTranslateUserMenu("items.back_to_original")}
-            </Menu.Item>
-          </>
-        )}
       </Menu.Dropdown>
     </Menu>
   );
 }
-

@@ -15,6 +15,7 @@
   ],
   "common": {
     "not_found": "Not found",
+    "go_back": "Go Back",
     "date_range": {
       "label": "Date Range",
       "options": {
@@ -784,8 +785,7 @@
       "items": {
         "app_label": "Application",
         "settings": "Settings",
-        "logout": "Logout",
-        "back_to_original": "Back to original UI"
+        "logout": "Logout"
       },
       "errors": {
         "connection_websocket_error": "Loading...",
@@ -830,8 +830,7 @@
       "wf_inventory": {
         "navbar": {
           "mods": "Mods",
-          "rivens": "Rivens",
-          "back_to_original": "Back to original UI"
+          "rivens": "Rivens"
         }
       }
     },
@@ -2835,12 +2834,12 @@
         "mods": {
           "title": "Mods",
           "mod_card": {
-            "rank": "Rank {{rank}}"
+            "quantity": "<qty/> {{quantity}}",
+            "rank": "Rank: <blue>{{mod_rank}}</blue>/<blue>{{max_rank}}</blue>"
           },
           "sort": {
             "name": "Name",
-            "quantity": "Quantity",
-            "mod_rank": "Rank"
+            "quantity": "Quantity"
           },
           "filters": {
             "all": "All",
