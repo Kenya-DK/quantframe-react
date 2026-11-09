@@ -32,7 +32,6 @@ export default function LiveScraperPage() {
     {
       label: useTranslateTabs("syndicate.title"),
       component: (isActive: boolean) => <SyndicatePanel isActive={isActive} />,
-      hide: !import.meta.env.DEV,
       id: "syndicate",
     },
   ];
@@ -49,13 +48,11 @@ export default function LiveScraperPage() {
       </Box>
       <Tabs value={activeTab} onChange={(value) => setActiveTab(value || tabs[0].id)}>
         <Tabs.List>
-          {tabs
-            .filter((tab) => !tab.hide)
-            .map((tab) => (
-              <Tabs.Tab value={tab.id} key={tab.id}>
-                {tab.label}
-              </Tabs.Tab>
-            ))}
+          {tabs.map((tab) => (
+            <Tabs.Tab value={tab.id} key={tab.id}>
+              {tab.label}
+            </Tabs.Tab>
+          ))}
         </Tabs.List>
         {tabs.map((tab) => (
           <Tabs.Panel value={tab.id} key={tab.id}>

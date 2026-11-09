@@ -41,7 +41,6 @@ export const LiveTradingPanel = ({ form, onHideButtons }: LiveTradingPanelProps)
     {
       label: useTranslateTabs("live_scraper.syndicate.title"),
       component: <SyndicatePanel form={form} setHideTab={(v) => setHideTab(v)} setHideButtons={(v) => onHideButtons?.(v)} />,
-      hide: !import.meta.env.DEV,
       id: "syndicate",
     },
   ];
@@ -51,13 +50,11 @@ export const LiveTradingPanel = ({ form, onHideButtons }: LiveTradingPanelProps)
   return (
     <Tabs h={"82vh"} orientation="vertical" value={activeTab} onChange={(value) => setActiveTab(value || tabs[0].id)}>
       <Tabs.List display={hideTab ? "none" : ""}>
-        {tabs
-          .filter((tab) => !tab.hide)
-          .map((tab) => (
-            <Tabs.Tab value={tab.id} key={tab.id}>
-              {tab.label}
-            </Tabs.Tab>
-          ))}
+        {tabs.map((tab) => (
+          <Tabs.Tab value={tab.id} key={tab.id}>
+            {tab.label}
+          </Tabs.Tab>
+        ))}
       </Tabs.List>
       {tabs.map((tab) => (
         <Tabs.Panel value={tab.id} key={tab.id}>

@@ -80,7 +80,7 @@ export const useStockMutations = ({ refetchQueries, setLoadingRows }: MutationHo
       mutationFn: async (order: WFMarketTypes.Order) => {
         if (!settings) throw new Error("Settings are not loaded");
         const wfm_id = order.properties?.wfm_id || order.itemId;
-        const allModes = [TauriTypes.TradeMode.Buy, TauriTypes.TradeMode.Sell, TauriTypes.TradeMode.Wishlist];
+        const allModes = [TauriTypes.TradeMode.Buy, TauriTypes.TradeMode.Sell, TauriTypes.TradeMode.Wishlist, TauriTypes.TradeMode.Syndicate];
         const blacklist = settings.live_scraper.items.general.blacklist || [];
         const updatedBlacklist = [...blacklist.filter((b) => b.wfmId !== wfm_id), { wfmId: wfm_id, disabled_for: allModes }];
         await api.app.updateSettings({
