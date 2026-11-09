@@ -1304,12 +1304,14 @@
           "email": {
             "label": "Email",
             "placeholder": "Email",
-            "error": "Invalid email"
+            "error": "Invalid email",
+            "required": "Email is required"
           },
           "password": {
             "label": "Password",
             "placeholder": "Password",
-            "error": "Password must include at least 6 characters"
+            "error": "Password must include at least 6 characters",
+            "required": "Password is required"
           }
         },
         "buttons": {
