@@ -29,6 +29,24 @@ fn flush_runtime() -> &'static Runtime {
     })
 }
 
+/// Returns true when the server definitively rejected the request payload,
+/// meaning resending the same batch can never succeed.
+///
+/// Network errors, rate limiting (429), auth failures (401) and 5xx responses
+/// are treated as transient and the batch is requeued instead.
+fn is_rejected_batch(err: &ApiError) -> bool {
+    match err {
+        ApiError::BadRequest(_)
+        | ApiError::NotFound(_)
+        | ApiError::Forbidden(_)
+        | ApiError::UserBanned(_) => true,
+        ApiError::ParsingError(req, _) => {
+            (400..500).contains(&req.status_code) && req.status_code != 429
+        }
+        _ => false,
+    }
+}
+
 #[derive(Debug)]
 pub struct EventsRoute {
     client: Weak<Client>,
@@ -118,6 +136,25 @@ impl EventsRoute {
                     info(
                         "Events:Flush",
                         format!("Sent batch of {} events", batch.len()),
+                        &log_options(),
+                    );
+                    events = rest.to_vec();
+                    if events.is_empty() {
+                        return Ok(());
+                    }
+                }
+                Err(mut e) if is_rejected_batch(&e) => {
+                    // The server rejected the batch itself (e.g. an unknown event
+                    // name). Retrying would fail forever and block every event
+                    // queued behind it, so drop the batch and keep going.
+                    e.mask_sensitive_data(SENSITIVE_FIELDS);
+                    error(
+                        "Events:Flush",
+                        format!(
+                            "Dropping batch of {} events rejected by server: {:?}",
+                            batch.len(),
+                            e
+                        ),
                         &log_options(),
                     );
                     events = rest.to_vec();
