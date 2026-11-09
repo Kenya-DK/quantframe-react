@@ -13,6 +13,7 @@ use crate::{
 pub trait OrderListExt {
     fn apply_trade_info(&mut self) -> Result<(), Error>;
     fn apply_item_info(&mut self, cache: &CacheState) -> Result<(), Error>;
+    fn restore_missing_item_info(&mut self, cache: &CacheState) -> Result<(), Error>;
     fn extract_order_summary(&self, order_type: OrderType) -> Vec<(i64, f64, String, String)>;
 }
 
@@ -67,6 +68,18 @@ impl OrderListExt for OrderList<Order> {
 
         Ok(())
     }
+    fn restore_missing_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
+        for order in self
+            .buy_orders
+            .iter_mut()
+            .chain(self.sell_orders.iter_mut())
+            .filter(|order| !order.has_item_info())
+        {
+            order.apply_info(cache)?;
+        }
+
+        Ok(())
+    }
 }
 impl OrderListExt for OrderList<OrderWithUser> {
     fn apply_trade_info(&mut self) -> Result<(), Error> {
@@ -80,6 +93,18 @@ impl OrderListExt for OrderList<OrderWithUser> {
             .buy_orders
             .iter_mut()
             .chain(self.sell_orders.iter_mut())
+        {
+            order.order.apply_info(cache)?;
+        }
+
+        Ok(())
+    }
+    fn restore_missing_item_info(&mut self, cache: &CacheState) -> Result<(), Error> {
+        for order in self
+            .buy_orders
+            .iter_mut()
+            .chain(self.sell_orders.iter_mut())
+            .filter(|order| !order.order.has_item_info())
         {
             order.order.apply_info(cache)?;
         }
